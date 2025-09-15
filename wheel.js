@@ -17,8 +17,18 @@ const wheelState = {
 
     lastTickedSegmentIndex: null,
     onTickSegmentBoundary: null,
-    onSpinComplete: null
+    onSpinComplete: null,
+
+    // Pointer tap animation state
+    pointerTapActive: false,
+    pointerTapDurationMs: 70
 };
+
+/* vibrant, alternating palette for a beautiful wheel */
+const segmentPalette = [
+    "#FF6B6B","#FFD166","#06D6A0","#4D96FF","#C77DFF","#FF9F1C",
+    "#2EC4B6","#EF476F","#70C1B3","#9B5DE5","#F15BB5","#00BBF9"
+];
 
 function computeCssSquareSide(wrapperElement) {
     const rect = wrapperElement.getBoundingClientRect();
@@ -35,19 +45,19 @@ function resizeCanvasBackingStore() {
     const cssSide = computeCssSquareSide(wrapperElement);
     wheelState.cssSideLengthPixels = cssSide;
 
-    const devicePixelRatioRounded = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
 
     wheelState.canvasElement.style.width = `${cssSide}px`;
     wheelState.canvasElement.style.height = `${cssSide}px`;
 
-    const backingWidth = Math.round(cssSide * devicePixelRatioRounded);
-    const backingHeight = Math.round(cssSide * devicePixelRatioRounded);
+    const backingWidth = Math.round(cssSide * dpr);
+    const backingHeight = Math.round(cssSide * dpr);
     if (wheelState.canvasElement.width !== backingWidth) wheelState.canvasElement.width = backingWidth;
     if (wheelState.canvasElement.height !== backingHeight) wheelState.canvasElement.height = backingHeight;
 
-    const drawingContext = wheelState.drawingContext;
-    drawingContext.setTransform(1, 0, 0, 1, 0, 0);
-    drawingContext.scale(devicePixelRatioRounded, devicePixelRatioRounded);
+    const ctx = wheelState.drawingContext;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
 }
 
 let windowResizeDebounceHandle = null;
@@ -94,116 +104,206 @@ export function registerSpinCallbacks(callbacks) {
     wheelState.onSpinComplete = callbacks && typeof callbacks.onStop === "function" ? callbacks.onStop : null;
 }
 
+export function setSpinDurationMs(ms) {
+    wheelState.spinDurationMs = typeof ms === "number" && ms > 0 ? ms : wheelState.spinDurationMs;
+}
+
+/* ---------- Beautiful curved text helpers ---------- */
+
+/** Measure how much angle (radians) a text occupies along an arc for a given font size. */
+function measureArcAngle(ctx, text, radius, fontPx, letterSpacingPx) {
+    ctx.save();
+    ctx.font = `${fontPx}px system-ui,-apple-system,Segoe UI,Roboto,sans-serif`;
+    let totalWidth = 0;
+    for (let i = 0; i < text.length; i++) {
+        totalWidth += ctx.measureText(text[i]).width;
+        if (i !== text.length - 1) totalWidth += letterSpacingPx;
+    }
+    ctx.restore();
+    return totalWidth / radius; // angle = arc length / radius
+}
+
+/** Draw text centered in a segment, along the arc, with outline for contrast. */
+function drawArcTextCentered(ctx, text, centerX, centerY, radius, midAngle, segmentSweep) {
+    // Target to use ~85% of angular width for padding from borders
+    const usableSweep = segmentSweep * 0.85;
+
+    // Start with a large size and shrink to fit
+    const maxPx = Math.max(14, Math.floor(radius * 0.16));
+    const minPx = 10;
+    let fontPx = maxPx;
+    let letterSpacingPx = Math.max(1, Math.round(fontPx * 0.08));
+
+    // Decrease font until text fits within usable sweep
+    for (; fontPx >= minPx; fontPx -= 1) {
+        letterSpacingPx = Math.max(1, Math.round(fontPx * 0.08));
+        const ang = measureArcAngle(ctx, text, radius, fontPx, letterSpacingPx);
+        if (ang <= usableSweep) break;
+    }
+
+    // Compute total angle at final size
+    const totalAngle = measureArcAngle(ctx, text, radius, fontPx, letterSpacingPx);
+    let startAngle = midAngle - totalAngle / 2;
+
+    ctx.save();
+    ctx.font = `${fontPx}px system-ui,-apple-system,Segoe UI,Roboto,sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic"; // use alphabetic so lowercases sit nicely on baseline
+
+    const strokeWidth = Math.max(2, Math.round(fontPx * 0.14));
+    ctx.lineWidth = strokeWidth;
+    ctx.strokeStyle = "#ffffff";  // white halo for contrast on bright slices
+    ctx.fillStyle = "#000000";
+
+    // Draw each glyph along the arc
+    for (let i = 0; i < text.length; i++) {
+        const glyph = text[i];
+        const glyphWidth = ctx.measureText(glyph).width;
+        const glyphAngle = glyphWidth / radius;
+
+        const angle = startAngle + glyphAngle / 2;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+
+        ctx.save();
+        // Upright text tangent to the arc; rotate so text is readable from outside
+        ctx.translate(x, y);
+        ctx.rotate(angle + Math.PI / 2);
+
+        ctx.strokeText(glyph, 0, 0);
+        ctx.fillText(glyph, 0, 0);
+
+        ctx.restore();
+
+        startAngle += glyphAngle;
+        // add letter-spacing as extra angle
+        startAngle += (i !== text.length - 1 ? letterSpacingPx / radius : 0);
+    }
+
+    ctx.restore();
+}
+
+/* ---------- Rendering ---------- */
 export function drawWheel() {
-    const drawingContext = wheelState.drawingContext;
-    if (!drawingContext) return;
+    const ctx = wheelState.drawingContext;
+    if (!ctx) return;
 
-    const viewWidth = wheelState.cssSideLengthPixels || 1;
-    const viewHeight = wheelState.cssSideLengthPixels || 1;
-    const centerX = viewWidth / 2;
-    const centerY = viewHeight / 2;
-    const wheelRadius = Math.min(viewWidth, viewHeight) * 0.45;
+    const view = wheelState.cssSideLengthPixels || 1;
+    const centerX = view / 2;
+    const centerY = view / 2;
+    const wheelRadius = Math.min(view, view) * 0.45;
 
-    drawingContext.clearRect(0, 0, viewWidth, viewHeight);
+    ctx.clearRect(0, 0, view, view);
 
-    drawingContext.beginPath();
-    drawingContext.arc(centerX, centerY, wheelRadius, 0, Math.PI * 2, false);
-    drawingContext.fillStyle = "#e6e6e6";
-    drawingContext.fill();
-    drawingContext.lineWidth = 2;
-    drawingContext.strokeStyle = "#000";
-    drawingContext.stroke();
+    // base circle
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, wheelRadius, 0, Math.PI * 2, false);
+    ctx.fillStyle = "#f5f5f5";
+    ctx.fill();
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "#000";
+    ctx.stroke();
 
-    const labelList = wheelState.segmentLabels;
-    if (!labelList.length) return;
+    const labels = wheelState.segmentLabels;
+    if (!labels.length) return;
 
-    const segmentCount = labelList.length;
+    const segmentCount = labels.length;
     const segmentAngle = (Math.PI * 2) / segmentCount;
 
     for (let segmentIndex = 0; segmentIndex < segmentCount; segmentIndex += 1) {
-        const segmentStartAngle = wheelState.currentAngleRadians + segmentIndex * segmentAngle;
-        const segmentEndAngle = segmentStartAngle + segmentAngle;
+        const startA = wheelState.currentAngleRadians + segmentIndex * segmentAngle;
+        const endA = startA + segmentAngle;
 
-        drawingContext.beginPath();
-        drawingContext.moveTo(centerX, centerY);
-        drawingContext.arc(centerX, centerY, wheelRadius, segmentStartAngle, segmentEndAngle, false);
-        drawingContext.closePath();
-        drawingContext.strokeStyle = "#000";
-        drawingContext.lineWidth = 2;
-        drawingContext.stroke();
+        // slice fill
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, wheelRadius, startA, endA, false);
+        ctx.closePath();
+        ctx.fillStyle = segmentPalette[segmentIndex % segmentPalette.length];
+        ctx.fill();
 
-        const labelMidAngle = segmentStartAngle + segmentAngle / 2;
-        const textX = centerX + Math.cos(labelMidAngle) * wheelRadius * 0.68;
-        const textY = centerY + Math.sin(labelMidAngle) * wheelRadius * 0.68;
-        const needsFlip = Math.cos(labelMidAngle) < 0;
+        // slice border
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#000";
+        ctx.stroke();
 
-        drawingContext.save();
-        drawingContext.translate(textX, textY);
-        drawingContext.rotate(needsFlip ? labelMidAngle + Math.PI : labelMidAngle);
-        drawingContext.textAlign = "center";
-        drawingContext.textBaseline = "middle";
-        drawingContext.font = `${Math.floor(wheelRadius * 0.12)}px system-ui,-apple-system,Segoe UI,Roboto,sans-serif`;
-        drawingContext.fillStyle = "#000";
-        drawingContext.fillText(labelList[segmentIndex], 0, 0, wheelRadius * 0.9);
-        drawingContext.restore();
+        // label: draw beautifully along the arc at ~0.68 * radius
+        const midA = startA + segmentAngle / 2;
+        const labelRadius = wheelRadius * 0.72; // slightly inward so text never clips border
+        drawArcTextCentered(ctx, labels[segmentIndex], centerX, centerY, labelRadius, midA, segmentAngle);
     }
 
-    drawingContext.beginPath();
-    drawingContext.arc(centerX, centerY, wheelRadius * 0.08, 0, Math.PI * 2, false);
-    drawingContext.fillStyle = "#fff";
-    drawingContext.fill();
-    drawingContext.lineWidth = 2;
-    drawingContext.strokeStyle = "#000";
-    drawingContext.stroke();
+    // center hub
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, wheelRadius * 0.08, 0, Math.PI * 2, false);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#000";
+    ctx.stroke();
 
-    const pointerLength = wheelRadius * 0.16;
-    drawingContext.beginPath();
-    drawingContext.moveTo(centerX, centerY - wheelRadius - 8);
-    drawingContext.lineTo(centerX - pointerLength * 0.35, centerY - wheelRadius + pointerLength * 0.08);
-    drawingContext.lineTo(centerX + pointerLength * 0.35, centerY - wheelRadius + pointerLength * 0.08);
-    drawingContext.closePath();
-    drawingContext.fillStyle = "#000";
-    drawingContext.fill();
+    // === BIG TOP POINTER (outside the wheel, pointing down into the wheel) ===
+    const pointerGap = Math.max(6, wheelRadius * 0.012); // idle gap above rim
+    const tipX = centerX;
+    const tipY = wheelState.pointerTapActive
+        ? centerX - wheelRadius // (we correct below) left here to show intent; corrected next line
+        : centerX - wheelRadius - pointerGap;
+
+    // correction for tipY using centerY
+    const fixedTipY = wheelState.pointerTapActive
+        ? centerY - wheelRadius
+        : centerY - wheelRadius - pointerGap;
+
+    const pointerLength = wheelRadius * 0.24;
+    const halfBase = pointerLength * 0.65;
+
+    ctx.beginPath();
+    ctx.moveTo(tipX, fixedTipY);
+    ctx.lineTo(tipX - halfBase, fixedTipY - pointerLength);
+    ctx.lineTo(tipX + halfBase, fixedTipY - pointerLength);
+    ctx.closePath();
+    ctx.fillStyle = "#000";
+    ctx.fill();
 }
 
-function easeOutCubic(normalizedTime) {
-    const clamped = normalizedTime < 0 ? 0 : normalizedTime > 1 ? 1 : normalizedTime;
+function easeOutCubic(t) {
+    const clamped = t < 0 ? 0 : t > 1 ? 1 : t;
     const inverted = 1 - clamped;
     return 1 - inverted * inverted * inverted;
 }
 
 function getCurrentPointerSegmentIndex() {
-    const labelList = wheelState.segmentLabels;
-    if (!labelList.length) return null;
-    const segmentAngle = (Math.PI * 2) / labelList.length;
+    const labels = wheelState.segmentLabels;
+    if (!labels.length) return null;
+    const segA = (Math.PI * 2) / labels.length;
     const pointerAngle = -Math.PI / 2;
-    const relativeAngle = (wheelState.currentAngleRadians - pointerAngle) % (Math.PI * 2);
-    const normalizedAngle = (relativeAngle + Math.PI * 2) % (Math.PI * 2);
-    const segmentIndex = Math.floor(normalizedAngle / segmentAngle);
-    return segmentIndex;
+    const relative = (wheelState.currentAngleRadians - pointerAngle) % (Math.PI * 2);
+    const normalized = (relative + Math.PI * 2) % (Math.PI * 2);
+    const index = Math.floor(normalized / segA);
+    return index;
 }
 
 function animationFrameStep() {
     if (!wheelState.isSpinning) return;
 
-    const elapsedMs = performance.now() - wheelState.spinStartTimestampMs;
-    const normalizedTime = Math.min(elapsedMs / wheelState.spinDurationMs, 1);
-    const eased = easeOutCubic(normalizedTime);
+    const elapsed = performance.now() - wheelState.spinStartTimestampMs;
+    const t = Math.min(elapsed / wheelState.spinDurationMs, 1);
+    const eased = easeOutCubic(t);
     wheelState.currentAngleRadians =
         wheelState.spinStartAngleRadians +
         eased * (wheelState.spinTargetAngleRadians - wheelState.spinStartAngleRadians);
 
-    const currentSegmentIndex = getCurrentPointerSegmentIndex();
-    if (currentSegmentIndex !== null && currentSegmentIndex !== wheelState.lastTickedSegmentIndex) {
-        wheelState.lastTickedSegmentIndex = currentSegmentIndex;
+    const currentIndex = getCurrentPointerSegmentIndex();
+    if (currentIndex !== null && currentIndex !== wheelState.lastTickedSegmentIndex) {
+        wheelState.lastTickedSegmentIndex = currentIndex;
         if (typeof wheelState.onTickSegmentBoundary === "function") {
-            wheelState.onTickSegmentBoundary(currentSegmentIndex);
+            wheelState.onTickSegmentBoundary(currentIndex);
         }
     }
 
     drawWheel();
 
-    if (normalizedTime >= 1) {
+    if (t >= 1) {
         wheelState.isSpinning = false;
         snapToNearestWinner();
         const winnerIndex = getCurrentPointerSegmentIndex();
@@ -216,49 +316,58 @@ function animationFrameStep() {
 }
 
 function snapToNearestWinner() {
-    const labelList = wheelState.segmentLabels;
-    if (!labelList.length) return;
-    const segmentAngle = (Math.PI * 2) / labelList.length;
+    const labels = wheelState.segmentLabels;
+    if (!labels.length) return;
+    const segA = (Math.PI * 2) / labels.length;
     const pointerAngle = -Math.PI / 2;
-    const relativeAngle = (wheelState.currentAngleRadians - pointerAngle) % (Math.PI * 2);
-    const normalizedAngle = (relativeAngle + Math.PI * 2) % (Math.PI * 2);
-    const segmentIndex = Math.floor(normalizedAngle / segmentAngle);
-    wheelState.currentAngleRadians = pointerAngle + segmentIndex * segmentAngle + segmentAngle / 2;
+    const relative = (wheelState.currentAngleRadians - pointerAngle) % (Math.PI * 2);
+    const normalized = (relative + Math.PI * 2) % (Math.PI * 2);
+    const index = Math.floor(normalized / segA);
+    wheelState.currentAngleRadians = pointerAngle + index * segA + segA / 2;
     drawWheel();
 }
 
 export function spinToIndex(requestedIndex) {
-    const labelList = wheelState.segmentLabels;
-    if (!labelList.length) return;
-    if (labelList.length === 1 && labelList[0] === "No matches") return;
+    const labels = wheelState.segmentLabels;
+    if (!labels.length) return;
+    if (labels.length === 1 && labels[0] === "No matches") return;
     if (wheelState.isSpinning) return;
 
-    const segmentCount = labelList.length;
-    const chosenIndex =
+    const count = labels.length;
+    const chosen =
         typeof requestedIndex === "number" && requestedIndex >= 0
-            ? requestedIndex % segmentCount
-            : Math.floor(Math.random() * segmentCount);
+            ? requestedIndex % count
+            : Math.floor(Math.random() * count);
 
-    const segmentAngle = (Math.PI * 2) / segmentCount;
+    const segA = (Math.PI * 2) / count;
     const pointerAngle = -Math.PI / 2;
-    const destinationAngle = pointerAngle + chosenIndex * segmentAngle + segmentAngle / 2;
+    const destination = pointerAngle + chosen * segA + segA / 2;
 
     wheelState.spinStartAngleRadians = wheelState.currentAngleRadians;
-    wheelState.spinTargetAngleRadians = destinationAngle + Math.PI * 2 * 4;
+    wheelState.spinTargetAngleRadians = destination + Math.PI * 2 * 4; // drama
     wheelState.spinStartTimestampMs = performance.now();
     wheelState.isSpinning = true;
     wheelState.lastTickedSegmentIndex = getCurrentPointerSegmentIndex();
     window.requestAnimationFrame(animationFrameStep);
 }
 
-/** NEW: stop immediately, snap, and fire onSpinComplete with current index */
+/** stop immediately, snap, and fire onSpinComplete with current index */
 export function forceStopSpin() {
     if (!wheelState.segmentLabels.length) return;
-    // If we were spinning, stop and snap; if not, still snap to nearest and report.
     wheelState.isSpinning = false;
     snapToNearestWinner();
     const winnerIndex = getCurrentPointerSegmentIndex();
     if (typeof wheelState.onSpinComplete === "function" && winnerIndex !== null) {
         wheelState.onSpinComplete(winnerIndex);
     }
+}
+
+/** brief downward tap so the pointer tip touches the rim; used on tick */
+export function triggerPointerTap() {
+    wheelState.pointerTapActive = true;
+    setTimeout(() => {
+        wheelState.pointerTapActive = false;
+        drawWheel();
+    }, wheelState.pointerTapDurationMs);
+    drawWheel();
 }

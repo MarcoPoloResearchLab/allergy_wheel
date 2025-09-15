@@ -7,7 +7,9 @@ import {
     spinToIndex,
     ensureWheelSize,
     registerSpinCallbacks,
-    forceStopSpin
+    forceStopSpin,
+    setSpinDurationMs,
+    triggerPointerTap
 } from "./wheel.js";
 import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom } from "./audio.js";
 
@@ -66,7 +68,9 @@ const applicationState = {
     dishIndexByAllergen: new Map(),
 
     currentCandidateDishes: [],
-    currentCandidateLabels: []
+    currentCandidateLabels: [],
+
+    stopButtonMode: "stop"
 };
 
 const localStorageKeySelectedToken = "allergyWheel.selectedAllergenToken";
@@ -78,9 +82,7 @@ function persistSelectedAllergen() {
         if (!applicationState.selectedAllergenToken) return;
         window.localStorage.setItem(localStorageKeySelectedToken, applicationState.selectedAllergenToken);
         window.localStorage.setItem(localStorageKeySelectedLabel, applicationState.selectedAllergenLabel || "");
-    } catch {
-        // ignore
-    }
+    } catch {}
 }
 
 function restorePersistedAllergen() {
@@ -92,9 +94,7 @@ function restorePersistedAllergen() {
             applicationState.selectedAllergenLabel = label || token;
             return true;
         }
-    } catch {
-        // ignore
-    }
+    } catch {}
     return false;
 }
 
@@ -117,14 +117,11 @@ function validateAllergenCoverageOrThrow() {
     for (const allergen of applicationState.allergensCatalog) {
         const token = allergen.token;
         const dishesForToken = applicationState.dishIndexByAllergen.get(token) || [];
-        if (dishesForToken.length === 0) {
-            missing.push(token);
-        }
+        if (dishesForToken.length === 0) missing.push(token);
     }
     if (missing.length > 0) {
         throw new Error(
-            `Data invariant violated: no dishes found for allergen token(s): ${missing.join(", ")}. ` +
-            `Please add at least one matching dish per allergen to data/dishes.json.`
+            `Data invariant violated: no dishes found for allergen token(s): ${missing.join(", ")}.`
         );
     }
 }
@@ -154,54 +151,81 @@ function refreshSelectedAllergenBadges() {
     }
 }
 
+function setWheelControlToStop() {
+    const stopButton = document.getElementById("stop");
+    if (!stopButton) return;
+    stopButton.textContent = "STOP";
+    stopButton.classList.add("danger");
+    stopButton.classList.remove("primary");
+    applicationState.stopButtonMode = "stop";
+}
+
+function setWheelControlToStartGame() {
+    const stopButton = document.getElementById("stop");
+    if (!stopButton) return;
+    stopButton.textContent = "Start Game";
+    stopButton.classList.remove("danger");
+    stopButton.classList.add("primary");
+    applicationState.stopButtonMode = "start";
+}
+
+/* ---------- enforce exactly 8 segments ---------- */
+const WHEEL_SEGMENTS = 8;
+
+function pickRandomUnique(sourceArray, howMany) {
+    const copy = Array.from(sourceArray);
+    for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy.slice(0, howMany);
+}
+
 function recomputeWheelFromSelection() {
-    const matchingDishes = dishesMatchingSelectedAllergen();
+    const matching = dishesMatchingSelectedAllergen();
+    let chosen = [];
 
-    const paddedDishes = [...matchingDishes];
-    const seenKeys = new Set(paddedDishes.map(d => (d.id || dishDisplayLabel(d))));
-
-    for (const dish of applicationState.dishesCatalog) {
-        if (paddedDishes.length >= 8) break;
-        const dishKey = dish.id || dishDisplayLabel(dish);
-        if (!seenKeys.has(dishKey)) {
-            paddedDishes.push(dish);
-            seenKeys.add(dishKey);
+    if (matching.length >= WHEEL_SEGMENTS) {
+        chosen = pickRandomUnique(matching, WHEEL_SEGMENTS);
+    } else {
+        chosen = [...matching];
+        const seen = new Set(chosen.map(d => d.id || dishDisplayLabel(d)));
+        const fillerPool = applicationState.dishesCatalog.filter(d => {
+            const key = d.id || dishDisplayLabel(d);
+            return !seen.has(key);
+        });
+        const need = WHEEL_SEGMENTS - chosen.length;
+        chosen.push(...pickRandomUnique(fillerPool, need));
+        while (chosen.length < WHEEL_SEGMENTS && chosen.length > 0) {
+            chosen.push(chosen[chosen.length % chosen.length]);
         }
     }
 
-    if (paddedDishes.length > 0) {
-        let sourceIndex = 0;
-        while (paddedDishes.length < 8) {
-            paddedDishes.push(paddedDishes[sourceIndex % paddedDishes.length]);
-            sourceIndex += 1;
-        }
-    }
+    applicationState.currentCandidateDishes = chosen;
+    applicationState.currentCandidateLabels = chosen.map(dishDisplayLabel).filter(Boolean).slice(0, WHEEL_SEGMENTS);
 
-    applicationState.currentCandidateDishes = paddedDishes;
-    applicationState.currentCandidateLabels = paddedDishes
-        .map(dishDisplayLabel)
-        .filter((text) => text && text.length > 0);
-
-    if (!applicationState.currentCandidateLabels.length) {
-        setWheelLabels(["No matches"]);
-        drawWheel();
-        return;
-    }
-
-    setWheelLabels(applicationState.currentCandidateLabels);
+    setWheelLabels(applicationState.currentCandidateLabels.length ? applicationState.currentCandidateLabels : ["No matches"]);
     drawWheel();
 }
 
+/* ---------- EXCLUSIVE SCREEN CONTROLLER ---------- */
 function showScreen(targetId) {
-    const sectionIds = ["screen-allergy", "screen-wheel", "reveal"];
-    for (const sectionId of sectionIds) {
-        const sectionElement = document.getElementById(sectionId);
-        if (!sectionElement) continue;
-        sectionElement.hidden = sectionId !== targetId;
+    const bodyEl = document.body;
+    const reveal = document.getElementById("reveal");
+
+    if (targetId === "screen-allergy") {
+        bodyEl.setAttribute("data-screen", "allergy");
+        if (reveal) reveal.setAttribute("aria-hidden", "true");
+    } else if (targetId === "screen-wheel") {
+        bodyEl.setAttribute("data-screen", "wheel");
+        if (reveal) reveal.setAttribute("aria-hidden", "true");
+        ensureWheelSize();
+    } else if (targetId === "reveal" && bodyEl.dataset.screen === "wheel") {
+        if (reveal) reveal.setAttribute("aria-hidden", "false");
     }
-    if (targetId === "screen-wheel") ensureWheelSize();
 }
 
+/* ---------- reveal ---------- */
 function populateRevealWithDish(chosenDish) {
     const revealSection = document.getElementById("reveal");
     const dishTitleElement = document.getElementById("dish-title");
@@ -211,47 +235,39 @@ function populateRevealWithDish(chosenDish) {
     const ingredientsContainer = document.getElementById("dish-ingredients");
     const faceSvg = document.getElementById("face");
 
-    if (!revealSection || !dishTitleElement || !dishCuisineElement || !resultBannerElement || !resultTextElement || !ingredientsContainer) {
-        return;
-    }
-
     dishTitleElement.textContent = dishDisplayLabel(chosenDish);
     dishCuisineElement.textContent = chosenDish.cuisine || "";
-
     ingredientsContainer.textContent = "";
 
     const triggeringToken = applicationState.selectedAllergenToken;
     let hasTriggeringIngredient = false;
 
     for (const ingredientName of chosenDish.ingredients || []) {
-        const ingredientSpan = document.createElement("span");
-        ingredientSpan.className = "ingredient";
-
+        const span = document.createElement("span");
+        span.className = "ingredient";
         const tokensForIngredient = applicationState.normalizationEngine.tokensForIngredient(ingredientName);
-        const isTriggering = tokensForIngredient.has(triggeringToken);
-        if (isTriggering) {
+        if (tokensForIngredient.has(triggeringToken)) {
             hasTriggeringIngredient = true;
-            ingredientSpan.classList.add("bad");
+            span.classList.add("bad");
         }
-        ingredientSpan.textContent = ingredientName;
-        ingredientsContainer.appendChild(ingredientSpan);
+        span.textContent = ingredientName;
+        ingredientsContainer.appendChild(span);
     }
 
     if (hasTriggeringIngredient) {
-        resultBannerElement.classList.remove("ok");
-        resultBannerElement.classList.add("bad");
+        resultBannerElement.classList.replace("ok", "bad");
         resultTextElement.textContent = `Contains your allergen: ${applicationState.selectedAllergenLabel}`;
         if (faceSvg) faceSvg.hidden = false;
         playSiren(1800);
     } else {
-        resultBannerElement.classList.remove("bad");
-        resultBannerElement.classList.add("ok");
+        resultBannerElement.classList.replace("bad", "ok");
         resultTextElement.textContent = "Safe to eat. Yummy!";
         if (faceSvg) faceSvg.hidden = true;
         playNomNom(1200);
     }
 
-    revealSection.hidden = false;
+    setWheelControlToStartGame();
+    showScreen("reveal");
 }
 
 /* ---------- wiring ---------- */
@@ -260,16 +276,12 @@ function wireStartButton() {
     if (!startButton) return;
     startButton.addEventListener("click", () => {
         if (!applicationState.selectedAllergenToken) return;
-
         showScreen("screen-wheel");
-        ensureWheelSize();
         recomputeWheelFromSelection();
-
         if (!applicationState.currentCandidateLabels.length) return;
-
-        const randomIndex = Math.floor(Math.random() * applicationState.currentCandidateLabels.length);
-        spinToIndex(randomIndex);
-        setTimeout(ensureWheelSize, 0);
+        setWheelControlToStop();
+        setSpinDurationMs(30000);
+        spinToIndex(Math.floor(Math.random() * applicationState.currentCandidateLabels.length));
     });
 }
 
@@ -277,7 +289,11 @@ function wireStopButton() {
     const stopButton = document.getElementById("stop");
     if (!stopButton) return;
     stopButton.addEventListener("click", () => {
-        forceStopSpin();
+        if (applicationState.stopButtonMode === "stop") {
+            forceStopSpin();
+        } else {
+            showScreen("screen-allergy");
+        }
     });
 }
 
@@ -285,12 +301,9 @@ function wireFullscreenButton() {
     const fullscreenButton = document.getElementById("fs");
     if (!fullscreenButton) return;
     fullscreenButton.addEventListener("click", () => {
-        const documentElement = document.documentElement;
-        if (!document.fullscreenElement) {
-            if (documentElement.requestFullscreen) documentElement.requestFullscreen();
-        } else {
-            if (document.exitFullscreen) document.exitFullscreen();
-        }
+        const root = document.documentElement;
+        if (!document.fullscreenElement) root.requestFullscreen();
+        else document.exitFullscreen();
     });
 }
 
@@ -299,29 +312,23 @@ function wireRevealAgainButton() {
     if (!againButton) return;
     againButton.addEventListener("click", () => {
         const revealSection = document.getElementById("reveal");
-        if (revealSection) revealSection.hidden = true;
+        if (revealSection) revealSection.setAttribute("aria-hidden", "true");
         if (!applicationState.currentCandidateLabels.length) return;
-        const randomIndex = Math.floor(Math.random() * applicationState.currentCandidateLabels.length);
-        spinToIndex(randomIndex);
+        setWheelControlToStop();
+        setSpinDurationMs(30000);
+        spinToIndex(Math.floor(Math.random() * applicationState.currentCandidateLabels.length));
     });
 }
 
 function wireRevealBackdropDismissal() {
     const revealSection = document.getElementById("reveal");
     if (!revealSection) return;
-
-    revealSection.addEventListener("click", (mouseEvent) => {
-        if (mouseEvent.target === revealSection) {
-            revealSection.hidden = true;
-            showScreen("screen-allergy");
-        }
+    revealSection.addEventListener("click", e => {
+        if (e.target === revealSection) revealSection.setAttribute("aria-hidden", "true");
     });
-
-    document.addEventListener("keydown", (keyboardEvent) => {
-        const isEscape = keyboardEvent.key === "Escape" || keyboardEvent.key === "Esc";
-        if (isEscape && !revealSection.hidden) {
-            revealSection.hidden = true;
-            showScreen("screen-allergy");
+    document.addEventListener("keydown", e => {
+        if ((e.key === "Escape" || e.key === "Esc") && revealSection.getAttribute("aria-hidden") === "false") {
+            revealSection.setAttribute("aria-hidden", "true");
         }
     });
 }
@@ -329,51 +336,47 @@ function wireRevealBackdropDismissal() {
 /* ---------- bootstrap ---------- */
 export async function initializeApp() {
     try {
-        const [allergenCatalogJson, dishesJson, normalizationJson] = await Promise.all([
+        const [allergens, dishes, normalization] = await Promise.all([
             loadJson("./data/allergens.json"),
             loadJson("./data/dishes.json"),
             loadJson("./data/normalization.json")
         ]);
 
-        applicationState.allergensCatalog = Array.isArray(allergenCatalogJson) ? allergenCatalogJson : [];
-        applicationState.dishesCatalog = Array.isArray(dishesJson) ? dishesJson : [];
-        applicationState.normalizationEngine = new NormalizationEngine(normalizationJson);
+        applicationState.allergensCatalog = allergens;
+        applicationState.dishesCatalog = dishes;
+        applicationState.normalizationEngine = new NormalizationEngine(normalization);
 
         buildDishIndexByAllergen();
         validateAllergenCoverageOrThrow();
 
         const listContainer = document.getElementById("allergy-list");
         if (listContainer) {
-            renderAllergenList(listContainer, applicationState.allergensCatalog, (selectedToken, selectedLabel) => {
-                applicationState.selectedAllergenToken = selectedToken;
-                applicationState.selectedAllergenLabel = selectedLabel;
-                const startButton = document.getElementById("start");
-                if (startButton) startButton.disabled = false;
+            renderAllergenList(listContainer, applicationState.allergensCatalog, (token, label) => {
+                applicationState.selectedAllergenToken = token;
+                applicationState.selectedAllergenLabel = label;
+                document.getElementById("start").disabled = false;
                 refreshSelectedAllergenBadges();
                 persistSelectedAllergen();
             });
-
             if (restorePersistedAllergen()) {
                 const preselectRadio = listContainer.querySelector(
                     `input[type="radio"][value="${applicationState.selectedAllergenToken}"]`
                 );
                 if (preselectRadio) {
                     preselectRadio.checked = true;
-                    const startButton = document.getElementById("start");
-                    if (startButton) startButton.disabled = false;
+                    document.getElementById("start").disabled = false;
                     refreshSelectedAllergenBadges();
                 }
             }
         }
 
-        const wheelCanvasElement = document.getElementById("wheel");
-        if (wheelCanvasElement) initWheel(wheelCanvasElement);
+        initWheel(document.getElementById("wheel"));
 
         registerSpinCallbacks({
-            onTick: () => playTick(),
-            onStop: (winnerIndex) => {
-                const chosenDish = applicationState.currentCandidateDishes[winnerIndex];
-                if (chosenDish) populateRevealWithDish(chosenDish);
+            onTick: () => { playTick(); triggerPointerTap(); },
+            onStop: idx => {
+                const dish = applicationState.currentCandidateDishes[idx];
+                if (dish) populateRevealWithDish(dish);
             }
         });
 
@@ -385,17 +388,16 @@ export async function initializeApp() {
 
         primeAudioOnFirstGesture();
 
-        const loadingText = document.getElementById("loading");
-        if (loadingText) loadingText.hidden = true;
-    } catch (caughtError) {
-        console.error(caughtError);
+        showScreen("screen-allergy");
+        document.getElementById("loading").hidden = true;
+    } catch (err) {
+        console.error(err);
         const errorText = document.getElementById("load-error");
         if (errorText) {
-            errorText.textContent = "Data error: " + (caughtError?.message || "Unknown");
+            errorText.textContent = "Data error: " + (err?.message || "Unknown");
             errorText.hidden = false;
         }
-        const startButton = document.getElementById("start");
-        if (startButton) startButton.disabled = true;
+        document.getElementById("start").disabled = true;
     }
 }
 
