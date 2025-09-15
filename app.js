@@ -1,177 +1,203 @@
-// app.js — robust boot: load JSON immediately, wait for DOM to wire UI.
-
-import { Wheel } from "./wheel.js";
-import { playTick, playSiren, primeAudioOnFirstGesture } from "./audio.js";
+/* global document, window */
+import { renderAllergenList } from "./ui.js";
 import {
-  qs, show, hide, bindFullScreen,
-  renderAllergyChecklist, updateBadges,
-  openModal, closeModal
-} from "./ui.js";
+    initWheel,
+    setWheelLabels,
+    drawWheel,
+    spinToIndex,
+    ensureWheelSize
+} from "./wheel.js";
+import { primeAudioOnFirstGesture } from "./audio.js";
 
-/* ---------- Data locations (absolute paths) ---------- */
-const DATA = {
-  allergens: "/data/allergens.json",
-  dishes: "/data/dishes.json",
-  normalization: "/data/normalization.json",
+/* ---------- data loading ---------- */
+async function loadJson(path) {
+    const httpResponse = await fetch(path, { cache: "no-store" });
+    if (!httpResponse.ok) throw new Error(`failed to load ${path}`);
+    return httpResponse.json();
+}
+
+/* ---------- normalization engine ---------- */
+class NormalizationEngine {
+    constructor(ruleDescriptors) {
+        // ruleDescriptors: [{pattern, flags, token}]
+        this.compiledRules = [];
+        if (Array.isArray(ruleDescriptors)) {
+            for (const descriptor of ruleDescriptors) {
+                const patternSource = String(descriptor.pattern || "");
+                const patternFlags = String(descriptor.flags || "");
+                const targetToken = String(descriptor.token || "");
+                if (!patternSource || !targetToken) continue;
+                this.compiledRules.push({
+                    regex: new RegExp(patternSource, patternFlags),
+                    token: targetToken
+                });
+            }
+        }
+    }
+
+    tokensForIngredient(ingredientText) {
+        const foundTokens = new Set();
+        const candidate = String(ingredientText || "");
+        for (const compiledRule of this.compiledRules) {
+            if (compiledRule.regex.test(candidate)) foundTokens.add(compiledRule.token);
+        }
+        return foundTokens;
+    }
+
+    tokensForDishIngredients(ingredientArray) {
+        const union = new Set();
+        for (const singleIngredient of ingredientArray || []) {
+            const mapped = this.tokensForIngredient(singleIngredient);
+            for (const token of mapped) union.add(token);
+        }
+        return union;
+    }
+}
+
+/* ---------- app state ---------- */
+const applicationState = {
+    selectedAllergenToken: null,
+    selectedAllergenLabel: "",
+    allergensCatalog: [],
+    dishesCatalog: [],
+    normalizationEngine: null
 };
 
-/* ---------- App state ---------- */
-const state = {
-  allergens: [],
-  dishes: [],
-  rules: [],           // [{ token, re: RegExp }]
-  selected: new Set(),
-  wheel: null,
-  spinning: false,
-};
+function dishesMatchingSelectedAllergen() {
+    const selectedToken = applicationState.selectedAllergenToken;
+    if (!selectedToken) return [];
+    const normalizedToken = String(selectedToken);
+    const matchingDishes = [];
 
-/* ---------- Load data immediately (does NOT touch DOM) ---------- */
-const dataReady = Promise.all([
-  fetchJSON(DATA.allergens),
-  fetchJSON(DATA.dishes),
-  fetchJSON(DATA.normalization),
-])
-  .then(([allergens, dishes, normalization]) => {
-    state.allergens = allergens;
-    state.dishes = dishes;
-    state.rules = normalization.map(r => ({ token: r.token, re: new RegExp(r.pattern, r.flags || "i") }));
-  })
-  .catch(err => {
-    // Defer UI error rendering until DOM exists
-    state._bootError = err;
-  });
-
-/* ---------- Wait for DOM without blocking data ---------- */
-const domReady = document.readyState === "loading"
-  ? new Promise(resolve => document.addEventListener("DOMContentLoaded", resolve, { once: true }))
-  : Promise.resolve();
-
-/* ---------- When both ready, wire UI ---------- */
-Promise.all([dataReady, domReady]).then(() => {
-  // Grab elements now that DOM exists
-  const el = {
-    fs: qs("#fs"),
-    allergyList: qs("#allergy-list"),
-    start: qs("#start"),
-    loading: qs("#loading"),
-    loadError: qs("#load-error"),
-    screenAllergy: qs("#screen-allergy"),
-    screenWheel: qs("#screen-wheel"),
-    wheelCanvas: qs("#wheel"),
-    stop: qs("#stop"),
-    badges: qs("#sel-badges"),
-    modal: qs("#reveal"),
-    title: qs("#dish-title"),
-    cuisine: qs("#dish-cuisine"),
-    ingredients: qs("#dish-ingredients"),
-    banner: qs("#result"),
-    face: qs("#face"),
-    resultText: qs("#result-text"),
-    again: qs("#again"),
-  };
-
-  // If data failed, show a visible error
-  if (state._bootError) {
-    if (el.loading) el.loading.hidden = true;
-    if (el.loadError) {
-      el.loadError.hidden = false;
-      el.loadError.textContent = `Could not load data. ${state._bootError.message || String(state._bootError)}`;
+    for (const dish of applicationState.dishesCatalog) {
+        const ingredientList = Array.isArray(dish.ingredients) ? dish.ingredients : [];
+        const dishTokens = applicationState.normalizationEngine.tokensForDishIngredients(ingredientList);
+        if (dishTokens.has(normalizedToken)) matchingDishes.push(dish);
     }
-    return;
-  }
+    return matchingDishes;
+}
 
-  // Now safe to bind UI (elements exist)
-  if (el.fs) bindFullScreen(el.fs);
-  primeAudioOnFirstGesture();
+function dishDisplayLabel(dish) {
+    if (!dish || typeof dish !== "object") return "";
+    return dish.name || dish.title || dish.label || dish.id || "";
+}
 
-  const getSelected = renderAllergyChecklist(el.allergyList, state.allergens);
-  if (el.loading) el.loading.textContent = "Select allergens, then Start.";
-  if (el.start) {
-    el.start.disabled = false;
-    el.start.addEventListener("click", () => {
-      state.selected = getSelected();
-      startWheel(el);
-    }, { once: true });
-  }
-
-  // Buttons & keyboard
-  if (el.stop) el.stop.addEventListener("click", () => state.wheel && state.wheel.requestStop());
-  if (el.again) el.again.addEventListener("click", () => {
-    closeModal(el.modal);
-    if (state.wheel) { state.spinning = true; state.wheel.start(); }
-  });
-  document.addEventListener("keydown", evt => {
-    if (evt.code === "Space" || evt.code === "Enter") {
-      const onAllergyScreen = !el.screenWheel || el.screenWheel.hasAttribute("hidden");
-      if (onAllergyScreen && el.start) el.start.click();
-      else if (el.stop) el.stop.click();
-      evt.preventDefault();
+/* ---------- UI helpers ---------- */
+function refreshSelectedAllergenBadges() {
+    const badgesContainer = document.getElementById("sel-badges");
+    if (!badgesContainer) return;
+    badgesContainer.textContent = "";
+    if (applicationState.selectedAllergenLabel) {
+        const badgeElement = document.createElement("span");
+        badgeElement.className = "badge";
+        badgeElement.textContent = applicationState.selectedAllergenLabel;
+        badgesContainer.appendChild(badgeElement);
     }
-  });
+}
 
-  // Helper closures with element bag
-  function startWheel(elRef) {
-    hide(elRef.screenAllergy);
-    show(elRef.screenWheel);
+function recomputeWheelFromSelection() {
+    const candidateDishes = dishesMatchingSelectedAllergen();
+    const labelList = candidateDishes.map(dishDisplayLabel).filter((text) => text && text.length > 0);
+    if (!labelList.length) {
+        setWheelLabels(["No matches"]);
+        drawWheel();
+        return;
+    }
+    setWheelLabels(labelList);
+    drawWheel();
+}
 
-    updateBadges(elRef.badges, state.selected, state.allergens);
+function showScreen(targetId) {
+    const sectionIds = ["screen-allergy", "screen-wheel", "reveal"];
+    for (const sectionId of sectionIds) {
+        const sectionElement = document.getElementById(sectionId);
+        if (!sectionElement) continue;
+        sectionElement.hidden = sectionId !== targetId;
+    }
+    if (targetId === "screen-wheel") ensureWheelSize();
+}
 
-    state.wheel = new Wheel(elRef.wheelCanvas, state.dishes.map(d => d.name));
-    state.wheel.onStop(idx => revealDish(elRef, state.dishes[idx]));
-    new ResizeObserver(() => state.wheel.resizeToCss()).observe(elRef.wheelCanvas);
+function wireStartButton() {
+    const startButton = document.getElementById("start");
+    if (!startButton) return;
+    startButton.addEventListener("click", () => {
+        if (!applicationState.selectedAllergenToken) return;
 
-    state.spinning = true;
-    state.wheel.start();
+        showScreen("screen-wheel");
+        ensureWheelSize();
+        recomputeWheelFromSelection();
 
-    const tickId = setInterval(() => { if (state.spinning) playTick(); }, 140);
-    const stopTicks = () => clearInterval(tickId);
-    elRef.again.addEventListener("click", stopTicks, { once: true });
-    elRef.stop.addEventListener("click", stopTicks, { once: true });
-  }
+        const candidateDishes = dishesMatchingSelectedAllergen();
+        const labelList = candidateDishes.map(dishDisplayLabel).filter((text) => text && text.length > 0);
+        if (!labelList.length) return;
 
-  function revealDish(elRef, dish) {
-    state.spinning = false;
-
-    const hits = [...allergensForDish(dish)].filter(t => state.selected.has(t));
-
-    elRef.title.textContent = dish.name;
-    elRef.cuisine.textContent = dish.cuisine;
-    elRef.ingredients.innerHTML = "";
-
-    dish.ingredients.forEach(ingredient => {
-      const span = document.createElement("span");
-      span.className = "ingredient";
-      span.textContent = ingredient;
-      if (state.rules.some(r => r.re.test(ingredient) && hits.includes(r.token))) span.classList.add("bad");
-      elRef.ingredients.appendChild(span);
+        const randomIndex = Math.floor(Math.random() * labelList.length);
+        spinToIndex(randomIndex);
+        setTimeout(ensureWheelSize, 0);
     });
+}
 
-    if (hits.length) {
-      elRef.banner.className = "banner bad";
-      elRef.resultText.textContent = "Allergen found! Call the food ambulance!";
-      elRef.face.hidden = false;
-      playSiren();
-    } else {
-      elRef.banner.className = "banner ok";
-      elRef.resultText.textContent = "Safe to eat. Yummy!";
-      elRef.face.hidden = true;
+function wireStopButton() {
+    const stopButton = document.getElementById("stop");
+    if (!stopButton) return;
+    stopButton.addEventListener("click", () => showScreen("screen-allergy"));
+}
+
+function wireFullscreenButton() {
+    const fullscreenButton = document.getElementById("fs");
+    if (!fullscreenButton) return;
+    fullscreenButton.addEventListener("click", () => {
+        const documentElement = document.documentElement;
+        if (!document.fullscreenElement) {
+            if (documentElement.requestFullscreen) documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
+    });
+}
+
+/* ---------- bootstrap ---------- */
+export async function initializeApp() {
+    try {
+        const [allergenCatalogJson, dishesJson, normalizationJson] = await Promise.all([
+            loadJson("./data/allergens.json"),
+            loadJson("./data/dishes.json"),
+            loadJson("./data/normalization.json")
+        ]);
+
+        applicationState.allergensCatalog = Array.isArray(allergenCatalogJson) ? allergenCatalogJson : [];
+        applicationState.dishesCatalog = Array.isArray(dishesJson) ? dishesJson : [];
+        applicationState.normalizationEngine = new NormalizationEngine(normalizationJson);
+
+        const listContainer = document.getElementById("allergy-list");
+        if (listContainer) {
+            renderAllergenList(listContainer, applicationState.allergensCatalog, (selectedToken, selectedLabel) => {
+                applicationState.selectedAllergenToken = selectedToken;
+                applicationState.selectedAllergenLabel = selectedLabel;
+                const startButton = document.getElementById("start");
+                if (startButton) startButton.disabled = false;
+                refreshSelectedAllergenBadges();
+                recomputeWheelFromSelection();
+            });
+        }
+
+        const wheelCanvasElement = document.getElementById("wheel");
+        if (wheelCanvasElement) initWheel(wheelCanvasElement);
+
+        wireStartButton();
+        wireStopButton();
+        wireFullscreenButton();
+
+        // prime audio context on first gesture (keeps autoplay policies happy)
+        primeAudioOnFirstGesture();
+
+        const loadingText = document.getElementById("loading");
+        if (loadingText) loadingText.hidden = true;
+    } catch (caughtError) {
+        console.error(caughtError);
+        const errorText = document.getElementById("load-error");
+        if (errorText) errorText.hidden = false;
     }
-    openModal(elRef.modal);
-  }
-});
-
-/* ---------- Helpers (no DOM access) ---------- */
-function fetchJSON(path) {
-  return fetch(path, { cache: "no-store" }).then(res => {
-    if (!res.ok) throw new Error(`GET ${path} → ${res.status} ${res.statusText}`);
-    return res.json();
-  });
 }
 
-function allergensForDish(dish) {
-  const out = new Set();
-  dish.ingredients.forEach(ing => {
-    state.rules.forEach(rule => { if (rule.re.test(ing)) out.add(rule.token); });
-  });
-  return out;
-}
+document.addEventListener("DOMContentLoaded", initializeApp);
