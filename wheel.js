@@ -20,7 +20,10 @@ const wheelState = {
     onSpinComplete: null,
 
     pointerTapActive: false,
-    pointerTapDurationMs: 70
+    pointerTapDurationMs: 70,
+
+    // Cached layout (recomputed only when labels or size change)
+    layout: null
 };
 
 const segmentPalette = [
@@ -47,6 +50,8 @@ function resizeCanvasBackingStore() {
     const ctx = wheelState.drawingContext;
     ctx.setTransform(1,0,0,1,0,0);
     ctx.scale(dpr, dpr);
+    // Invalidate cached layout when size changes
+    wheelState.layout = null;
 }
 
 let resizeTimer;
@@ -67,9 +72,22 @@ export function initWheel(c) {
     drawWheel();
 }
 
+/**
+ * Accepts an array of either strings or objects {label, emoji}
+ */
 export function setWheelLabels(arr) {
-    wheelState.segmentLabels = Array.isArray(arr) ? arr.map(String).filter(Boolean) : [];
+    const norm = Array.isArray(arr) ? arr : [];
+    wheelState.segmentLabels = norm
+        .map(item => {
+            if (typeof item === "string") return { label: item, emoji: "" };
+            const label = String(item?.label || "");
+            const emoji = String(item?.emoji || "");
+            return { label, emoji };
+        })
+        .filter(obj => obj.label);
     wheelState.lastTickedSegmentIndex = null;
+    // Invalidate cached layout when labels change
+    wheelState.layout = null;
 }
 export function registerSpinCallbacks(cbs) {
     wheelState.onTickSegmentBoundary = cbs?.onTick || null;
@@ -97,9 +115,10 @@ function wrapLabel(ctx, text, maxWidth, fontPx) {
 }
 
 function computeFontPx(ctx, labels, maxWidth, maxFontPx, minFontPx) {
+    const onlyText = labels.map(l => (typeof l === "string" ? l : (l?.label || "")));
     for (let size = maxFontPx; size >= minFontPx; size--) {
         let fits = true;
-        for (const l of labels) {
+        for (const l of onlyText) {
             const lines = wrapLabel(ctx, l, maxWidth, size);
             for (const ln of lines) {
                 if (ctx.measureText(ln).width > maxWidth) { fits = false; break; }
@@ -111,53 +130,119 @@ function computeFontPx(ctx, labels, maxWidth, maxFontPx, minFontPx) {
     return minFontPx;
 }
 
+/* ---- compute and cache layout (font sizes, radii) ---- */
+function ensureLayout() {
+    if (wheelState.layout) return wheelState.layout;
+
+    const ctx = wheelState.drawingContext;
+    const side = wheelState.cssSideLengthPixels || 1;
+    const cx = side/2, cy = side/2, R = side*0.45;
+
+    const items = wheelState.segmentLabels;
+    const N = Math.max(1, items.length || 1);
+    const segAngle = 2 * Math.PI / N;
+
+    // Bands and widths
+    const textBandRadius = R * 0.70; // slightly further out to allow bigger text
+    const chordWidth = 2 * textBandRadius * Math.sin(segAngle/2) * 0.88; // allow more width
+
+    // Make labels BIGGER: raise max font bound
+    const fontPx = computeFontPx(ctx, items, chordWidth, /*max*/ 56, /*min*/ 18);
+    const lineHeight = fontPx * 1.18;
+
+    // Emoji near center, sized relative to text
+    const emojiPx = Math.round(fontPx * 1.9);
+    const emojiRadius = R * 0.40;
+
+    wheelState.layout = {
+        cx, cy, R,
+        N, segAngle,
+        textBandRadius, chordWidth,
+        fontPx, lineHeight,
+        emojiPx, emojiRadius
+    };
+    return wheelState.layout;
+}
+
 /* ---- draw wheel ---- */
 export function drawWheel() {
     const ctx = wheelState.drawingContext;
     if (!ctx) return;
     const side = wheelState.cssSideLengthPixels||1;
-    const cx=side/2, cy=side/2, R=side*0.45;
     ctx.clearRect(0,0,side,side);
 
-    // Base
-    ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle="#f5f5f5"; ctx.fill(); ctx.lineWidth=6; ctx.strokeStyle="#000"; ctx.stroke();
+    const L = wheelState.segmentLabels;
+    if (!L.length) {
+        // draw base circle anyway
+        const { cx, cy, R } = ensureLayout();
+        ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+        ctx.fillStyle="#f5f5f5"; ctx.fill(); ctx.lineWidth=6; ctx.strokeStyle="#000"; ctx.stroke();
+        drawPointer(ctx, cx, cy, R);
+        return;
+    }
 
-    const labels = wheelState.segmentLabels; if (!labels.length) return;
-    const N = labels.length, segA = 2*Math.PI/N;
-    const textBandR = R*0.65;
-    const chordW = 2*textBandR*Math.sin(segA/2)*0.8;
+    const {
+        cx, cy, R,
+        N, segAngle,
+        textBandRadius, chordWidth,
+        fontPx, lineHeight,
+        emojiPx, emojiRadius
+    } = ensureLayout();
 
-    const fontPx = computeFontPx(ctx, labels, chordW, 32, 16);
-    const lineH = fontPx*1.2;
+    // Base ring
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle="#fefefe"; ctx.fill(); ctx.lineWidth=6; ctx.strokeStyle="#000"; ctx.stroke();
 
     for (let i=0;i<N;i++) {
-        const a0=wheelState.currentAngleRadians+i*segA, a1=a0+segA;
+        const a0=wheelState.currentAngleRadians+i*segAngle, a1=a0+segAngle;
+        // segment fill
         ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R,a0,a1); ctx.closePath();
         ctx.fillStyle=segmentPalette[i%segmentPalette.length]; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle="#000"; ctx.stroke();
 
-        const mid=a0+segA/2;
-        const label=labels[i];
-        const lines=wrapLabel(ctx,label,chordW,fontPx);
+        const mid=a0+segAngle/2;
+        const { label, emoji } = L[i];
+        const lines=wrapLabel(ctx,label,chordWidth,fontPx);
+
+        // Text (upright towards center)
         ctx.save();
-        ctx.translate(cx+Math.cos(mid)*textBandR, cy+Math.sin(mid)*textBandR);
-        ctx.rotate(mid+Math.PI/2); // keep upright horizontally
+        ctx.translate(cx+Math.cos(mid)*textBandRadius, cy+Math.sin(mid)*textBandRadius);
+        ctx.rotate(mid+Math.PI/2);
         ctx.textAlign="center"; ctx.textBaseline="middle";
         ctx.font=`${fontPx}px "Fredoka One", sans-serif`;
         ctx.lineWidth=3; ctx.strokeStyle="#fff"; ctx.fillStyle="#111";
         for (let j=0;j<lines.length;j++){
-            const y=(j-(lines.length-1)/2)*lineH;
+            const y=(j-(lines.length-1)/2)*lineHeight;
             ctx.strokeText(lines[j],0,y);
             ctx.fillText(lines[j],0,y);
         }
         ctx.restore();
+
+        // Emoji nearer to center
+        if (emoji) {
+            ctx.save();
+            ctx.translate(cx+Math.cos(mid)*emojiRadius, cy+Math.sin(mid)*emojiRadius);
+            ctx.rotate(mid+Math.PI/2);
+            ctx.textAlign="center"; ctx.textBaseline="middle";
+            ctx.font=`${emojiPx}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+            ctx.fillText(emoji, 0, 0);
+            ctx.restore();
+        }
     }
 
     // center hub
     ctx.beginPath(); ctx.arc(cx,cy,R*0.08,0,Math.PI*2); ctx.fillStyle="#fff"; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle="#000"; ctx.stroke();
 
-    // pointer
+    drawPointer(ctx, cx, cy, R);
+}
+
+function drawPointer(ctx, cx, cy, R) {
     const tipX=cx, tipY=cy-R-8;
-    ctx.beginPath(); ctx.moveTo(tipX,tipY); ctx.lineTo(tipX-20,tipY-40); ctx.lineTo(tipX+20,tipY-40); ctx.closePath(); ctx.fillStyle="#000"; ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(tipX,tipY);
+    ctx.lineTo(tipX-20,tipY-40);
+    ctx.lineTo(tipX+20,tipY-40);
+    ctx.closePath();
+    ctx.fillStyle="#000";
+    ctx.fill();
 }
 
 /* ---- spin engine ---- */
@@ -169,9 +254,10 @@ function easeOutCubic(t){t=Math.min(Math.max(t,0),1);return 1-Math.pow(1-t,3);}
  */
 function getCurrentPointerSegmentIndex(){
     const L=wheelState.segmentLabels; if(!L.length) return null;
-    const N=L.length, segA=2*Math.PI/N, pa=-Math.PI/2;
+    const { N, segAngle } = ensureLayout();
+    const pa=-Math.PI/2;
     // Current angle is the start angle of segment 0. Map to index whose mid hits the pointer.
-    let x = (pa - wheelState.currentAngleRadians) / segA - 0.5; // number of segments from 0's mid to pointer
+    let x = (pa - wheelState.currentAngleRadians) / segAngle - 0.5; // segments from 0's mid to pointer
     let idx = Math.round(x);
     // normalize to [0, N)
     idx = ((idx % N) + N) % N;
@@ -195,13 +281,14 @@ function step(){
 
 export function spinToIndex(reqIdx){
     const L=wheelState.segmentLabels; if(!L.length||wheelState.isSpinning) return;
-    const N=L.length, idx=(typeof reqIdx==="number"&&reqIdx>=0)?reqIdx%N:Math.floor(Math.random()*N);
-    const segA=2*Math.PI/N, pa=-Math.PI/2;
+    const { N, segAngle } = ensureLayout();
+    const idx=(typeof reqIdx==="number"&&reqIdx>=0)?reqIdx%N:Math.floor(Math.random()*N);
+    const pa=-Math.PI/2;
 
     // We want the MID of segment `idx` to align to the fixed pointer at angle `pa`.
     // Since `currentAngleRadians` represents the START angle of segment 0,
     // set destination so that: current + idx*segA + segA/2 === pa (mod 2π)
-    const dest = pa - idx*segA - segA/2;
+    const dest = pa - idx*segAngle - segAngle/2;
 
     wheelState.spinStartAngleRadians=wheelState.currentAngleRadians;
     wheelState.spinTargetAngleRadians=dest+Math.PI*2*4; // add revolutions

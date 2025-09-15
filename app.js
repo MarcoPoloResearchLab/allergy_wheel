@@ -37,7 +37,7 @@ const applicationState = {
     selectedAllergenToken: null,
     selectedAllergenLabel: "",
     currentCandidateDishes: [],
-    currentCandidateLabels: [],
+    currentCandidateLabels: [], // now array of {label, emoji}
     stopButtonMode: "stop", // "stop" | "start"
     heartsCount: initialHeartsCount
 };
@@ -50,7 +50,7 @@ function recomputeWheelFromSelection() {
     if (!board || !selectedToken) {
         applicationState.currentCandidateDishes = [];
         applicationState.currentCandidateLabels = [];
-        setWheelLabels(["No selection"]);
+        setWheelLabels([{ label: "No selection", emoji: "" }]);
         drawWheel();
         return;
     }
@@ -84,14 +84,14 @@ function recomputeWheelFromSelection() {
 
     applicationState.currentCandidateDishes = chosenDishes.slice(0, wheelSegmentCount);
     applicationState.currentCandidateLabels = applicationState.currentCandidateDishes
-        .map(d => board.getDishLabel(d))
-        .filter(Boolean)
+        .map(d => ({ label: board.getDishLabel(d), emoji: d.emoji || "" }))
+        .filter(obj => obj.label)
         .slice(0, wheelSegmentCount);
 
     setWheelLabels(
         applicationState.currentCandidateLabels.length
             ? applicationState.currentCandidateLabels
-            : ["No matches"]
+            : [{ label: "No matches", emoji: "" }]
     );
     drawWheel();
 }
@@ -242,7 +242,11 @@ async function initializeApp() {
                 applicationState.selectedAllergenLabel = label;
                 const startBtn = document.getElementById("start");
                 if (startBtn) startBtn.disabled = false;
-                refreshSelectedAllergenBadges([label]);
+
+                // Find emoji for selected allergen for badges
+                const found = allergensCatalog.find(a => a.token === token);
+                const badgeEntry = { label, emoji: found?.emoji || "" };
+                refreshSelectedAllergenBadges([badgeEntry]);
             });
             const startBtn = document.getElementById("start");
             if (startBtn) startBtn.disabled = true;
@@ -260,7 +264,8 @@ async function initializeApp() {
                     dish,
                     selectedAllergenToken: applicationState.selectedAllergenToken,
                     selectedAllergenLabel: applicationState.selectedAllergenLabel,
-                    normalizationEngine
+                    normalizationEngine,
+                    allergensCatalog: board.allergensCatalog
                 });
 
                 if (revealInfo.hasTriggeringIngredient) {

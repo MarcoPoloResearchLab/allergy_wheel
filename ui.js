@@ -8,6 +8,7 @@ export function renderAllergenList(containerElement, allergenList, onSelectCallb
     for (const allergenItem of allergenList) {
         const allergenToken = allergenItem.token;
         const allergenLabel = allergenItem.label || allergenToken;
+        const allergenEmoji = allergenItem.emoji || "";
 
         const labelElement = document.createElement("label");
         labelElement.className = "chip";
@@ -21,21 +22,42 @@ export function renderAllergenList(containerElement, allergenList, onSelectCallb
             if (typeof onSelectCallback === "function") onSelectCallback(allergenToken, allergenLabel);
         });
 
+        const textNode = document.createTextNode(` ${allergenLabel}`);
+        const emojiSpan = document.createElement("span");
+        emojiSpan.className = "emoji-large";
+        emojiSpan.textContent = allergenEmoji;
+
         labelElement.appendChild(radioElement);
-        labelElement.appendChild(document.createTextNode(` ${allergenLabel}`));
+        labelElement.appendChild(textNode);
+        labelElement.appendChild(emojiSpan);
+
         containerElement.appendChild(labelElement);
     }
 }
 
 /* badges under wheel */
-export function refreshSelectedAllergenBadges(allergenLabels) {
+export function refreshSelectedAllergenBadges(allergenEntries) {
     const badgesContainer = document.getElementById("sel-badges");
     if (!badgesContainer) return;
     badgesContainer.textContent = "";
-    for (const singleLabel of allergenLabels || []) {
+
+    for (const entry of allergenEntries || []) {
+        const labelText = typeof entry === "string" ? entry : (entry.label || "");
+        const emojiText = typeof entry === "string" ? "" : (entry.emoji || "");
+
         const badgeElement = document.createElement("span");
         badgeElement.className = "badge";
-        badgeElement.textContent = singleLabel;
+
+        const labelSpan = document.createElement("span");
+        labelSpan.textContent = labelText;
+
+        const emojiSpan = document.createElement("span");
+        emojiSpan.className = "emoji-large";
+        emojiSpan.textContent = emojiText;
+
+        badgeElement.appendChild(labelSpan);
+        if (emojiText) badgeElement.appendChild(emojiSpan);
+
         badgesContainer.appendChild(badgeElement);
     }
 }
@@ -59,7 +81,7 @@ export function setWheelControlToStop() { /* no-op for API symmetry */ }
 export function setWheelControlToStartGame() { /* no-op for API symmetry */ }
 
 /* populate reveal card and return outcome */
-export function populateRevealCard({ dish, selectedAllergenToken, selectedAllergenLabel, normalizationEngine }) {
+export function populateRevealCard({ dish, selectedAllergenToken, selectedAllergenLabel, normalizationEngine, allergensCatalog }) {
     const revealSection = document.getElementById("reveal");
     const dishTitleElement = document.getElementById("dish-title");
     const dishCuisineElement = document.getElementById("dish-cuisine");
@@ -68,21 +90,48 @@ export function populateRevealCard({ dish, selectedAllergenToken, selectedAllerg
     const ingredientsContainer = document.getElementById("dish-ingredients");
     const faceSvg = document.getElementById("face");
 
-    dishTitleElement.textContent = dish.name || dish.title || dish.label || dish.id || "";
+    const dishEmoji = dish.emoji || "";
+    dishTitleElement.textContent = `${dishEmoji ? dishEmoji + " " : ""}${dish.name || dish.title || dish.label || dish.id || ""}`;
     dishCuisineElement.textContent = dish.cuisine || "";
     ingredientsContainer.textContent = "";
+
+    // Map allergen token -> emoji for quick lookup
+    const emojiByToken = new Map();
+    for (const a of allergensCatalog || []) {
+        if (a?.token) emojiByToken.set(a.token, a.emoji || "");
+    }
 
     let hasTriggeringIngredient = false;
 
     for (const ingredientName of dish.ingredients || []) {
         const spanElement = document.createElement("span");
         spanElement.className = "ingredient";
+
         const tokensForIngredient = normalizationEngine.tokensForIngredient(ingredientName);
+        let ingredientEmoji = "";
+
         if (tokensForIngredient.has(selectedAllergenToken)) {
             hasTriggeringIngredient = true;
             spanElement.classList.add("bad");
+            ingredientEmoji = emojiByToken.get(selectedAllergenToken) || "";
+        } else {
+            // If ingredient maps to any known allergen token, show its emoji (first match)
+            for (const token of tokensForIngredient) {
+                const maybe = emojiByToken.get(token);
+                if (maybe) { ingredientEmoji = maybe; break; }
+            }
         }
-        spanElement.textContent = ingredientName;
+
+        const textSpan = document.createElement("span");
+        textSpan.textContent = ingredientName;
+
+        const emojiSpan = document.createElement("span");
+        emojiSpan.className = "emoji-large";
+        emojiSpan.textContent = ingredientEmoji;
+
+        spanElement.appendChild(textSpan);
+        if (ingredientEmoji) spanElement.appendChild(emojiSpan);
+
         ingredientsContainer.appendChild(spanElement);
     }
 
