@@ -4,9 +4,10 @@
     <meta charset="utf-8"/>
     <title>Allergy Wheel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
         :root{
-            --bg:#fffbef;--fg:#111;--primary:#ff4d6d;--ink:#fff;--accent:#00c2ff;--danger:#ff3b30;
+            --bg:#fffbef;--fg:#111;--primary:#ff4d6d;--ink:#fff;--danger:#ff3b30;--success:#2ecc71;
             --card:#fff;--muted:#666;--shadow:0 12px 30px rgba(0,0,0,.15)
         }
         html,body{height:100%}
@@ -14,35 +15,45 @@
         header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:linear-gradient(90deg,#fff0d6,#ffe5f0);border-bottom:2px solid #ffd6e3}
         header h1{margin:0;font-size:clamp(18px,2.2vw,28px)}
         .ghost{background:#fff;border:2px solid #000;border-radius:999px;padding:10px 14px;font-weight:800;box-shadow:2px 2px 0 #000;cursor:pointer}
+
         main{flex:1;display:grid;place-items:center;padding:20px}
         .card{width:min(900px,92vw);background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:20px}
         .title{margin:0 0 10px 0;font-size:clamp(22px,3.4vw,34px)}
         .muted{color:var(--muted)}
         .actions{margin-top:12px}
+
+        /* Base buttons */
         .btn{border:0;border-radius:999px;padding:12px 18px;font-weight:800;cursor:pointer}
-        .btn.primary{background:var(--primary);color:var(--ink);box-shadow:var(--shadow)}
-        .btn.danger{background:var(--danger);color:#fff;box-shadow:4px 6px 0 #000;border:4px solid #000}
+        .btn.primary{background:var(--primary);color:var(--ink);box-shadow:var(--shadow)} /* used elsewhere */
+        .btn.danger{background:var(--danger);color:#fff;box-shadow:4px 6px 0 #000;border:4px solid #000} /* legacy */
+
+        /* Unified center action button (used for both Start/Stop on the wheel) */
+        .btn.action{
+            color:#fff;
+            border:4px solid #000;
+            box-shadow:4px 6px 0 #000;
+            font-weight:900;
+        }
+        .btn.action.is-start{ background:var(--success); }
+        .btn.action.is-stop { background:var(--danger); }
+
         .grid{display:grid;gap:12px}
         .grid.cols-2{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
         .chip{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:999px;background:#fff7c8;border:2px solid #000;box-shadow:2px 2px 0 #000}
         .chip input{width:20px;height:20px}
 
-        /* --- Exclusive screen controller --- */
-        /* Default: both off; specific states turn one on */
-        #screen-allergy, #screen-wheel { display:none; }
-        body[data-screen="allergy"] #screen-allergy { display:grid; }
-        body[data-screen="allergy"] #screen-wheel  { display:none; }
-        body[data-screen="wheel"]   #screen-allergy { display:none; }
-        body[data-screen="wheel"]   #screen-wheel  { display:grid; }
+        /* Exclusive screens */
+        #screen-allergy,#screen-wheel{display:none}
+        body[data-screen="allergy"] #screen-allergy{display:grid}
+        body[data-screen="wheel"] #screen-wheel{display:grid}
 
-        /* Reveal is an overlay shown only while on wheel screen */
+        /* Reveal overlay only on wheel screen */
         #reveal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;place-items:center;z-index:10}
-        body[data-screen="wheel"] #reveal[aria-hidden="false"]{ display:grid; }
+        body[data-screen="wheel"] #reveal[aria-hidden="false"]{display:grid}
 
         .wheel-wrap{position:relative;width:min(96vmin,980px);aspect-ratio:1;display:grid;place-items:center;margin-inline:auto}
         #wheel{width:100%;height:100%;background:#fff;border-radius:50%;border:6px solid #000;box-shadow:var(--shadow)}
-        #stop{position:absolute;inset:auto auto 50% 50%;transform:translate(-50%,50%);padding:22px 34px;border-radius:999px;
-            font-weight:900;font-size:clamp(18px,2.6vw,28px);}
+        #stop{position:absolute;inset:auto auto 50% 50%;transform:translate(-50%,50%);padding:22px 34px;border-radius:999px;font-weight:900;font-size:clamp(18px,2.6vw,28px)}
         .status{text-align:center;margin-top:12px;font-weight:700}
         .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#ffe08a;border:2px solid #000;margin:2px 6px;font-weight:800}
 
@@ -57,7 +68,7 @@
         .face{width:90px;height:90px}
     </style>
 </head>
-<!-- set authoritative screen state here -->
+
 <body data-screen="allergy">
 <header>
     <h1>Allergy Wheel</h1>
@@ -80,7 +91,8 @@
 <main id="screen-wheel">
     <div class="wheel-wrap">
         <canvas id="wheel" width="1000" height="1000" aria-label="Spinning dish wheel"></canvas>
-        <button id="stop" class="btn danger">STOP</button>
+        <!-- unified action button; JS toggles .is-stop <-> .is-start -->
+        <button id="stop" class="btn action is-stop">STOP</button>
     </div>
     <div class="status">Allergens: <span id="sel-badges"></span></div>
 </main>
