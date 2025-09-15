@@ -55,12 +55,8 @@ export function showScreen(screenName) {
 }
 
 /* stop button visual state helpers (mirrored in app.js text switch) */
-export function setWheelControlToStop() {
-    // no-op here; class/text is handled in app.js; this is kept to satisfy API exposure
-}
-export function setWheelControlToStartGame() {
-    // no-op (same rationale)
-}
+export function setWheelControlToStop() { /* no-op for API symmetry */ }
+export function setWheelControlToStartGame() { /* no-op for API symmetry */ }
 
 /* populate reveal card and return outcome */
 export function populateRevealCard({ dish, selectedAllergenToken, selectedAllergenLabel, normalizationEngine }) {
@@ -105,4 +101,84 @@ export function populateRevealCard({ dish, selectedAllergenToken, selectedAllerg
     if (revealSection) revealSection.setAttribute("aria-hidden", "false");
 
     return { hasTriggeringIngredient };
+}
+
+/* ---------- Hearts UI ---------- */
+/**
+ * Render hearts with optional add/remove animations.
+ * @param {number} count - target hearts count
+ * @param {{animate?: boolean}} [options]
+ */
+export function renderHearts(count, options = {}) {
+    const { animate = false } = options;
+    const heartsBar = document.getElementById("hearts-bar");
+    if (!heartsBar) return;
+
+    const previousCount = parseInt(heartsBar.getAttribute("data-count") || "0", 10);
+    const total = Math.max(0, Math.floor(count || 0));
+
+    // First render (or when animation is disabled): hard rebuild
+    if (!animate || previousCount === 0) {
+        heartsBar.innerHTML = "";
+        for (let index = 0; index < total; index++) {
+            const span = document.createElement("span");
+            span.className = "heart";
+            span.setAttribute("aria-hidden", "true");
+            span.textContent = "❤️";
+            heartsBar.appendChild(span);
+        }
+        heartsBar.setAttribute("data-count", String(total));
+        heartsBar.setAttribute("aria-label", `${total} hearts`);
+        heartsBar.title = `${total} hearts`;
+        return;
+    }
+
+    // Animated diff
+    const delta = total - previousCount;
+    if (delta > 0) {
+        // Add hearts with a pop-in animation
+        for (let i = 0; i < delta; i++) {
+            const span = document.createElement("span");
+            span.className = "heart heart-enter";
+            span.setAttribute("aria-hidden", "true");
+            span.textContent = "❤️";
+            heartsBar.appendChild(span);
+            span.addEventListener("animationend", () => {
+                span.classList.remove("heart-enter");
+            }, { once: true });
+        }
+        showHeartDelta(`+${delta}`);
+    } else if (delta < 0) {
+        // Remove hearts with a pop-out animation (from the end)
+        for (let i = 0; i < Math.abs(delta); i++) {
+            const last = heartsBar.lastElementChild;
+            if (!last) break;
+            last.classList.add("heart-exit");
+            last.addEventListener("animationend", () => {
+                last.remove();
+            }, { once: true });
+        }
+        showHeartDelta(`${delta}`); // delta is negative already
+    }
+
+    heartsBar.setAttribute("data-count", String(total));
+    heartsBar.setAttribute("aria-label", `${total} hearts`);
+    heartsBar.title = `${total} hearts`;
+}
+
+/** Floating “+1 / -1” indicator near the hearts bar */
+function showHeartDelta(textContent) {
+    const heartsBar = document.getElementById("hearts-bar");
+    if (!heartsBar) return;
+    const bubble = document.createElement("span");
+    bubble.className = "heart-delta";
+    bubble.textContent = textContent;
+    heartsBar.appendChild(bubble);
+    bubble.addEventListener("animationend", () => bubble.remove(), { once: true });
+}
+
+export function showGameOver() {
+    const gameover = document.getElementById("gameover");
+    if (!gameover) return;
+    gameover.setAttribute("aria-hidden", "false");
 }

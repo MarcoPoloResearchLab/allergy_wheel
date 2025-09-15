@@ -1,6 +1,25 @@
 /* global document, window */
-import { renderAllergenList, refreshSelectedAllergenBadges, showScreen, populateRevealCard, setWheelControlToStop, setWheelControlToStartGame } from "./ui.js";
-import { initWheel, setWheelLabels, drawWheel, spinToIndex, ensureWheelSize, registerSpinCallbacks, forceStopSpin, setSpinDurationMs, triggerPointerTap } from "./wheel.js";
+import {
+    renderAllergenList,
+    refreshSelectedAllergenBadges,
+    showScreen,
+    populateRevealCard,
+    setWheelControlToStop,
+    setWheelControlToStartGame,
+    renderHearts,
+    showGameOver
+} from "./ui.js";
+import {
+    initWheel,
+    setWheelLabels,
+    drawWheel,
+    spinToIndex,
+    ensureWheelSize,
+    registerSpinCallbacks,
+    forceStopSpin,
+    setSpinDurationMs,
+    triggerPointerTap
+} from "./wheel.js";
 import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom } from "./audio.js";
 import { loadJson, NormalizationEngine, pickRandomUnique } from "./utils.js";
 import { Board } from "./board.js";
@@ -8,6 +27,7 @@ import { Board } from "./board.js";
 /* ---------- constants ---------- */
 const wheelSegmentCount = 8;
 const spinDurationMsDefault = 30000;
+const initialHeartsCount = 10;
 
 /* ---------- app state ---------- */
 const applicationState = {
@@ -16,7 +36,8 @@ const applicationState = {
     selectedAllergenLabel: "",
     currentCandidateDishes: [],
     currentCandidateLabels: [],
-    stopButtonMode: "stop" // "stop" | "start"
+    stopButtonMode: "stop", // "stop" | "start"
+    heartsCount: initialHeartsCount
 };
 
 /* ---------- helpers ---------- */
@@ -34,14 +55,11 @@ function recomputeWheelFromSelection() {
 
     const matchingDishes = board.getDishesForAllergen(selectedToken);
     if (!Array.isArray(matchingDishes) || matchingDishes.length === 0) {
-        // Hard fail per requirement: data must guarantee at least one match per allergen.
         throw new Error(`Invariant broken: no dishes for allergen token '${selectedToken}'`);
     }
 
-    // 1) Anchor: ensure at least one matching dish is present (random among matches).
     const anchorDish = matchingDishes[Math.floor(Math.random() * matchingDishes.length)];
 
-    // 2) Fill remaining slots from the catalog excluding the anchor (keeps picks unique).
     const catalog = Array.isArray(board.dishesCatalog) ? board.dishesCatalog : [];
     const slotsToFill = Math.max(0, wheelSegmentCount - 1);
     const pool = catalog.filter(d => d !== anchorDish);
@@ -50,21 +68,18 @@ function recomputeWheelFromSelection() {
     if (pool.length >= slotsToFill) {
         fill = pickRandomUnique(pool, slotsToFill);
     } else {
-        // Not enough unique dishes in catalog to fill one spin — use all unique then repeat randomly.
         fill = [...pool];
         while (fill.length < slotsToFill) {
             fill.push(catalog[Math.floor(Math.random() * catalog.length)]);
         }
     }
 
-    // 3) Combine and shuffle so anchor position is not predictable.
     const chosenDishes = [anchorDish, ...fill];
     for (let index = chosenDishes.length - 1; index > 0; index--) {
         const randomIndex = Math.floor(Math.random() * (index + 1));
         [chosenDishes[index], chosenDishes[randomIndex]] = [chosenDishes[randomIndex], chosenDishes[index]];
     }
 
-    // 4) Persist + render
     applicationState.currentCandidateDishes = chosenDishes.slice(0, wheelSegmentCount);
     applicationState.currentCandidateLabels = applicationState.currentCandidateDishes
         .map(d => board.getDishLabel(d))
@@ -97,6 +112,19 @@ function toStopMode() {
     centerButton.classList.remove("is-start", "primary", "danger");
     applicationState.stopButtonMode = "stop";
     setWheelControlToStop();
+}
+
+function resetGame() {
+    applicationState.heartsCount = initialHeartsCount;
+    renderHearts(applicationState.heartsCount, { animate: false });
+    applicationState.selectedAllergenToken = null;
+    applicationState.selectedAllergenLabel = "";
+    applicationState.currentCandidateDishes = [];
+    applicationState.currentCandidateLabels = [];
+    const startBtn = document.getElementById("start");
+    if (startBtn) startBtn.disabled = true;
+    refreshSelectedAllergenBadges([]);
+    showScreen("allergy");
 }
 
 /* ---------- wiring ---------- */
@@ -165,6 +193,16 @@ function wireRevealBackdropDismissal() {
     });
 }
 
+function wireRestartButton() {
+    const restartButton = document.getElementById("restart");
+    if (!restartButton) return;
+    restartButton.addEventListener("click", () => {
+        const gameoverSection = document.getElementById("gameover");
+        if (gameoverSection) gameoverSection.setAttribute("aria-hidden", "true");
+        resetGame();
+    });
+}
+
 /* ---------- bootstrap ---------- */
 async function initializeApp() {
     try {
@@ -174,7 +212,6 @@ async function initializeApp() {
             loadJson("./data/normalization.json")
         ]);
 
-        // ---------- HARD FAIL VALIDATIONS ----------
         if (!Array.isArray(allergensCatalog) || allergensCatalog.length === 0) {
             throw new Error("allergens.json is missing or empty");
         }
@@ -184,32 +221,18 @@ async function initializeApp() {
         if (!Array.isArray(normalizationRules) || normalizationRules.length === 0) {
             throw new Error("normalization.json is missing or empty");
         }
-        // Validate allergens have required shape
-        const badAllergenItems = allergensCatalog.filter(
-            (item) => !item || typeof item.token !== "string" || item.token.trim() === ""
-        );
-        if (badAllergenItems.length > 0) {
-            throw new Error("allergens.json contains item(s) without a valid 'token'");
-        }
-        // Validate dishes have array ingredients
-        const badDishItems = dishesCatalog.filter(
-            (dish) => !dish || !Array.isArray(dish.ingredients)
-        );
-        if (badDishItems.length > 0) {
-            throw new Error("dishes.json contains item(s) without an 'ingredients' array");
-        }
-        // ------------------------------------------
 
         const normalizationEngine = new NormalizationEngine(normalizationRules);
         const board = new Board({ allergensCatalog, dishesCatalog, normalizationEngine });
         board.buildDishIndexByAllergen();
-
-        // HARD FAIL if any allergen has no dishes mapped
         board.throwIfAnyAllergenHasNoDishes();
 
         applicationState.board = board;
 
-        // Render full list: NOTHING preselected; enable Start only after user chooses.
+        // Initial hearts render (no animation)
+        applicationState.heartsCount = initialHeartsCount;
+        renderHearts(applicationState.heartsCount, { animate: false });
+
         const allergyListContainer = document.getElementById("allergy-list");
         if (allergyListContainer) {
             renderAllergenList(allergyListContainer, allergensCatalog, (token, label) => {
@@ -219,14 +242,11 @@ async function initializeApp() {
                 if (startBtn) startBtn.disabled = false;
                 refreshSelectedAllergenBadges([label]);
             });
-
-            // Ensure Start remains disabled until user actively picks an allergen.
             const startBtn = document.getElementById("start");
             if (startBtn) startBtn.disabled = true;
             refreshSelectedAllergenBadges([]);
         }
 
-        // Wheel
         initWheel(document.getElementById("wheel"));
         registerSpinCallbacks({
             onTick: () => { playTick(); triggerPointerTap(); },
@@ -242,20 +262,30 @@ async function initializeApp() {
                 });
 
                 if (revealInfo.hasTriggeringIngredient) {
+                    applicationState.heartsCount = Math.max(0, applicationState.heartsCount - 1);
                     playSiren(1800);
                 } else {
+                    applicationState.heartsCount = applicationState.heartsCount + 1;
                     playNomNom(1200);
                 }
+
+                // Update the toolbar hearts with animation
+                renderHearts(applicationState.heartsCount, { animate: true });
+
+                if (applicationState.heartsCount === 0) {
+                    showGameOver();
+                }
+
                 toStartMode();
             }
         });
 
-        // UI wiring
         wireStartButton();
         wireStopButton();
         wireFullscreenButton();
         wireSpinAgainButton();
         wireRevealBackdropDismissal();
+        wireRestartButton();
 
         primeAudioOnFirstGesture();
 
