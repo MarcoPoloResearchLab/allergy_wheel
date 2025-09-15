@@ -27,7 +27,10 @@ export class NormalizationEngine {
         const foundTokens = new Set();
         const candidateText = String(ingredientText || "");
         for (const compiledRule of this.compiledRules) {
-            if (compiledRule.regex.test(candidateText)) foundTokens.add(compiledRule.token);
+            compiledRule.regex.lastIndex = 0;
+            if (compiledRule.regex.test(candidateText)) {
+                foundTokens.add(compiledRule.token);
+            }
         }
         return foundTokens;
     }

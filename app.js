@@ -21,32 +21,61 @@ const applicationState = {
 
 /* ---------- helpers ---------- */
 function recomputeWheelFromSelection() {
-    const matchingDishes = applicationState.board.getDishesForAllergen(applicationState.selectedAllergenToken);
-    let chosenDishes = [];
+    const board = applicationState.board;
+    const selectedToken = applicationState.selectedAllergenToken;
 
-    if (matchingDishes.length >= wheelSegmentCount) {
-        chosenDishes = pickRandomUnique(matchingDishes, wheelSegmentCount);
+    if (!board || !selectedToken) {
+        applicationState.currentCandidateDishes = [];
+        applicationState.currentCandidateLabels = [];
+        setWheelLabels(["No selection"]);
+        drawWheel();
+        return;
+    }
+
+    const matchingDishes = board.getDishesForAllergen(selectedToken);
+    if (!Array.isArray(matchingDishes) || matchingDishes.length === 0) {
+        // Hard fail per requirement: data must guarantee at least one match per allergen.
+        throw new Error(`Invariant broken: no dishes for allergen token '${selectedToken}'`);
+    }
+
+    // 1) Anchor: ensure at least one matching dish is present (random among matches).
+    const anchorDish = matchingDishes[Math.floor(Math.random() * matchingDishes.length)];
+
+    // 2) Fill remaining slots from the catalog excluding the anchor (keeps picks unique).
+    const catalog = Array.isArray(board.dishesCatalog) ? board.dishesCatalog : [];
+    const slotsToFill = Math.max(0, wheelSegmentCount - 1);
+    const pool = catalog.filter(d => d !== anchorDish);
+
+    let fill = [];
+    if (pool.length >= slotsToFill) {
+        fill = pickRandomUnique(pool, slotsToFill);
     } else {
-        chosenDishes = [...matchingDishes];
-        const seenKeys = new Set(chosenDishes.map(dish => dish.id || applicationState.board.getDishLabel(dish)));
-        const fillerPool = applicationState.board.dishesCatalog.filter(dish => {
-            const key = dish.id || applicationState.board.getDishLabel(dish);
-            return !seenKeys.has(key);
-        });
-        const needCount = wheelSegmentCount - chosenDishes.length;
-        chosenDishes.push(...pickRandomUnique(fillerPool, needCount));
-        while (chosenDishes.length < wheelSegmentCount && chosenDishes.length > 0) {
-            chosenDishes.push(chosenDishes[chosenDishes.length % chosenDishes.length]);
+        // Not enough unique dishes in catalog to fill one spin — use all unique then repeat randomly.
+        fill = [...pool];
+        while (fill.length < slotsToFill) {
+            fill.push(catalog[Math.floor(Math.random() * catalog.length)]);
         }
     }
 
-    applicationState.currentCandidateDishes = chosenDishes;
-    applicationState.currentCandidateLabels = chosenDishes
-        .map(dish => applicationState.board.getDishLabel(dish))
+    // 3) Combine and shuffle so anchor position is not predictable.
+    const chosenDishes = [anchorDish, ...fill];
+    for (let index = chosenDishes.length - 1; index > 0; index--) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [chosenDishes[index], chosenDishes[randomIndex]] = [chosenDishes[randomIndex], chosenDishes[index]];
+    }
+
+    // 4) Persist + render
+    applicationState.currentCandidateDishes = chosenDishes.slice(0, wheelSegmentCount);
+    applicationState.currentCandidateLabels = applicationState.currentCandidateDishes
+        .map(d => board.getDishLabel(d))
         .filter(Boolean)
         .slice(0, wheelSegmentCount);
 
-    setWheelLabels(applicationState.currentCandidateLabels.length ? applicationState.currentCandidateLabels : ["No matches"]);
+    setWheelLabels(
+        applicationState.currentCandidateLabels.length
+            ? applicationState.currentCandidateLabels
+            : ["No matches"]
+    );
     drawWheel();
 }
 
@@ -137,7 +166,7 @@ function wireRevealBackdropDismissal() {
 }
 
 /* ---------- bootstrap ---------- */
-export async function initializeApp() {
+async function initializeApp() {
     try {
         const [allergensCatalog, dishesCatalog, normalizationRules] = await Promise.all([
             loadJson("./data/allergens.json"),
@@ -145,13 +174,42 @@ export async function initializeApp() {
             loadJson("./data/normalization.json")
         ]);
 
+        // ---------- HARD FAIL VALIDATIONS ----------
+        if (!Array.isArray(allergensCatalog) || allergensCatalog.length === 0) {
+            throw new Error("allergens.json is missing or empty");
+        }
+        if (!Array.isArray(dishesCatalog) || dishesCatalog.length === 0) {
+            throw new Error("dishes.json is missing or empty");
+        }
+        if (!Array.isArray(normalizationRules) || normalizationRules.length === 0) {
+            throw new Error("normalization.json is missing or empty");
+        }
+        // Validate allergens have required shape
+        const badAllergenItems = allergensCatalog.filter(
+            (item) => !item || typeof item.token !== "string" || item.token.trim() === ""
+        );
+        if (badAllergenItems.length > 0) {
+            throw new Error("allergens.json contains item(s) without a valid 'token'");
+        }
+        // Validate dishes have array ingredients
+        const badDishItems = dishesCatalog.filter(
+            (dish) => !dish || !Array.isArray(dish.ingredients)
+        );
+        if (badDishItems.length > 0) {
+            throw new Error("dishes.json contains item(s) without an 'ingredients' array");
+        }
+        // ------------------------------------------
+
         const normalizationEngine = new NormalizationEngine(normalizationRules);
         const board = new Board({ allergensCatalog, dishesCatalog, normalizationEngine });
         board.buildDishIndexByAllergen();
+
+        // HARD FAIL if any allergen has no dishes mapped
         board.throwIfAnyAllergenHasNoDishes();
 
         applicationState.board = board;
 
+        // Render full list (since we hard-fail above, all have dishes)
         const allergyListContainer = document.getElementById("allergy-list");
         if (allergyListContainer) {
             renderAllergenList(allergyListContainer, allergensCatalog, (token, label) => {
@@ -181,7 +239,7 @@ export async function initializeApp() {
         initWheel(document.getElementById("wheel"));
         registerSpinCallbacks({
             onTick: () => { playTick(); triggerPointerTap(); },
-            onStop: winnerIndex => {
+            onStop: (winnerIndex) => {
                 const dish = applicationState.currentCandidateDishes[winnerIndex];
                 if (!dish) return;
 
