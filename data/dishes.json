@@ -1,0 +1,12 @@
+[
+  { "token": "peanuts", "label": "Peanuts" },
+  { "token": "tree_nuts", "label": "Tree Nuts" },
+  { "token": "sesame", "label": "Sesame" },
+  { "token": "shellfish", "label": "Shellfish" },
+  { "token": "milk", "label": "Milk / Dairy" },
+  { "token": "egg", "label": "Egg" },
+  { "token": "soy", "label": "Soy" },
+  { "token": "wheat", "label": "Wheat / Gluten" },
+  { "token": "italian_sausage", "label": "Italian Sausage (Pork/Spices)" },
+  { "token": "fish", "label": "Fish" }
+]

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Allergy Wheel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <style>
+    :root{--bg:#fffbef;--fg:#111;--primary:#ff4d6d;--ink:#fff;--accent:#00c2ff;--card:#fff;--muted:#666;--shadow:0 12px 30px rgba(0,0,0,.15)}
+    html,body{height:100%} body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;display:flex;flex-direction:column}
+    header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:linear-gradient(90deg,#fff0d6,#ffe5f0);border-bottom:2px solid #ffd6e3}
+    header h1{margin:0;font-size:clamp(18px,2.2vw,28px)}
+    .ghost{background:#fff;border:2px solid #000;border-radius:999px;padding:10px 14px;font-weight:800;box-shadow:2px 2px 0 #000;cursor:pointer}
+    main{flex:1;display:grid;place-items:center;padding:20px}
+    .card{width:min(900px,92vw);background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:20px}
+    .title{margin:0 0 10px 0;font-size:clamp(22px,3.4vw,34px)}
+    .muted{color:var(--muted)} .actions{margin-top:12px}
+    .btn{border:0;border-radius:999px;padding:12px 18px;font-weight:800;cursor:pointer}
+    .btn.primary{background:var(--primary);color:var(--ink);box-shadow:var(--shadow)}
+    .grid{display:grid;gap:12px} .grid.cols-2{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+    .chip{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:999px;background:#fff7c8;border:2px solid #000;box-shadow:2px 2px 0 #000}
+    .chip input{width:20px;height:20px}
+    #screen-wheel[hidden],#reveal[hidden]{display:none}
+    .wheel-wrap{position:relative;width:min(92vmin,920px);aspect-ratio:1;display:grid;place-items:center;margin-inline:auto}
+    #wheel{width:100%;height:100%;background:#fff;border-radius:50%;border:6px solid #000;box-shadow:var(--shadow)}
+    .pointer{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-bottom:28px solid #000}
+    #stop{position:absolute;inset:auto auto 50% 50%;transform:translate(-50%,50%);padding:18px 26px;border-radius:999px;border:4px solid #000;font-weight:900;background:var(--accent);box-shadow:4px 6px 0 #000}
+    .status{text-align:center;margin-top:12px;font-weight:700}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#ffe08a;border:2px solid #000;margin:2px 6px;font-weight:800}
+    /* reveal */
+    #reveal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:grid;place-items:center;z-index:10}
+    .reveal-card{width:min(760px,92vw);background:#fff;border-radius:24px;border:4px solid #000;box-shadow:var(--shadow);padding:20px}
+    .row{display:flex;justify-content:space-between;align-items:center;gap:14px}
+    .tag{background:#d1f7ff;border:2px solid #000;border-radius:14px;padding:6px 10px;font-weight:800}
+    .ingredients{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    .ingredient{padding:8px 12px;border:2px solid #000;border-radius:999px;background:#f4f4f4;font-weight:700}
+    .ingredient.bad{background:#ffd0d6}
+    .banner{display:flex;align-items:center;gap:12px;margin-top:12px;border:3px dashed #000;border-radius:16px;padding:10px}
+    .ok{background:#d9fbe9} .bad{background:#ffe2e6}
+    .face{width:90px;height:90px}
+    .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Allergy Wheel</h1>
+    <button id="fs" class="ghost">Full Screen</button>
+  </header>
+
+  <!-- Allergy selection -->
+  <main id="screen-allergy">
+    <div class="card">
+      <h2 class="title">Pick your allergens</h2>
+      <p class="muted">Choose anything that might cause trouble. You can change this later.</p>
+      <div id="allergy-list" class="grid cols-2"></div>
+      <div class="actions"><button id="start" class="btn primary" disabled>Start Game</button></div>
+      <p id="loading" class="muted">Loading data…</p>
+      <p id="load-error" class="muted" hidden>Could not load data. Check JSON paths.</p>
+    </div>
+  </main>
+
+  <!-- Wheel -->
+  <main id="screen-wheel" hidden>
+    <div class="wheel-wrap">
+      <canvas id="wheel" width="1000" height="1000" aria-label="Spinning dish wheel"></canvas>
+      <div class="pointer" aria-hidden="true"></div>
+      <button id="stop">STOP</button>
+    </div>
+    <div class="status">Allergens: <span id="sel-badges"></span></div>
+  </main>
+
+  <!-- Reveal -->
+  <section id="reveal" hidden role="dialog" aria-modal="true" aria-labelledby="dish-title">
+    <div class="reveal-card">
+      <div class="row">
+        <h3 id="dish-title" class="title" style="margin:0"></h3>
+        <span id="dish-cuisine" class="tag"></span>
+      </div>
+      <div id="result" class="banner ok"><svg id="face" class="face" viewBox="0 0 100 100" hidden>
+        <circle cx="50" cy="50" r="45" fill="#ffd1dc" stroke="#000" stroke-width="4"/>
+        <circle cx="35" cy="40" r="6"/><circle cx="65" cy="40" r="6"/>
+        <ellipse cx="50" cy="65" rx="22" ry="14" fill="#ff9eb3" stroke="#000" stroke-width="4"/>
+      </svg><div id="result-text" style="font-weight:900">Safe to eat. Yummy!</div></div>
+      <div id="dish-ingredients" class="ingredients"></div>
+      <div class="actions" style="text-align:right"><button id="again" class="btn primary">Spin Again</button></div>
+    </div>
+  </section>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
