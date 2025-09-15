@@ -174,7 +174,12 @@ function wireSpinAgainButton() {
     againButton.addEventListener("click", () => {
         const revealSection = document.getElementById("reveal");
         if (revealSection) revealSection.setAttribute("aria-hidden", "true");
+
+        // NEW BEHAVIOR: always build a NEW wheel (new random dishes) for the same allergen
+        if (!applicationState.selectedAllergenToken) return;
+        recomputeWheelFromSelection();         // <- refresh candidates and labels
         if (!applicationState.currentCandidateLabels.length) return;
+
         toStopMode();
         setSpinDurationMs(spinDurationMsDefault);
         const randomIndex = Math.floor(Math.random() * applicationState.currentCandidateLabels.length);
