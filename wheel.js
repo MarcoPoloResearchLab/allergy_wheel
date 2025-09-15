@@ -162,13 +162,22 @@ export function drawWheel() {
 
 /* ---- spin engine ---- */
 function easeOutCubic(t){t=Math.min(Math.max(t,0),1);return 1-Math.pow(1-t,3);}
+
+/**
+ * Compute which segment is under the fixed pointer (triangle at -PI/2).
+ * We invert the geometry so the segment whose MID aligns to the pointer returns its index.
+ */
 function getCurrentPointerSegmentIndex(){
     const L=wheelState.segmentLabels; if(!L.length) return null;
-    const segA=2*Math.PI/L.length; const pa=-Math.PI/2;
-    const rel=(wheelState.currentAngleRadians-pa)%(2*Math.PI);
-    const norm=(rel+2*Math.PI)%(2*Math.PI);
-    return Math.floor(norm/segA);
+    const N=L.length, segA=2*Math.PI/N, pa=-Math.PI/2;
+    // Current angle is the start angle of segment 0. Map to index whose mid hits the pointer.
+    let x = (pa - wheelState.currentAngleRadians) / segA - 0.5; // number of segments from 0's mid to pointer
+    let idx = Math.round(x);
+    // normalize to [0, N)
+    idx = ((idx % N) + N) % N;
+    return idx;
 }
+
 function step(){
     if(!wheelState.isSpinning)return;
     const t=Math.min((performance.now()-wheelState.spinStartTimestampMs)/wheelState.spinDurationMs,1);
@@ -183,17 +192,25 @@ function step(){
     if(t>=1){wheelState.isSpinning=false;const win=getCurrentPointerSegmentIndex();wheelState.onSpinComplete?.(win);return;}
     requestAnimationFrame(step);
 }
+
 export function spinToIndex(reqIdx){
     const L=wheelState.segmentLabels; if(!L.length||wheelState.isSpinning) return;
     const N=L.length, idx=(typeof reqIdx==="number"&&reqIdx>=0)?reqIdx%N:Math.floor(Math.random()*N);
-    const segA=2*Math.PI/N, pa=-Math.PI/2, dest=pa+idx*segA+segA/2;
+    const segA=2*Math.PI/N, pa=-Math.PI/2;
+
+    // We want the MID of segment `idx` to align to the fixed pointer at angle `pa`.
+    // Since `currentAngleRadians` represents the START angle of segment 0,
+    // set destination so that: current + idx*segA + segA/2 === pa (mod 2π)
+    const dest = pa - idx*segA - segA/2;
+
     wheelState.spinStartAngleRadians=wheelState.currentAngleRadians;
-    wheelState.spinTargetAngleRadians=dest+Math.PI*2*4;
+    wheelState.spinTargetAngleRadians=dest+Math.PI*2*4; // add revolutions
     wheelState.spinStartTimestampMs=performance.now();
     wheelState.isSpinning=true;
     wheelState.lastTickedSegmentIndex=getCurrentPointerSegmentIndex();
     requestAnimationFrame(step);
 }
+
 export function forceStopSpin(){
     wheelState.isSpinning=false;
     const idx=getCurrentPointerSegmentIndex();

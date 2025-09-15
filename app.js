@@ -2,7 +2,7 @@
 import { renderAllergenList, refreshSelectedAllergenBadges, showScreen, populateRevealCard, setWheelControlToStop, setWheelControlToStartGame } from "./ui.js";
 import { initWheel, setWheelLabels, drawWheel, spinToIndex, ensureWheelSize, registerSpinCallbacks, forceStopSpin, setSpinDurationMs, triggerPointerTap } from "./wheel.js";
 import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom } from "./audio.js";
-import { loadJson, NormalizationEngine, persistSelectedAllergen, restorePersistedAllergen, pickRandomUnique } from "./utils.js";
+import { loadJson, NormalizationEngine, pickRandomUnique } from "./utils.js";
 import { Board } from "./board.js";
 
 /* ---------- constants ---------- */
@@ -209,30 +209,21 @@ async function initializeApp() {
 
         applicationState.board = board;
 
-        // Render full list (since we hard-fail above, all have dishes)
+        // Render full list: NOTHING preselected; enable Start only after user chooses.
         const allergyListContainer = document.getElementById("allergy-list");
         if (allergyListContainer) {
             renderAllergenList(allergyListContainer, allergensCatalog, (token, label) => {
                 applicationState.selectedAllergenToken = token;
                 applicationState.selectedAllergenLabel = label;
-                document.getElementById("start").disabled = false;
+                const startBtn = document.getElementById("start");
+                if (startBtn) startBtn.disabled = false;
                 refreshSelectedAllergenBadges([label]);
-                persistSelectedAllergen(token, label);
             });
 
-            const restored = restorePersistedAllergen();
-            if (restored) {
-                applicationState.selectedAllergenToken = restored.token;
-                applicationState.selectedAllergenLabel = restored.label || restored.token;
-                const preselectRadio = allergyListContainer.querySelector(
-                    `input[type="radio"][value="${applicationState.selectedAllergenToken}"]`
-                );
-                if (preselectRadio) {
-                    preselectRadio.checked = true;
-                    document.getElementById("start").disabled = false;
-                    refreshSelectedAllergenBadges([applicationState.selectedAllergenLabel]);
-                }
-            }
+            // Ensure Start remains disabled until user actively picks an allergen.
+            const startBtn = document.getElementById("start");
+            if (startBtn) startBtn.disabled = true;
+            refreshSelectedAllergenBadges([]);
         }
 
         // Wheel
