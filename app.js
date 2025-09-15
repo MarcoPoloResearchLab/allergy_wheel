@@ -7,7 +7,9 @@ import {
     setWheelControlToStop,
     setWheelControlToStartGame,
     renderHearts,
-    showGameOver
+    showGameOver,
+    animateHeartGainFromReveal,
+    animateHeartLossAtHeartsBar
 } from "./ui.js";
 import {
     initWheel,
@@ -27,7 +29,7 @@ import { Board } from "./board.js";
 /* ---------- constants ---------- */
 const wheelSegmentCount = 8;
 const spinDurationMsDefault = 30000;
-const initialHeartsCount = 10;
+const initialHeartsCount = 5;
 
 /* ---------- app state ---------- */
 const applicationState = {
@@ -262,9 +264,13 @@ async function initializeApp() {
                 });
 
                 if (revealInfo.hasTriggeringIngredient) {
+                    // LOSS: animate a breaking heart at the bar, then decrement
+                    animateHeartLossAtHeartsBar();
                     applicationState.heartsCount = Math.max(0, applicationState.heartsCount - 1);
                     playSiren(1800);
                 } else {
+                    // GAIN: fly a heart from the reveal to the bar, then increment
+                    animateHeartGainFromReveal();
                     applicationState.heartsCount = applicationState.heartsCount + 1;
                     playNomNom(1200);
                 }

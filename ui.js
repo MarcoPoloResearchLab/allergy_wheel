@@ -148,6 +148,12 @@ export function renderHearts(count, options = {}) {
             }, { once: true });
         }
         showHeartDelta(`+${delta}`);
+        // Small pulse to the bar for emphasis
+        heartsBar.classList.remove("pulse");
+        // force reflow
+        // eslint-disable-next-line no-unused-expressions
+        heartsBar.offsetWidth;
+        heartsBar.classList.add("pulse");
     } else if (delta < 0) {
         // Remove hearts with a pop-out animation (from the end)
         for (let i = 0; i < Math.abs(delta); i++) {
@@ -159,6 +165,10 @@ export function renderHearts(count, options = {}) {
             }, { once: true });
         }
         showHeartDelta(`${delta}`); // delta is negative already
+        heartsBar.classList.remove("shake");
+        // eslint-disable-next-line no-unused-expressions
+        heartsBar.offsetWidth;
+        heartsBar.classList.add("shake");
     }
 
     heartsBar.setAttribute("data-count", String(total));
@@ -177,6 +187,64 @@ function showHeartDelta(textContent) {
     bubble.addEventListener("animationend", () => bubble.remove(), { once: true });
 }
 
+/* ---------- FX helpers (flying / breaking hearts) ---------- */
+
+/** Fly a heart from the reveal card banner to the hearts bar */
+export function animateHeartGainFromReveal() {
+    const source = document.getElementById("result") || document.getElementById("reveal");
+    const target = document.getElementById("hearts-bar");
+    if (!source || !target) return;
+
+    const srcRect = source.getBoundingClientRect();
+    const tgtRect = target.getBoundingClientRect();
+
+    const startX = srcRect.left + srcRect.width * 0.1;
+    const startY = srcRect.top + 16; // near banner icon
+    const endX = tgtRect.left + tgtRect.width - 8;
+    const endY = tgtRect.top + 8;
+
+    const heart = document.createElement("span");
+    heart.className = "fx-heart fly";
+    heart.textContent = "❤️";
+    heart.style.left = `${startX}px`;
+    heart.style.top = `${startY}px`;
+    document.body.appendChild(heart);
+
+    // set CSS variables for delta
+    const dx = endX - startX;
+    const dy = endY - startY;
+    heart.style.setProperty("--dx", `${dx}px`);
+    heart.style.setProperty("--dy", `${dy}px`);
+
+    requestAnimationFrame(() => {
+        heart.classList.add("go");
+    });
+
+    heart.addEventListener("transitionend", () => {
+        heart.remove();
+    }, { once: true });
+}
+
+/** Create a breaking heart effect near the hearts bar */
+export function animateHeartLossAtHeartsBar() {
+    const target = document.getElementById("hearts-bar");
+    if (!target) return;
+
+    const rect = target.getBoundingClientRect();
+    const cx = rect.left + rect.width - 10;
+    const cy = rect.top + 10;
+
+    const broken = document.createElement("span");
+    broken.className = "fx-heart break";
+    broken.textContent = "💔";
+    broken.style.left = `${cx}px`;
+    broken.style.top = `${cy}px`;
+    document.body.appendChild(broken);
+
+    broken.addEventListener("animationend", () => broken.remove(), { once: true });
+}
+
+/* Game over overlay */
 export function showGameOver() {
     const gameover = document.getElementById("gameover");
     if (!gameover) return;
