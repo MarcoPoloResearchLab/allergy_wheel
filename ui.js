@@ -22,7 +22,7 @@ export function renderAllergenList(containerElement, allergenList, onSelectCallb
             if (typeof onSelectCallback === "function") onSelectCallback(allergenToken, allergenLabel);
         });
 
-        const textNode = document.createTextNode(` ${allergenLabel}`);
+        const textNode = document.createTextNode(" " + allergenLabel);
         const emojiSpan = document.createElement("span");
         emojiSpan.className = "emoji-large";
         emojiSpan.textContent = allergenEmoji;
@@ -80,8 +80,16 @@ export function showScreen(screenName) {
 export function setWheelControlToStop() { /* no-op for API symmetry */ }
 export function setWheelControlToStartGame() { /* no-op for API symmetry */ }
 
-/* populate reveal card and return outcome */
-export function populateRevealCard({ dish, selectedAllergenToken, selectedAllergenLabel, normalizationEngine, allergensCatalog }) {
+/* populate reveal card and return outcome
+   Added: cuisineToFlagMap (Map lowercased cuisine -> flag emoji) */
+export function populateRevealCard({
+                                       dish,
+                                       selectedAllergenToken,
+                                       selectedAllergenLabel,
+                                       normalizationEngine,
+                                       allergensCatalog,
+                                       cuisineToFlagMap
+                                   }) {
     const revealSection = document.getElementById("reveal");
     const dishTitleElement = document.getElementById("dish-title");
     const dishCuisineElement = document.getElementById("dish-cuisine");
@@ -91,14 +99,24 @@ export function populateRevealCard({ dish, selectedAllergenToken, selectedAllerg
     const faceSvg = document.getElementById("face");
 
     const dishEmoji = dish.emoji || "";
-    dishTitleElement.textContent = `${dishEmoji ? dishEmoji + " " : ""}${dish.name || dish.title || dish.label || dish.id || ""}`;
-    dishCuisineElement.textContent = dish.cuisine || "";
+    const dishNameText = (dish.name || dish.title || dish.label || dish.id || "");
+    dishTitleElement.textContent = (dishEmoji ? dishEmoji + " " : "") + dishNameText;
+
+    // Cuisine + country flag (flag looked up by lowercase cuisine name)
+    const cuisineText = dish.cuisine || "";
+    let cuisineFlagEmoji = "";
+    if (cuisineToFlagMap && typeof cuisineToFlagMap.get === "function" && cuisineText) {
+        const key = String(cuisineText).trim().toLowerCase();
+        cuisineFlagEmoji = cuisineToFlagMap.get(key) || "";
+    }
+    dishCuisineElement.textContent = cuisineText ? (cuisineFlagEmoji ? (cuisineText + " " + cuisineFlagEmoji) : cuisineText) : "";
+
     ingredientsContainer.textContent = "";
 
     // Map allergen token -> emoji for quick lookup
     const emojiByToken = new Map();
     for (const a of allergensCatalog || []) {
-        if (a?.token) emojiByToken.set(a.token, a.emoji || "");
+        if (a && a.token) emojiByToken.set(a.token, a.emoji || "");
     }
 
     let hasTriggeringIngredient = false;
@@ -138,7 +156,7 @@ export function populateRevealCard({ dish, selectedAllergenToken, selectedAllerg
     if (hasTriggeringIngredient) {
         resultBannerElement.classList.remove("ok");
         resultBannerElement.classList.add("bad");
-        resultTextElement.textContent = `Contains your allergen: ${selectedAllergenLabel}`;
+        resultTextElement.textContent = "Contains your allergen: " + selectedAllergenLabel;
         if (faceSvg) faceSvg.hidden = false;
     } else {
         resultBannerElement.classList.remove("bad");
@@ -149,15 +167,10 @@ export function populateRevealCard({ dish, selectedAllergenToken, selectedAllerg
 
     if (revealSection) revealSection.setAttribute("aria-hidden", "false");
 
-    return { hasTriggeringIngredient };
+    return { hasTriggeringIngredient: hasTriggeringIngredient };
 }
 
 /* ---------- Hearts UI ---------- */
-/**
- * Render hearts with optional add/remove animations.
- * @param {number} count - target hearts count
- * @param {{animate?: boolean}} [options]
- */
 export function renderHearts(count, options = {}) {
     const { animate = false } = options;
     const heartsBar = document.getElementById("hearts-bar");
@@ -166,7 +179,6 @@ export function renderHearts(count, options = {}) {
     const previousCount = parseInt(heartsBar.getAttribute("data-count") || "0", 10);
     const total = Math.max(0, Math.floor(count || 0));
 
-    // First render (or when animation is disabled): hard rebuild
     if (!animate || previousCount === 0) {
         heartsBar.innerHTML = "";
         for (let index = 0; index < total; index++) {
@@ -177,43 +189,38 @@ export function renderHearts(count, options = {}) {
             heartsBar.appendChild(span);
         }
         heartsBar.setAttribute("data-count", String(total));
-        heartsBar.setAttribute("aria-label", `${total} hearts`);
-        heartsBar.title = `${total} hearts`;
+        heartsBar.setAttribute("aria-label", total + " hearts");
+        heartsBar.title = total + " hearts";
         return;
     }
 
-    // Animated diff
     const delta = total - previousCount;
     if (delta > 0) {
-        // Add hearts with a pop-in animation
         for (let i = 0; i < delta; i++) {
             const span = document.createElement("span");
             span.className = "heart heart-enter";
             span.setAttribute("aria-hidden", "true");
             span.textContent = "❤️";
             heartsBar.appendChild(span);
-            span.addEventListener("animationend", () => {
+            span.addEventListener("animationend", function onEnd() {
                 span.classList.remove("heart-enter");
             }, { once: true });
         }
-        showHeartDelta(`+${delta}`);
-        // Small pulse to the bar for emphasis
+        showHeartDelta("+" + delta);
         heartsBar.classList.remove("pulse");
-        // force reflow
         // eslint-disable-next-line no-unused-expressions
         heartsBar.offsetWidth;
         heartsBar.classList.add("pulse");
     } else if (delta < 0) {
-        // Remove hearts with a pop-out animation (from the end)
         for (let i = 0; i < Math.abs(delta); i++) {
             const last = heartsBar.lastElementChild;
             if (!last) break;
             last.classList.add("heart-exit");
-            last.addEventListener("animationend", () => {
+            last.addEventListener("animationend", function onExit() {
                 last.remove();
             }, { once: true });
         }
-        showHeartDelta(`${delta}`); // delta is negative already
+        showHeartDelta(String(delta));
         heartsBar.classList.remove("shake");
         // eslint-disable-next-line no-unused-expressions
         heartsBar.offsetWidth;
@@ -221,11 +228,10 @@ export function renderHearts(count, options = {}) {
     }
 
     heartsBar.setAttribute("data-count", String(total));
-    heartsBar.setAttribute("aria-label", `${total} hearts`);
-    heartsBar.title = `${total} hearts`;
+    heartsBar.setAttribute("aria-label", total + " hearts");
+    heartsBar.title = total + " hearts";
 }
 
-/** Floating “+1 / -1” indicator near the hearts bar */
 function showHeartDelta(textContent) {
     const heartsBar = document.getElementById("hearts-bar");
     if (!heartsBar) return;
@@ -233,12 +239,9 @@ function showHeartDelta(textContent) {
     bubble.className = "heart-delta";
     bubble.textContent = textContent;
     heartsBar.appendChild(bubble);
-    bubble.addEventListener("animationend", () => bubble.remove(), { once: true });
+    bubble.addEventListener("animationend", function onAnimEnd() { bubble.remove(); }, { once: true });
 }
 
-/* ---------- FX helpers (flying / breaking hearts) ---------- */
-
-/** Fly a heart from the reveal card banner to the hearts bar */
 export function animateHeartGainFromReveal() {
     const source = document.getElementById("result") || document.getElementById("reveal");
     const target = document.getElementById("hearts-bar");
@@ -248,33 +251,27 @@ export function animateHeartGainFromReveal() {
     const tgtRect = target.getBoundingClientRect();
 
     const startX = srcRect.left + srcRect.width * 0.1;
-    const startY = srcRect.top + 16; // near banner icon
+    const startY = srcRect.top + 16;
     const endX = tgtRect.left + tgtRect.width - 8;
     const endY = tgtRect.top + 8;
 
     const heart = document.createElement("span");
     heart.className = "fx-heart fly";
     heart.textContent = "❤️";
-    heart.style.left = `${startX}px`;
-    heart.style.top = `${startY}px`;
+    heart.style.left = startX + "px";
+    heart.style.top = startY + "px";
     document.body.appendChild(heart);
 
-    // set CSS variables for delta
     const dx = endX - startX;
     const dy = endY - startY;
-    heart.style.setProperty("--dx", `${dx}px`);
-    heart.style.setProperty("--dy", `${dy}px`);
+    heart.style.setProperty("--dx", dx + "px");
+    heart.style.setProperty("--dy", dy + "px");
 
-    requestAnimationFrame(() => {
-        heart.classList.add("go");
-    });
+    requestAnimationFrame(function go() { heart.classList.add("go"); });
 
-    heart.addEventListener("transitionend", () => {
-        heart.remove();
-    }, { once: true });
+    heart.addEventListener("transitionend", function onEnd() { heart.remove(); }, { once: true });
 }
 
-/** Create a breaking heart effect near the hearts bar */
 export function animateHeartLossAtHeartsBar() {
     const target = document.getElementById("hearts-bar");
     if (!target) return;
@@ -283,19 +280,18 @@ export function animateHeartLossAtHeartsBar() {
     const cx = rect.left + rect.width - 10;
     const cy = rect.top + 10;
 
-    const broken = document.createElement("span");
-    broken.className = "fx-heart break";
-    broken.textContent = "💔";
-    broken.style.left = `${cx}px`;
-    broken.style.top = `${cy}px`;
-    document.body.appendChild(broken);
+    const heart = document.createElement("span");
+    heart.className = "fx-heart break";
+    heart.textContent = "💔";
+    heart.style.left = cx + "px";
+    heart.style.top = cy + "px";
+    document.body.appendChild(heart);
 
-    broken.addEventListener("animationend", () => broken.remove(), { once: true });
+    heart.addEventListener("animationend", function onEnd() { heart.remove(); }, { once: true });
 }
 
-/* Game over overlay */
+/* ---------- Game Over overlay helpers ---------- */
 export function showGameOver() {
-    const gameover = document.getElementById("gameover");
-    if (!gameover) return;
-    gameover.setAttribute("aria-hidden", "false");
+    const gameoverSection = document.getElementById("gameover");
+    if (gameoverSection) gameoverSection.setAttribute("aria-hidden", "false");
 }

@@ -1,0 +1,23 @@
+[
+  { "cuisine": "American",       "country": "United States", "flag": "🇺🇸" },
+  { "cuisine": "Argentinian",    "country": "Argentina",     "flag": "🇦🇷" },
+  { "cuisine": "Brazilian",      "country": "Brazil",        "flag": "🇧🇷" },
+  { "cuisine": "British",        "country": "United Kingdom","flag": "🇬🇧" },
+  { "cuisine": "Canadian",       "country": "Canada",        "flag": "🇨🇦" },
+  { "cuisine": "Chinese",        "country": "China",         "flag": "🇨🇳" },
+  { "cuisine": "French",         "country": "France",        "flag": "🇫🇷" },
+  { "cuisine": "German",         "country": "Germany",       "flag": "🇩🇪" },
+  { "cuisine": "Greek",          "country": "Greece",        "flag": "🇬🇷" },
+  { "cuisine": "Indian",         "country": "India",         "flag": "🇮🇳" },
+  { "cuisine": "Italian",        "country": "Italy",         "flag": "🇮🇹" },
+  { "cuisine": "Japanese",       "country": "Japan",         "flag": "🇯🇵" },
+  { "cuisine": "Korean",         "country": "South Korea",   "flag": "🇰🇷" },
+  { "cuisine": "Mexican",        "country": "Mexico",        "flag": "🇲🇽" },
+  { "cuisine": "Moroccan",       "country": "Morocco",       "flag": "🇲🇦" },
+  { "cuisine": "Russian",        "country": "Russia",        "flag": "🇷🇺" },
+  { "cuisine": "Spanish",        "country": "Spain",         "flag": "🇪🇸" },
+  { "cuisine": "Thai",           "country": "Thailand",      "flag": "🇹🇭" },
+  { "cuisine": "Turkish",        "country": "Türkiye",       "flag": "🇹🇷" },
+  { "cuisine": "Vietnamese",     "country": "Vietnam",       "flag": "🇻🇳" },
+  { "cuisine": "Levantine",  "country": "Lebanon",       "flag": "🇱🇧" }
+]

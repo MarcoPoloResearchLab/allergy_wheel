@@ -37,7 +37,7 @@ const applicationState = {
     selectedAllergenToken: null,
     selectedAllergenLabel: "",
     currentCandidateDishes: [],
-    currentCandidateLabels: [], // now array of {label, emoji}
+    currentCandidateLabels: [], // array of {label, emoji}
     stopButtonMode: "stop", // "stop" | "start"
     heartsCount: initialHeartsCount
 };
@@ -57,35 +57,37 @@ function recomputeWheelFromSelection() {
 
     const matchingDishes = board.getDishesForAllergen(selectedToken);
     if (!Array.isArray(matchingDishes) || matchingDishes.length === 0) {
-        throw new Error(`Invariant broken: no dishes for allergen token '${selectedToken}'`);
+        throw new Error("Invariant broken: no dishes for allergen token '" + selectedToken + "'");
     }
 
     const anchorDish = matchingDishes[Math.floor(Math.random() * matchingDishes.length)];
-
     const catalog = Array.isArray(board.dishesCatalog) ? board.dishesCatalog : [];
+
     const slotsToFill = Math.max(0, wheelSegmentCount - 1);
-    const pool = catalog.filter(d => d !== anchorDish);
+    const pool = catalog.filter(function filterOutAnchor(d) { return d !== anchorDish; });
 
     let fill = [];
     if (pool.length >= slotsToFill) {
         fill = pickRandomUnique(pool, slotsToFill);
     } else {
-        fill = [...pool];
+        fill = pool.slice();
         while (fill.length < slotsToFill) {
             fill.push(catalog[Math.floor(Math.random() * catalog.length)]);
         }
     }
 
     const chosenDishes = [anchorDish, ...fill];
-    for (let index = chosenDishes.length - 1; index > 0; index--) {
+    for (let index = chosenDishes.length - 1; index > 0; index -= 1) {
         const randomIndex = Math.floor(Math.random() * (index + 1));
-        [chosenDishes[index], chosenDishes[randomIndex]] = [chosenDishes[randomIndex], chosenDishes[index]];
+        const tmp = chosenDishes[index];
+        chosenDishes[index] = chosenDishes[randomIndex];
+        chosenDishes[randomIndex] = tmp;
     }
 
     applicationState.currentCandidateDishes = chosenDishes.slice(0, wheelSegmentCount);
     applicationState.currentCandidateLabels = applicationState.currentCandidateDishes
-        .map(d => ({ label: board.getDishLabel(d), emoji: d.emoji || "" }))
-        .filter(obj => obj.label)
+        .map(function mapDishToLabel(d) { return { label: board.getDishLabel(d), emoji: d.emoji || "" }; })
+        .filter(function keepNonEmpty(obj) { return obj.label; })
         .slice(0, wheelSegmentCount);
 
     setWheelLabels(
@@ -130,10 +132,10 @@ function resetGame() {
 }
 
 /* ---------- wiring ---------- */
-function wireStartButton() {
+function wireStartButton(cuisineToFlagMap) {
     const startButton = document.getElementById("start");
     if (!startButton) return;
-    startButton.addEventListener("click", () => {
+    startButton.addEventListener("click", function onStartPressed() {
         if (!applicationState.selectedAllergenToken) return;
         showScreen("wheel");
         ensureWheelSize();
@@ -149,7 +151,7 @@ function wireStartButton() {
 function wireStopButton() {
     const stopButton = document.getElementById("stop");
     if (!stopButton) return;
-    stopButton.addEventListener("click", () => {
+    stopButton.addEventListener("click", function onStopPressed() {
         if (applicationState.stopButtonMode === "stop") {
             forceStopSpin();
         } else {
@@ -161,7 +163,7 @@ function wireStopButton() {
 function wireFullscreenButton() {
     const fullscreenButton = document.getElementById("fs");
     if (!fullscreenButton) return;
-    fullscreenButton.addEventListener("click", () => {
+    fullscreenButton.addEventListener("click", function onFullscreenPressed() {
         const rootElement = document.documentElement;
         if (!document.fullscreenElement) rootElement.requestFullscreen();
         else document.exitFullscreen();
@@ -171,13 +173,13 @@ function wireFullscreenButton() {
 function wireSpinAgainButton() {
     const againButton = document.getElementById("again");
     if (!againButton) return;
-    againButton.addEventListener("click", () => {
+    againButton.addEventListener("click", function onAgainPressed() {
         const revealSection = document.getElementById("reveal");
         if (revealSection) revealSection.setAttribute("aria-hidden", "true");
 
-        // NEW BEHAVIOR: always build a NEW wheel (new random dishes) for the same allergen
+        // Always build a NEW wheel (new random dishes) for the same allergen
         if (!applicationState.selectedAllergenToken) return;
-        recomputeWheelFromSelection();         // <- refresh candidates and labels
+        recomputeWheelFromSelection();
         if (!applicationState.currentCandidateLabels.length) return;
 
         toStopMode();
@@ -190,11 +192,11 @@ function wireSpinAgainButton() {
 function wireRevealBackdropDismissal() {
     const revealSection = document.getElementById("reveal");
     if (!revealSection) return;
-    revealSection.addEventListener("click", eventObject => {
-        if (eventObject.target === revealSection) revealSection.setAttribute("aria-hidden", "true");
+    revealSection.addEventListener("click", function onBackdropClick(e) {
+        if (e.target === revealSection) revealSection.setAttribute("aria-hidden", "true");
     });
-    document.addEventListener("keydown", eventObject => {
-        if ((eventObject.key === "Escape" || eventObject.key === "Esc") && revealSection.getAttribute("aria-hidden") === "false") {
+    document.addEventListener("keydown", function onEsc(e) {
+        if ((e.key === "Escape" || e.key === "Esc") && revealSection.getAttribute("aria-hidden") === "false") {
             revealSection.setAttribute("aria-hidden", "true");
         }
     });
@@ -203,7 +205,7 @@ function wireRevealBackdropDismissal() {
 function wireRestartButton() {
     const restartButton = document.getElementById("restart");
     if (!restartButton) return;
-    restartButton.addEventListener("click", () => {
+    restartButton.addEventListener("click", function onRestartPressed() {
         const gameoverSection = document.getElementById("gameover");
         if (gameoverSection) gameoverSection.setAttribute("aria-hidden", "true");
         resetGame();
@@ -213,10 +215,11 @@ function wireRestartButton() {
 /* ---------- bootstrap ---------- */
 async function initializeApp() {
     try {
-        const [allergensCatalog, dishesCatalog, normalizationRules] = await Promise.all([
+        const [allergensCatalog, dishesCatalog, normalizationRules, countriesCatalogMaybe] = await Promise.all([
             loadJson("./data/allergens.json"),
             loadJson("./data/dishes.json"),
-            loadJson("./data/normalization.json")
+            loadJson("./data/normalization.json"),
+            loadJson("./data/countries.json"),
         ]);
 
         if (!Array.isArray(allergensCatalog) || allergensCatalog.length === 0) {
@@ -227,6 +230,18 @@ async function initializeApp() {
         }
         if (!Array.isArray(normalizationRules) || normalizationRules.length === 0) {
             throw new Error("normalization.json is missing or empty");
+        }
+
+        // Build cuisine -> flag map (keys in lowercase for robust matching)
+        const cuisineToFlagMap = new Map();
+        if (Array.isArray(countriesCatalogMaybe)) {
+            for (const record of countriesCatalogMaybe) {
+                const cuisineKey = String(record && record.cuisine ? record.cuisine : "")
+                    .trim()
+                    .toLowerCase();
+                const flagEmoji = String(record && record.flag ? record.flag : "");
+                if (cuisineKey) cuisineToFlagMap.set(cuisineKey, flagEmoji);
+            }
         }
 
         const normalizationEngine = new NormalizationEngine(normalizationRules);
@@ -242,15 +257,15 @@ async function initializeApp() {
 
         const allergyListContainer = document.getElementById("allergy-list");
         if (allergyListContainer) {
-            renderAllergenList(allergyListContainer, allergensCatalog, (token, label) => {
+            renderAllergenList(allergyListContainer, allergensCatalog, function onAllergenChosen(token, label) {
                 applicationState.selectedAllergenToken = token;
                 applicationState.selectedAllergenLabel = label;
                 const startBtn = document.getElementById("start");
                 if (startBtn) startBtn.disabled = false;
 
                 // Find emoji for selected allergen for badges
-                const found = allergensCatalog.find(a => a.token === token);
-                const badgeEntry = { label, emoji: found?.emoji || "" };
+                const found = allergensCatalog.find(function findMatch(a) { return a && a.token === token; });
+                const badgeEntry = { label: label, emoji: (found && found.emoji) || "" };
                 refreshSelectedAllergenBadges([badgeEntry]);
             });
             const startBtn = document.getElementById("start");
@@ -260,17 +275,18 @@ async function initializeApp() {
 
         initWheel(document.getElementById("wheel"));
         registerSpinCallbacks({
-            onTick: () => { playTick(); triggerPointerTap(); },
-            onStop: (winnerIndex) => {
+            onTick: function onTick() { playTick(); triggerPointerTap(); },
+            onStop: function onStop(winnerIndex) {
                 const dish = applicationState.currentCandidateDishes[winnerIndex];
                 if (!dish) return;
 
                 const revealInfo = populateRevealCard({
-                    dish,
+                    dish: dish,
                     selectedAllergenToken: applicationState.selectedAllergenToken,
                     selectedAllergenLabel: applicationState.selectedAllergenLabel,
-                    normalizationEngine,
-                    allergensCatalog: board.allergensCatalog
+                    normalizationEngine: normalizationEngine,
+                    allergensCatalog: board.allergensCatalog,
+                    cuisineToFlagMap: cuisineToFlagMap
                 });
 
                 if (revealInfo.hasTriggeringIngredient) {
@@ -296,7 +312,7 @@ async function initializeApp() {
             }
         });
 
-        wireStartButton();
+        wireStartButton(cuisineToFlagMap);
         wireStopButton();
         wireFullscreenButton();
         wireSpinAgainButton();
@@ -305,18 +321,20 @@ async function initializeApp() {
 
         primeAudioOnFirstGesture();
 
+        // Show initial screen
+        const loadingEl = document.getElementById("loading");
+        if (loadingEl) loadingEl.hidden = true;
         showScreen("allergy");
-        document.getElementById("loading").hidden = true;
-    } catch (caughtError) {
-        console.error(caughtError);
-        const errorText = document.getElementById("load-error");
-        if (errorText) {
-            errorText.textContent = "Data error: " + (caughtError?.message || "Unknown");
-            errorText.hidden = false;
-        }
-        const startButton = document.getElementById("start");
-        if (startButton) startButton.disabled = true;
+    } catch (errorObject) {
+        const loadingEl = document.getElementById("loading");
+        const loadErrorEl = document.getElementById("load-error");
+        if (loadingEl) loadingEl.hidden = true;
+        if (loadErrorEl) loadErrorEl.hidden = false;
+        // eslint-disable-next-line no-console
+        console.error(errorObject);
     }
 }
 
-document.addEventListener("DOMContentLoaded", initializeApp);
+window.addEventListener("DOMContentLoaded", function onDomReady() {
+    initializeApp();
+});
