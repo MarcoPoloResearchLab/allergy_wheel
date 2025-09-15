@@ -6,15 +6,27 @@ function ensureAudioContext() {
     if (!sharedAudioContext) {
         sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
-    if (sharedAudioContext.state === "suspended") {
-        sharedAudioContext.resume();
-    }
+    try {
+        sharedAudioContext.resume?.();
+    } catch {}
     return sharedAudioContext;
+}
+
+function unlockAudioNow() {
+    const context = ensureAudioContext();
+    try {
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        gain.gain.setValueAtTime(0.0001, context.currentTime);
+        osc.connect(gain).connect(context.destination);
+        osc.start();
+        osc.stop(context.currentTime + 0.01);
+        context.resume?.();
+    } catch {}
 }
 
 /* ---------- small helper envelopes ---------- */
 function expTo(ctx, param, value, t, min = 0.0001) {
-    // clamp to >0 for exponential ramps
     const safe = Math.max(Math.abs(value), min);
     param.exponentialRampToValueAtTime(safe, t);
 }
@@ -23,7 +35,7 @@ function linearTo(ctx, param, value, t) {
     param.linearRampToValueAtTime(value, t);
 }
 
-/* ---------- simple tick (unchanged) ---------- */
+/* ---------- simple tick ---------- */
 export function playTick() {
     const context = ensureAudioContext();
     const oscillatorNode = context.createOscillator();
@@ -38,7 +50,7 @@ export function playTick() {
     oscillatorNode.stop(context.currentTime + 0.07);
 }
 
-/* ---------- siren (unchanged) ---------- */
+/* ---------- siren ---------- */
 export async function playSiren(durationMs = 1800) {
     const context = ensureAudioContext();
     const carrier = context.createOscillator();
@@ -48,12 +60,12 @@ export async function playSiren(durationMs = 1800) {
 
     carrier.type = "sine";
     mod.type = "sine";
-    deviation.gain.value = 40;               // FM depth
+    deviation.gain.value = 40;
     mod.frequency.setValueAtTime(4.2, context.currentTime);
     carrier.frequency.setValueAtTime(700, context.currentTime);
 
     out.gain.setValueAtTime(0.0001, context.currentTime);
-    expTo(context, out.gain, 0.6, context.currentTime + 0.08);
+    expTo(context, out.gain, 0.8, context.currentTime + 0.08);
 
     mod.connect(deviation);
     deviation.connect(carrier.frequency);
@@ -69,33 +81,22 @@ export async function playSiren(durationMs = 1800) {
 }
 
 /* ---------- synthesized "nom-nom" chew ---------- */
-/*
-   We make a friendly “chew” using:
-   - Body: triangle oscillator with slight downward pitch bend
-   - Formant: bandpass filter to vowel-ize (~800–1200 Hz)
-   - Crunch: short noise burst through a higher bandpass
-   - Fast percussive gain envelope
-   We schedule 2–3 syllables inside the requested duration.
-*/
 function scheduleChew(context, startTime) {
-    const duration = 0.22;           // length of a single "nom"
+    const duration = 0.22;
     const endTime = startTime + duration;
 
-    // Body oscillator
     const osc = context.createOscillator();
     osc.type = "triangle";
     const bodyFilter = context.createBiquadFilter();
     bodyFilter.type = "bandpass";
-    bodyFilter.frequency.setValueAtTime(950, startTime); // vowel-ish color
+    bodyFilter.frequency.setValueAtTime(950, startTime);
     bodyFilter.Q.setValueAtTime(1.2, startTime);
 
     const bodyGain = context.createGain();
     bodyGain.gain.setValueAtTime(0.0001, startTime);
-    // quick attack then decay
-    expTo(context, bodyGain.gain, 0.45, startTime + 0.015);
+    expTo(context, bodyGain.gain, 0.60, startTime + 0.015);
     expTo(context, bodyGain.gain, 0.0001, endTime);
 
-    // gentle downward pitch sweep (like a bite)
     osc.frequency.setValueAtTime(240, startTime);
     linearTo(context, osc.frequency, 180, endTime);
 
@@ -103,7 +104,6 @@ function scheduleChew(context, startTime) {
     osc.start(startTime);
     osc.stop(endTime);
 
-    // Crunch noise
     const crunchDur = 0.08;
     const crunchStart = startTime + 0.02;
     const noiseBuf = context.createBuffer(1, Math.floor(context.sampleRate * crunchDur), context.sampleRate);
@@ -133,32 +133,36 @@ export function playNomNom(durationMs = 1200) {
     const context = ensureAudioContext();
     const t0 = context.currentTime;
 
-    // Schedule syllables evenly spaced within durationMs.
-    const total = Math.max(350, durationMs) / 1000; // seconds
-    const gap = 0.28;                               // spacing between "noms"
+    const total = Math.max(350, durationMs) / 1000;
+    const gap = 0.28;
     let when = t0;
 
-    // Make the first two accents a tad stronger by stacking a second filter pass.
     scheduleChew(context, when);
-    scheduleChew(context, when + 0.05); // subtle doubling for a fuller first bite
+    scheduleChew(context, when + 0.05);
 
     when += gap;
     scheduleChew(context, when);
 
-    // Third chew if room remains
     when += gap;
     if (when - t0 + 0.25 <= total) {
         scheduleChew(context, when);
     }
 }
 
-/* ---------- prime on first user gesture (unchanged) ---------- */
+/* ---------- prime on first user gesture ---------- */
 export function primeAudioOnFirstGesture() {
     const onceHandler = () => {
-        ensureAudioContext();
-        window.removeEventListener("touchstart", onceHandler);
-        window.removeEventListener("click", onceHandler);
+        unlockAudioNow();
+        ["pointerdown", "touchstart", "click", "keydown"].forEach((type) =>
+            window.removeEventListener(type, onceHandler, true)
+        );
     };
-    window.addEventListener("touchstart", onceHandler, { once: true });
-    window.addEventListener("click", onceHandler, { once: true });
+    ["pointerdown", "touchstart", "click", "keydown"].forEach((type) =>
+        window.addEventListener(type, onceHandler, { once: true, capture: true })
+    );
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            try { ensureAudioContext().resume?.(); } catch {}
+        }
+    });
 }
