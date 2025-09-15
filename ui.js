@@ -1,7 +1,5 @@
 /* global document */
 
-// Render single-select radios for allergens with shape { token, label }.
-// Invokes onSelect(selectedToken, selectedLabel)
 export function renderAllergenList(containerElement, allergenList, onSelect) {
     containerElement.innerHTML = "";
     const radioGroupName = "allergen_single";

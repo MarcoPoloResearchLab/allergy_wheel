@@ -70,7 +70,7 @@
     <div class="status">Allergens: <span id="sel-badges"></span></div>
 </main>
 
-<!-- Reveal (kept for later use; current spin shows on canvas only) -->
+<!-- Reveal -->
 <section id="reveal" hidden role="dialog" aria-modal="true" aria-labelledby="dish-title">
     <div class="reveal-card">
         <div class="row">
@@ -83,10 +83,12 @@
                 <circle cx="35" cy="40" r="6"/><circle cx="65" cy="40" r="6"/>
                 <ellipse cx="50" cy="65" rx="22" ry="14" fill="#ff9eb3" stroke="#000" stroke-width="4"/>
             </svg>
-            <div id="result-text" style="font-weight:900">Safe to eat. Yummy!</div>
+            <div id="result-text" style="font-weight:900"></div>
         </div>
         <div id="dish-ingredients" class="ingredients"></div>
-        <div class="actions" style="text-align:right"><button id="again" class="btn primary">Spin Again</button></div>
+        <div class="actions" style="text-align:right">
+            <button id="again" class="btn primary">Spin Again</button>
+        </div>
     </div>
 </section>
 

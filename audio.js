@@ -53,6 +53,23 @@ export async function playSiren(durationMs = 1800) {
     modulatorOscillator.stop(fadeEnd);
 }
 
+export function playNomNom(durationMs = 1200) {
+    try {
+        const audioElement = new Audio("./sounds/nomnom.mp3");
+        audioElement.currentTime = 0;
+        audioElement.play();
+        if (durationMs > 0) {
+            setTimeout(() => {
+                if (!audioElement.paused) {
+                    audioElement.pause();
+                }
+            }, durationMs);
+        }
+    } catch (error) {
+        console.error("Failed to play nom-nom sound", error);
+    }
+}
+
 export function primeAudioOnFirstGesture() {
     const onceHandler = () => {
         ensureAudioContext();

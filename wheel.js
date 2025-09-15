@@ -6,19 +6,20 @@ const wheelState = {
     segmentLabels: [],
     currentAngleRadians: 0,
 
-    // spin
     isSpinning: false,
     spinStartAngleRadians: 0,
     spinTargetAngleRadians: 0,
     spinStartTimestampMs: 0,
     spinDurationMs: 2600,
 
-    // sizing
     cssSideLengthPixels: 0,
-    resizeObserver: null
+    resizeObserver: null,
+
+    lastTickedSegmentIndex: null,
+    onTickSegmentBoundary: null,
+    onSpinComplete: null
 };
 
-/* ---------- sizing ---------- */
 function computeCssSquareSide(wrapperElement) {
     const rect = wrapperElement.getBoundingClientRect();
     let measuredWidth = rect.width;
@@ -63,7 +64,6 @@ export function ensureWheelSize() {
     drawWheel();
 }
 
-/* ---------- initialization ---------- */
 export function initWheel(canvasElement) {
     wheelState.canvasElement = canvasElement;
     wheelState.drawingContext = canvasElement.getContext("2d");
@@ -86,9 +86,14 @@ export function setWheelLabels(labelArray) {
     wheelState.segmentLabels = Array.isArray(labelArray)
         ? labelArray.map((text) => (text == null ? "" : String(text))).filter((text) => text.length > 0)
         : [];
+    wheelState.lastTickedSegmentIndex = null;
 }
 
-/* ---------- drawing ---------- */
+export function registerSpinCallbacks(callbacks) {
+    wheelState.onTickSegmentBoundary = callbacks && typeof callbacks.onTick === "function" ? callbacks.onTick : null;
+    wheelState.onSpinComplete = callbacks && typeof callbacks.onStop === "function" ? callbacks.onStop : null;
+}
+
 export function drawWheel() {
     const drawingContext = wheelState.drawingContext;
     if (!drawingContext) return;
@@ -101,7 +106,6 @@ export function drawWheel() {
 
     drawingContext.clearRect(0, 0, viewWidth, viewHeight);
 
-    // base disk
     drawingContext.beginPath();
     drawingContext.arc(centerX, centerY, wheelRadius, 0, Math.PI * 2, false);
     drawingContext.fillStyle = "#e6e6e6";
@@ -120,7 +124,6 @@ export function drawWheel() {
         const segmentStartAngle = wheelState.currentAngleRadians + segmentIndex * segmentAngle;
         const segmentEndAngle = segmentStartAngle + segmentAngle;
 
-        // segment border
         drawingContext.beginPath();
         drawingContext.moveTo(centerX, centerY);
         drawingContext.arc(centerX, centerY, wheelRadius, segmentStartAngle, segmentEndAngle, false);
@@ -129,7 +132,6 @@ export function drawWheel() {
         drawingContext.lineWidth = 2;
         drawingContext.stroke();
 
-        // label
         const labelMidAngle = segmentStartAngle + segmentAngle / 2;
         const textX = centerX + Math.cos(labelMidAngle) * wheelRadius * 0.68;
         const textY = centerY + Math.sin(labelMidAngle) * wheelRadius * 0.68;
@@ -146,7 +148,6 @@ export function drawWheel() {
         drawingContext.restore();
     }
 
-    // center hub
     drawingContext.beginPath();
     drawingContext.arc(centerX, centerY, wheelRadius * 0.08, 0, Math.PI * 2, false);
     drawingContext.fillStyle = "#fff";
@@ -155,7 +156,6 @@ export function drawWheel() {
     drawingContext.strokeStyle = "#000";
     drawingContext.stroke();
 
-    // top pointer (inside canvas)
     const pointerLength = wheelRadius * 0.16;
     drawingContext.beginPath();
     drawingContext.moveTo(centerX, centerY - wheelRadius - 8);
@@ -166,27 +166,50 @@ export function drawWheel() {
     drawingContext.fill();
 }
 
-/* ---------- spin ---------- */
 function easeOutCubic(normalizedTime) {
     const clamped = normalizedTime < 0 ? 0 : normalizedTime > 1 ? 1 : normalizedTime;
     const inverted = 1 - clamped;
     return 1 - inverted * inverted * inverted;
 }
 
+function getCurrentPointerSegmentIndex() {
+    const labelList = wheelState.segmentLabels;
+    if (!labelList.length) return null;
+    const segmentAngle = (Math.PI * 2) / labelList.length;
+    const pointerAngle = -Math.PI / 2;
+    const relativeAngle = (wheelState.currentAngleRadians - pointerAngle) % (Math.PI * 2);
+    const normalizedAngle = (relativeAngle + Math.PI * 2) % (Math.PI * 2);
+    const segmentIndex = Math.floor(normalizedAngle / segmentAngle);
+    return segmentIndex;
+}
+
 function animationFrameStep() {
     if (!wheelState.isSpinning) return;
-    const elapsed = performance.now() - wheelState.spinStartTimestampMs;
-    const normalized = Math.min(elapsed / wheelState.spinDurationMs, 1);
-    const eased = easeOutCubic(normalized);
+
+    const elapsedMs = performance.now() - wheelState.spinStartTimestampMs;
+    const normalizedTime = Math.min(elapsedMs / wheelState.spinDurationMs, 1);
+    const eased = easeOutCubic(normalizedTime);
     wheelState.currentAngleRadians =
         wheelState.spinStartAngleRadians +
         eased * (wheelState.spinTargetAngleRadians - wheelState.spinStartAngleRadians);
 
+    const currentSegmentIndex = getCurrentPointerSegmentIndex();
+    if (currentSegmentIndex !== null && currentSegmentIndex !== wheelState.lastTickedSegmentIndex) {
+        wheelState.lastTickedSegmentIndex = currentSegmentIndex;
+        if (typeof wheelState.onTickSegmentBoundary === "function") {
+            wheelState.onTickSegmentBoundary(currentSegmentIndex);
+        }
+    }
+
     drawWheel();
 
-    if (normalized >= 1) {
+    if (normalizedTime >= 1) {
         wheelState.isSpinning = false;
         snapToNearestWinner();
+        const winnerIndex = getCurrentPointerSegmentIndex();
+        if (typeof wheelState.onSpinComplete === "function" && winnerIndex !== null) {
+            wheelState.onSpinComplete(winnerIndex);
+        }
         return;
     }
     window.requestAnimationFrame(animationFrameStep);
@@ -199,8 +222,8 @@ function snapToNearestWinner() {
     const pointerAngle = -Math.PI / 2;
     const relativeAngle = (wheelState.currentAngleRadians - pointerAngle) % (Math.PI * 2);
     const normalizedAngle = (relativeAngle + Math.PI * 2) % (Math.PI * 2);
-    const winnerIndex = Math.floor(normalizedAngle / segmentAngle);
-    wheelState.currentAngleRadians = pointerAngle + winnerIndex * segmentAngle + segmentAngle / 2;
+    const segmentIndex = Math.floor(normalizedAngle / segmentAngle);
+    wheelState.currentAngleRadians = pointerAngle + segmentIndex * segmentAngle + segmentAngle / 2;
     drawWheel();
 }
 
@@ -224,5 +247,18 @@ export function spinToIndex(requestedIndex) {
     wheelState.spinTargetAngleRadians = destinationAngle + Math.PI * 2 * 4;
     wheelState.spinStartTimestampMs = performance.now();
     wheelState.isSpinning = true;
+    wheelState.lastTickedSegmentIndex = getCurrentPointerSegmentIndex();
     window.requestAnimationFrame(animationFrameStep);
+}
+
+/** NEW: stop immediately, snap, and fire onSpinComplete with current index */
+export function forceStopSpin() {
+    if (!wheelState.segmentLabels.length) return;
+    // If we were spinning, stop and snap; if not, still snap to nearest and report.
+    wheelState.isSpinning = false;
+    snapToNearestWinner();
+    const winnerIndex = getCurrentPointerSegmentIndex();
+    if (typeof wheelState.onSpinComplete === "function" && winnerIndex !== null) {
+        wheelState.onSpinComplete(winnerIndex);
+    }
 }

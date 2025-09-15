@@ -5,9 +5,11 @@ import {
     setWheelLabels,
     drawWheel,
     spinToIndex,
-    ensureWheelSize
+    ensureWheelSize,
+    registerSpinCallbacks,
+    forceStopSpin
 } from "./wheel.js";
-import { primeAudioOnFirstGesture } from "./audio.js";
+import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom } from "./audio.js";
 
 /* ---------- data loading ---------- */
 async function loadJson(path) {
@@ -19,7 +21,6 @@ async function loadJson(path) {
 /* ---------- normalization engine ---------- */
 class NormalizationEngine {
     constructor(ruleDescriptors) {
-        // ruleDescriptors: [{pattern, flags, token}]
         this.compiledRules = [];
         if (Array.isArray(ruleDescriptors)) {
             for (const descriptor of ruleDescriptors) {
@@ -60,21 +61,79 @@ const applicationState = {
     selectedAllergenLabel: "",
     allergensCatalog: [],
     dishesCatalog: [],
-    normalizationEngine: null
+    normalizationEngine: null,
+
+    dishIndexByAllergen: new Map(),
+
+    currentCandidateDishes: [],
+    currentCandidateLabels: []
 };
 
-function dishesMatchingSelectedAllergen() {
-    const selectedToken = applicationState.selectedAllergenToken;
-    if (!selectedToken) return [];
-    const normalizedToken = String(selectedToken);
-    const matchingDishes = [];
+const localStorageKeySelectedToken = "allergyWheel.selectedAllergenToken";
+const localStorageKeySelectedLabel = "allergyWheel.selectedAllergenLabel";
 
+/* ---------- persistence ---------- */
+function persistSelectedAllergen() {
+    try {
+        if (!applicationState.selectedAllergenToken) return;
+        window.localStorage.setItem(localStorageKeySelectedToken, applicationState.selectedAllergenToken);
+        window.localStorage.setItem(localStorageKeySelectedLabel, applicationState.selectedAllergenLabel || "");
+    } catch {
+        // ignore
+    }
+}
+
+function restorePersistedAllergen() {
+    try {
+        const token = window.localStorage.getItem(localStorageKeySelectedToken);
+        const label = window.localStorage.getItem(localStorageKeySelectedLabel);
+        if (token) {
+            applicationState.selectedAllergenToken = token;
+            applicationState.selectedAllergenLabel = label || token;
+            return true;
+        }
+    } catch {
+        // ignore
+    }
+    return false;
+}
+
+/* ---------- indexing & validation ---------- */
+function buildDishIndexByAllergen() {
+    const index = new Map();
     for (const dish of applicationState.dishesCatalog) {
         const ingredientList = Array.isArray(dish.ingredients) ? dish.ingredients : [];
-        const dishTokens = applicationState.normalizationEngine.tokensForDishIngredients(ingredientList);
-        if (dishTokens.has(normalizedToken)) matchingDishes.push(dish);
+        const tokens = applicationState.normalizationEngine.tokensForDishIngredients(ingredientList);
+        for (const token of tokens) {
+            if (!index.has(token)) index.set(token, []);
+            index.get(token).push(dish);
+        }
     }
-    return matchingDishes;
+    applicationState.dishIndexByAllergen = index;
+}
+
+function validateAllergenCoverageOrThrow() {
+    const missing = [];
+    for (const allergen of applicationState.allergensCatalog) {
+        const token = allergen.token;
+        const dishesForToken = applicationState.dishIndexByAllergen.get(token) || [];
+        if (dishesForToken.length === 0) {
+            missing.push(token);
+        }
+    }
+    if (missing.length > 0) {
+        throw new Error(
+            `Data invariant violated: no dishes found for allergen token(s): ${missing.join(", ")}. ` +
+            `Please add at least one matching dish per allergen to data/dishes.json.`
+        );
+    }
+}
+
+/* ---------- selectors ---------- */
+function dishesMatchingSelectedAllergen() {
+    const token = applicationState.selectedAllergenToken;
+    if (!token) return [];
+    return applicationState.dishIndexByAllergen.get(token) || [];
 }
 
 function dishDisplayLabel(dish) {
@@ -96,14 +155,40 @@ function refreshSelectedAllergenBadges() {
 }
 
 function recomputeWheelFromSelection() {
-    const candidateDishes = dishesMatchingSelectedAllergen();
-    const labelList = candidateDishes.map(dishDisplayLabel).filter((text) => text && text.length > 0);
-    if (!labelList.length) {
+    const matchingDishes = dishesMatchingSelectedAllergen();
+
+    const paddedDishes = [...matchingDishes];
+    const seenKeys = new Set(paddedDishes.map(d => (d.id || dishDisplayLabel(d))));
+
+    for (const dish of applicationState.dishesCatalog) {
+        if (paddedDishes.length >= 8) break;
+        const dishKey = dish.id || dishDisplayLabel(dish);
+        if (!seenKeys.has(dishKey)) {
+            paddedDishes.push(dish);
+            seenKeys.add(dishKey);
+        }
+    }
+
+    if (paddedDishes.length > 0) {
+        let sourceIndex = 0;
+        while (paddedDishes.length < 8) {
+            paddedDishes.push(paddedDishes[sourceIndex % paddedDishes.length]);
+            sourceIndex += 1;
+        }
+    }
+
+    applicationState.currentCandidateDishes = paddedDishes;
+    applicationState.currentCandidateLabels = paddedDishes
+        .map(dishDisplayLabel)
+        .filter((text) => text && text.length > 0);
+
+    if (!applicationState.currentCandidateLabels.length) {
         setWheelLabels(["No matches"]);
         drawWheel();
         return;
     }
-    setWheelLabels(labelList);
+
+    setWheelLabels(applicationState.currentCandidateLabels);
     drawWheel();
 }
 
@@ -117,6 +202,59 @@ function showScreen(targetId) {
     if (targetId === "screen-wheel") ensureWheelSize();
 }
 
+function populateRevealWithDish(chosenDish) {
+    const revealSection = document.getElementById("reveal");
+    const dishTitleElement = document.getElementById("dish-title");
+    const dishCuisineElement = document.getElementById("dish-cuisine");
+    const resultBannerElement = document.getElementById("result");
+    const resultTextElement = document.getElementById("result-text");
+    const ingredientsContainer = document.getElementById("dish-ingredients");
+    const faceSvg = document.getElementById("face");
+
+    if (!revealSection || !dishTitleElement || !dishCuisineElement || !resultBannerElement || !resultTextElement || !ingredientsContainer) {
+        return;
+    }
+
+    dishTitleElement.textContent = dishDisplayLabel(chosenDish);
+    dishCuisineElement.textContent = chosenDish.cuisine || "";
+
+    ingredientsContainer.textContent = "";
+
+    const triggeringToken = applicationState.selectedAllergenToken;
+    let hasTriggeringIngredient = false;
+
+    for (const ingredientName of chosenDish.ingredients || []) {
+        const ingredientSpan = document.createElement("span");
+        ingredientSpan.className = "ingredient";
+
+        const tokensForIngredient = applicationState.normalizationEngine.tokensForIngredient(ingredientName);
+        const isTriggering = tokensForIngredient.has(triggeringToken);
+        if (isTriggering) {
+            hasTriggeringIngredient = true;
+            ingredientSpan.classList.add("bad");
+        }
+        ingredientSpan.textContent = ingredientName;
+        ingredientsContainer.appendChild(ingredientSpan);
+    }
+
+    if (hasTriggeringIngredient) {
+        resultBannerElement.classList.remove("ok");
+        resultBannerElement.classList.add("bad");
+        resultTextElement.textContent = `Contains your allergen: ${applicationState.selectedAllergenLabel}`;
+        if (faceSvg) faceSvg.hidden = false;
+        playSiren(1800);
+    } else {
+        resultBannerElement.classList.remove("bad");
+        resultBannerElement.classList.add("ok");
+        resultTextElement.textContent = "Safe to eat. Yummy!";
+        if (faceSvg) faceSvg.hidden = true;
+        playNomNom(1200);
+    }
+
+    revealSection.hidden = false;
+}
+
+/* ---------- wiring ---------- */
 function wireStartButton() {
     const startButton = document.getElementById("start");
     if (!startButton) return;
@@ -127,11 +265,9 @@ function wireStartButton() {
         ensureWheelSize();
         recomputeWheelFromSelection();
 
-        const candidateDishes = dishesMatchingSelectedAllergen();
-        const labelList = candidateDishes.map(dishDisplayLabel).filter((text) => text && text.length > 0);
-        if (!labelList.length) return;
+        if (!applicationState.currentCandidateLabels.length) return;
 
-        const randomIndex = Math.floor(Math.random() * labelList.length);
+        const randomIndex = Math.floor(Math.random() * applicationState.currentCandidateLabels.length);
         spinToIndex(randomIndex);
         setTimeout(ensureWheelSize, 0);
     });
@@ -140,7 +276,9 @@ function wireStartButton() {
 function wireStopButton() {
     const stopButton = document.getElementById("stop");
     if (!stopButton) return;
-    stopButton.addEventListener("click", () => showScreen("screen-allergy"));
+    stopButton.addEventListener("click", () => {
+        forceStopSpin();
+    });
 }
 
 function wireFullscreenButton() {
@@ -152,6 +290,38 @@ function wireFullscreenButton() {
             if (documentElement.requestFullscreen) documentElement.requestFullscreen();
         } else {
             if (document.exitFullscreen) document.exitFullscreen();
+        }
+    });
+}
+
+function wireRevealAgainButton() {
+    const againButton = document.getElementById("again");
+    if (!againButton) return;
+    againButton.addEventListener("click", () => {
+        const revealSection = document.getElementById("reveal");
+        if (revealSection) revealSection.hidden = true;
+        if (!applicationState.currentCandidateLabels.length) return;
+        const randomIndex = Math.floor(Math.random() * applicationState.currentCandidateLabels.length);
+        spinToIndex(randomIndex);
+    });
+}
+
+function wireRevealBackdropDismissal() {
+    const revealSection = document.getElementById("reveal");
+    if (!revealSection) return;
+
+    revealSection.addEventListener("click", (mouseEvent) => {
+        if (mouseEvent.target === revealSection) {
+            revealSection.hidden = true;
+            showScreen("screen-allergy");
+        }
+    });
+
+    document.addEventListener("keydown", (keyboardEvent) => {
+        const isEscape = keyboardEvent.key === "Escape" || keyboardEvent.key === "Esc";
+        if (isEscape && !revealSection.hidden) {
+            revealSection.hidden = true;
+            showScreen("screen-allergy");
         }
     });
 }
@@ -169,6 +339,9 @@ export async function initializeApp() {
         applicationState.dishesCatalog = Array.isArray(dishesJson) ? dishesJson : [];
         applicationState.normalizationEngine = new NormalizationEngine(normalizationJson);
 
+        buildDishIndexByAllergen();
+        validateAllergenCoverageOrThrow();
+
         const listContainer = document.getElementById("allergy-list");
         if (listContainer) {
             renderAllergenList(listContainer, applicationState.allergensCatalog, (selectedToken, selectedLabel) => {
@@ -177,18 +350,39 @@ export async function initializeApp() {
                 const startButton = document.getElementById("start");
                 if (startButton) startButton.disabled = false;
                 refreshSelectedAllergenBadges();
-                recomputeWheelFromSelection();
+                persistSelectedAllergen();
             });
+
+            if (restorePersistedAllergen()) {
+                const preselectRadio = listContainer.querySelector(
+                    `input[type="radio"][value="${applicationState.selectedAllergenToken}"]`
+                );
+                if (preselectRadio) {
+                    preselectRadio.checked = true;
+                    const startButton = document.getElementById("start");
+                    if (startButton) startButton.disabled = false;
+                    refreshSelectedAllergenBadges();
+                }
+            }
         }
 
         const wheelCanvasElement = document.getElementById("wheel");
         if (wheelCanvasElement) initWheel(wheelCanvasElement);
 
+        registerSpinCallbacks({
+            onTick: () => playTick(),
+            onStop: (winnerIndex) => {
+                const chosenDish = applicationState.currentCandidateDishes[winnerIndex];
+                if (chosenDish) populateRevealWithDish(chosenDish);
+            }
+        });
+
         wireStartButton();
         wireStopButton();
         wireFullscreenButton();
+        wireRevealAgainButton();
+        wireRevealBackdropDismissal();
 
-        // prime audio context on first gesture (keeps autoplay policies happy)
         primeAudioOnFirstGesture();
 
         const loadingText = document.getElementById("loading");
@@ -196,7 +390,12 @@ export async function initializeApp() {
     } catch (caughtError) {
         console.error(caughtError);
         const errorText = document.getElementById("load-error");
-        if (errorText) errorText.hidden = false;
+        if (errorText) {
+            errorText.textContent = "Data error: " + (caughtError?.message || "Unknown");
+            errorText.hidden = false;
+        }
+        const startButton = document.getElementById("start");
+        if (startButton) startButton.disabled = true;
     }
 }
 
