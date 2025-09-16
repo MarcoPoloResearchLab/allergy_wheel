@@ -5,8 +5,6 @@ export const ScreenName = Object.freeze({
     WHEEL: "wheel"
 });
 
-export const SCREEN_ALLERGY = ScreenName.ALLERGY;
-export const SCREEN_WHEEL = ScreenName.WHEEL;
 
 const WheelControlModeStringStop = "stop";
 const WheelControlModeStringStart = "start";

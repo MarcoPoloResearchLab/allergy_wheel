@@ -1,8 +1,7 @@
 import {
     ButtonText,
     ScreenName,
-    MODE_START,
-    MODE_STOP,
+    WheelControlMode,
     BrowserEventName,
     AttributeBooleanValue,
     DocumentElementId
@@ -54,9 +53,18 @@ const DataValidationMessage = Object.freeze({
     INGREDIENTS: "ingredients.json is missing or empty"
 });
 
+/**
+ * Generates a random integer within the inclusive range defined by the provided bounds.
+ * If the lower bound exceeds the upper bound, the values are swapped before generating the result.
+ */
 function generateRandomIntegerInclusive(minInclusive, maxInclusive) {
-    const minimum = Math.ceil(minInclusive);
-    const maximum = Math.floor(maxInclusive);
+    const areBoundsInverted = minInclusive > maxInclusive;
+    const normalizedMinimumInput = areBoundsInverted ? maxInclusive : minInclusive;
+    const normalizedMaximumInput = areBoundsInverted ? minInclusive : maxInclusive;
+
+    const minimum = Math.ceil(normalizedMinimumInput);
+    const maximum = Math.floor(normalizedMaximumInput);
+
     return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
 }
 
@@ -631,7 +639,7 @@ export class GameController {
         const centerButton = this.#documentReference.getElementById(this.#controlElementIdMap.STOP_BUTTON);
         if (!centerButton) {
             if (this.#stateManager.setStopButtonMode) {
-                this.#stateManager.setStopButtonMode(MODE_START);
+                this.#stateManager.setStopButtonMode(WheelControlMode.START);
             }
             if (this.#uiPresenter.setWheelControlToStartGame) {
                 this.#uiPresenter.setWheelControlToStartGame();
@@ -642,7 +650,7 @@ export class GameController {
         centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.START);
         centerButton.classList.remove(ButtonClassName.STOP, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
         if (this.#stateManager.setStopButtonMode) {
-            this.#stateManager.setStopButtonMode(MODE_START);
+            this.#stateManager.setStopButtonMode(WheelControlMode.START);
         }
         if (this.#uiPresenter.setWheelControlToStartGame) {
             this.#uiPresenter.setWheelControlToStartGame();
@@ -653,7 +661,7 @@ export class GameController {
         const centerButton = this.#documentReference.getElementById(this.#controlElementIdMap.STOP_BUTTON);
         if (!centerButton) {
             if (this.#stateManager.setStopButtonMode) {
-                this.#stateManager.setStopButtonMode(MODE_STOP);
+                this.#stateManager.setStopButtonMode(WheelControlMode.STOP);
             }
             if (this.#uiPresenter.setWheelControlToStop) {
                 this.#uiPresenter.setWheelControlToStop();
@@ -664,7 +672,7 @@ export class GameController {
         centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.STOP);
         centerButton.classList.remove(ButtonClassName.START, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
         if (this.#stateManager.setStopButtonMode) {
-            this.#stateManager.setStopButtonMode(MODE_STOP);
+            this.#stateManager.setStopButtonMode(WheelControlMode.STOP);
         }
         if (this.#uiPresenter.setWheelControlToStop) {
             this.#uiPresenter.setWheelControlToStop();
