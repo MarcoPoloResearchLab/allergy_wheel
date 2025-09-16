@@ -55,7 +55,6 @@ const DataPath = Object.freeze({
 const DocumentElementId = Object.freeze({
     LOADING: "loading",
     LOAD_ERROR: "load-error",
-    ALLERGY_LIST: "allergy-list",
     WHEEL_CANVAS: "wheel"
 });
 
@@ -306,36 +305,18 @@ export class GameController {
     }
 
     #initializeSelectionUi(allergensCatalog) {
-        const allergyListContainer = this.#documentReference.getElementById(DocumentElementId.ALLERGY_LIST);
-        if (!allergyListContainer || !this.#firstCardPresenter.renderAllergenList) {
+        if (!this.#firstCardPresenter || typeof this.#firstCardPresenter.renderAllergens !== "function") {
             return;
         }
 
-        this.#firstCardPresenter.renderAllergenList(
-            allergyListContainer,
-            allergensCatalog,
-            (token, label) => {
-                if (this.#stateManager.setSelectedAllergen) {
-                    this.#stateManager.setSelectedAllergen({ token, label });
-                }
-                const startButton = this.#documentReference.getElementById(this.#controlElementIdMap.START_BUTTON);
-                if (startButton) {
-                    startButton.disabled = false;
-                }
-                if (this.#firstCardPresenter.refreshSelectedAllergenBadges) {
-                    const foundAllergen = allergensCatalog.find((entry) => entry && entry.token === token);
-                    const badgeEntry = { label, emoji: (foundAllergen && foundAllergen.emoji) || "" };
-                    this.#firstCardPresenter.refreshSelectedAllergenBadges([badgeEntry]);
-                }
-            }
-        );
+        this.#firstCardPresenter.renderAllergens(allergensCatalog);
 
         const startButton = this.#documentReference.getElementById(this.#controlElementIdMap.START_BUTTON);
         if (startButton) {
             startButton.disabled = true;
         }
-        if (this.#firstCardPresenter.refreshSelectedAllergenBadges) {
-            this.#firstCardPresenter.refreshSelectedAllergenBadges([]);
+        if (typeof this.#firstCardPresenter.updateBadges === "function") {
+            this.#firstCardPresenter.updateBadges([]);
         }
     }
 
@@ -655,8 +636,8 @@ export class GameController {
         if (startButton) {
             startButton.disabled = true;
         }
-        if (this.#firstCardPresenter.refreshSelectedAllergenBadges) {
-            this.#firstCardPresenter.refreshSelectedAllergenBadges([]);
+        if (typeof this.#firstCardPresenter.updateBadges === "function") {
+            this.#firstCardPresenter.updateBadges([]);
         }
         if (this.#uiPresenter.showScreen) {
             this.#uiPresenter.showScreen(ScreenName.ALLERGY);

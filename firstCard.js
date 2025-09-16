@@ -6,10 +6,6 @@ const ElementClassName = Object.freeze({
     EMOJI_LARGE: "emoji-large"
 });
 
-const ElementId = Object.freeze({
-    SELECTED_BADGES: "sel-badges"
-});
-
 const RadioInputConfiguration = Object.freeze({
     TYPE: "radio",
     NAME: "allergen_single"
@@ -35,81 +31,111 @@ const ValueType = Object.freeze({
     STRING: typeof ""
 });
 
-export function renderAllergenList(containerElement, allergenList, onSelectCallback) {
-    if (!containerElement) {
-        return;
+export class AllergenCard {
+    #listContainerElement;
+
+    #badgeContainerElement;
+
+    #onAllergenSelected;
+
+    constructor({ listContainerElement, badgeContainerElement, onAllergenSelected } = {}) {
+        this.#listContainerElement = listContainerElement || null;
+        this.#badgeContainerElement = badgeContainerElement || null;
+        this.#onAllergenSelected = typeof onAllergenSelected === ValueType.FUNCTION
+            ? onAllergenSelected
+            : null;
     }
 
-    containerElement.innerHTML = TextContent.EMPTY;
-    const safeAllergens = Array.isArray(allergenList) ? allergenList : [];
-
-    for (const allergenItem of safeAllergens) {
-        if (!allergenItem || !allergenItem.token) {
-            continue;
+    renderAllergens(allergenList) {
+        if (!this.#listContainerElement) {
+            return;
         }
 
-        const allergenToken = allergenItem.token;
-        const allergenLabel = allergenItem.label || allergenToken;
-        const allergenEmoji = allergenItem.emoji || TextContent.EMPTY;
+        this.#listContainerElement.innerHTML = TextContent.EMPTY;
+        const safeAllergens = Array.isArray(allergenList) ? allergenList : [];
 
-        const labelElement = document.createElement(ElementTagName.LABEL);
-        labelElement.className = ElementClassName.CHIP;
+        for (const allergenRecord of safeAllergens) {
+            if (!allergenRecord || !allergenRecord.token) {
+                continue;
+            }
 
-        const radioElement = document.createElement(ElementTagName.INPUT);
-        radioElement.type = RadioInputConfiguration.TYPE;
-        radioElement.name = RadioInputConfiguration.NAME;
-        radioElement.value = allergenToken;
+            const allergenToken = allergenRecord.token;
+            const allergenLabel = allergenRecord.label || allergenToken;
+            const allergenEmoji = allergenRecord.emoji || TextContent.EMPTY;
 
-        if (typeof onSelectCallback === ValueType.FUNCTION) {
+            const labelElement = document.createElement(ElementTagName.LABEL);
+            labelElement.className = ElementClassName.CHIP;
+
+            const radioElement = document.createElement(ElementTagName.INPUT);
+            radioElement.type = RadioInputConfiguration.TYPE;
+            radioElement.name = RadioInputConfiguration.NAME;
+            radioElement.value = allergenToken;
+
             radioElement.addEventListener(EventName.CHANGE, () => {
-                onSelectCallback(allergenToken, allergenLabel);
+                this.#handleAllergenSelection({
+                    token: allergenToken,
+                    label: allergenLabel,
+                    emoji: allergenEmoji
+                });
             });
-        }
 
-        const textNode = document.createTextNode(`${TextContent.SPACE_PREFIX}${allergenLabel}`);
+            const textNode = document.createTextNode(`${TextContent.SPACE_PREFIX}${allergenLabel}`);
 
-        const emojiSpan = document.createElement(ElementTagName.SPAN);
-        emojiSpan.className = ElementClassName.EMOJI_LARGE;
-        emojiSpan.textContent = allergenEmoji;
-
-        labelElement.appendChild(radioElement);
-        labelElement.appendChild(textNode);
-        labelElement.appendChild(emojiSpan);
-
-        containerElement.appendChild(labelElement);
-    }
-}
-
-export function refreshSelectedAllergenBadges(allergenEntries) {
-    const badgesContainer = document.getElementById(ElementId.SELECTED_BADGES);
-    if (!badgesContainer) {
-        return;
-    }
-
-    badgesContainer.textContent = TextContent.EMPTY;
-
-    for (const allergenEntry of allergenEntries || []) {
-        const labelText = typeof allergenEntry === ValueType.STRING
-            ? allergenEntry
-            : (allergenEntry && allergenEntry.label) || TextContent.EMPTY;
-        const emojiText = typeof allergenEntry === ValueType.STRING
-            ? TextContent.EMPTY
-            : (allergenEntry && allergenEntry.emoji) || TextContent.EMPTY;
-
-        const badgeElement = document.createElement(ElementTagName.SPAN);
-        badgeElement.className = ElementClassName.BADGE;
-
-        const labelSpan = document.createElement(ElementTagName.SPAN);
-        labelSpan.textContent = labelText;
-        badgeElement.appendChild(labelSpan);
-
-        if (emojiText) {
             const emojiSpan = document.createElement(ElementTagName.SPAN);
             emojiSpan.className = ElementClassName.EMOJI_LARGE;
-            emojiSpan.textContent = emojiText;
-            badgeElement.appendChild(emojiSpan);
+            emojiSpan.textContent = allergenEmoji;
+
+            labelElement.appendChild(radioElement);
+            labelElement.appendChild(textNode);
+            labelElement.appendChild(emojiSpan);
+
+            this.#listContainerElement.appendChild(labelElement);
+        }
+    }
+
+    updateBadges(allergenEntries) {
+        if (!this.#badgeContainerElement) {
+            return;
         }
 
-        badgesContainer.appendChild(badgeElement);
+        this.#badgeContainerElement.textContent = TextContent.EMPTY;
+
+        for (const allergenEntry of allergenEntries || []) {
+            const labelText = typeof allergenEntry === ValueType.STRING
+                ? allergenEntry
+                : (allergenEntry && allergenEntry.label) || TextContent.EMPTY;
+            const emojiText = typeof allergenEntry === ValueType.STRING
+                ? TextContent.EMPTY
+                : (allergenEntry && allergenEntry.emoji) || TextContent.EMPTY;
+
+            const badgeElement = document.createElement(ElementTagName.SPAN);
+            badgeElement.className = ElementClassName.BADGE;
+
+            const labelSpan = document.createElement(ElementTagName.SPAN);
+            labelSpan.textContent = labelText;
+            badgeElement.appendChild(labelSpan);
+
+            if (emojiText) {
+                const emojiSpan = document.createElement(ElementTagName.SPAN);
+                emojiSpan.className = ElementClassName.EMOJI_LARGE;
+                emojiSpan.textContent = emojiText;
+                badgeElement.appendChild(emojiSpan);
+            }
+
+            this.#badgeContainerElement.appendChild(badgeElement);
+        }
+    }
+
+    #handleAllergenSelection(allergenDescriptor) {
+        if (typeof this.#onAllergenSelected !== ValueType.FUNCTION) {
+            return;
+        }
+
+        const descriptor = allergenDescriptor || {};
+        this.#onAllergenSelected({
+            token: descriptor.token,
+            label: descriptor.label,
+            emoji: descriptor.emoji
+        });
     }
 }

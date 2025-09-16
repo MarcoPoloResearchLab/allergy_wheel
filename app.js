@@ -22,7 +22,7 @@ import {
 } from "./state.js";
 import { Board } from "./board.js";
 import { NormalizationEngine, loadJson, pickRandomUnique } from "./utils.js";
-import { renderAllergenList, refreshSelectedAllergenBadges } from "./firstCard.js";
+import { AllergenCard } from "./firstCard.js";
 import { populateRevealCard, showGameOver, showWinningCard } from "./lastCard.js";
 import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "./hearts.js";
 import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom, playWin } from "./audio.js";
@@ -44,6 +44,11 @@ const AttributeName = Object.freeze({
 
 const BrowserEventName = Object.freeze({
     DOM_CONTENT_LOADED: "DOMContentLoaded"
+});
+
+const FirstCardElementId = Object.freeze({
+    LIST_CONTAINER: "allergy-list",
+    BADGE_CONTAINER: "sel-badges"
 });
 
 const listenerBinder = createListenerBinder({
@@ -79,10 +84,35 @@ const stateManager = {
     setStopButtonMode
 };
 
-const firstCardPresenter = {
-    renderAllergenList,
-    refreshSelectedAllergenBadges
-};
+const firstCardPresenter = new AllergenCard({
+    listContainerElement: document.getElementById(FirstCardElementId.LIST_CONTAINER),
+    badgeContainerElement: document.getElementById(FirstCardElementId.BADGE_CONTAINER),
+    onAllergenSelected: (allergenDescriptor) => {
+        if (!allergenDescriptor || !allergenDescriptor.token) {
+            return;
+        }
+
+        const selectedLabel = allergenDescriptor.label || allergenDescriptor.token;
+
+        if (stateManager.setSelectedAllergen) {
+            stateManager.setSelectedAllergen({
+                token: allergenDescriptor.token,
+                label: selectedLabel
+            });
+        }
+
+        const startButtonElement = document.getElementById(ControlElementId.START_BUTTON);
+        if (startButtonElement) {
+            startButtonElement.disabled = false;
+        }
+
+        const badgeEntry = {
+            label: selectedLabel,
+            emoji: allergenDescriptor.emoji || ""
+        };
+        firstCardPresenter.updateBadges([badgeEntry]);
+    }
+});
 
 const revealCardPresenter = {
     populateRevealCard,
