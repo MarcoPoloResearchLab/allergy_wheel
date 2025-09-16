@@ -23,7 +23,7 @@ import {
 import { Board } from "./board.js";
 import { NormalizationEngine, loadJson, pickRandomUnique } from "./utils.js";
 import { AllergenCard } from "./firstCard.js";
-import { populateRevealCard, showGameOver, showWinningCard } from "./lastCard.js";
+import { ResultCard, ElementId as ResultCardElementId } from "./lastCard.js";
 import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "./hearts.js";
 import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom, playWin } from "./audio.js";
 import { showScreen, setWheelControlToStop, setWheelControlToStartGame } from "./ui.js";
@@ -114,11 +114,21 @@ const firstCardPresenter = new AllergenCard({
     }
 });
 
-const revealCardPresenter = {
-    populateRevealCard,
-    showGameOver,
-    showWinningCard
-};
+const revealCardPresenter = new ResultCard({
+    documentReference: document,
+    revealSectionElement: document.getElementById(ResultCardElementId.REVEAL_SECTION),
+    dishTitleElement: document.getElementById(ResultCardElementId.DISH_TITLE),
+    dishCuisineElement: document.getElementById(ResultCardElementId.DISH_CUISINE),
+    resultBannerElement: document.getElementById(ResultCardElementId.RESULT_BANNER),
+    resultTextElement: document.getElementById(ResultCardElementId.RESULT_TEXT),
+    ingredientsContainerElement: document.getElementById(ResultCardElementId.INGREDIENTS_CONTAINER),
+    faceSvgElement: document.getElementById(ResultCardElementId.FACE_SVG),
+    gameOverSectionElement: document.getElementById(ResultCardElementId.GAME_OVER_SECTION),
+    normalizationEngine: board.normalizationEngine,
+    allergensCatalog: board.allergensCatalog,
+    cuisineToFlagMap: new Map(),
+    ingredientEmojiByName: new Map()
+});
 
 const heartsPresenter = {
     renderHearts,

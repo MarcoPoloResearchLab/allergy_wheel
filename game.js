@@ -143,8 +143,6 @@ export class GameController {
 
     #normalizationEngine;
 
-    #allergensCatalog;
-
     constructor({
         documentReference = document,
         controlElementIdMap,
@@ -194,7 +192,6 @@ export class GameController {
         this.#cuisineToFlagMap = new Map();
         this.#ingredientEmojiByName = new Map();
         this.#normalizationEngine = null;
-        this.#allergensCatalog = [];
     }
 
     async bootstrap() {
@@ -264,10 +261,18 @@ export class GameController {
         this.#board.throwIfAnyAllergenHasNoDishes();
 
         this.#stateManager.setBoard(this.#board);
-        this.#allergensCatalog = allergensCatalog;
 
         this.#cuisineToFlagMap = this.#buildCuisineFlagMap(countriesCatalog);
         this.#ingredientEmojiByName = this.#buildIngredientEmojiMap(ingredientsCatalog);
+
+        if (this.#revealCardPresenter && typeof this.#revealCardPresenter.updateDataDependencies === "function") {
+            this.#revealCardPresenter.updateDataDependencies({
+                normalizationEngine: this.#normalizationEngine,
+                allergensCatalog,
+                cuisineToFlagMap: this.#cuisineToFlagMap,
+                ingredientEmojiByName: this.#ingredientEmojiByName
+            });
+        }
 
         const initialHeartsCount = this.#stateManager.getInitialHeartsCount();
         this.#stateManager.setHeartsCount(initialHeartsCount);
@@ -547,11 +552,7 @@ export class GameController {
                     : null,
                 selectedAllergenLabel: this.#stateManager.getSelectedAllergenLabel
                     ? this.#stateManager.getSelectedAllergenLabel()
-                    : "",
-                normalizationEngine: this.#normalizationEngine,
-                allergensCatalog: this.#allergensCatalog,
-                cuisineToFlagMap: this.#cuisineToFlagMap,
-                ingredientEmojiByName: this.#ingredientEmojiByName
+                    : ""
             })
             : { hasTriggeringIngredient: false };
 
@@ -591,14 +592,14 @@ export class GameController {
         }
 
         if (heartsCountAfterSpin >= WheelConfiguration.WIN_CONDITION_HEARTS) {
-            const restartButton = this.#revealCardPresenter.showWinningCard
+            const winningCardInfo = this.#revealCardPresenter.showWinningCard
                 ? this.#revealCardPresenter.showWinningCard()
-                : null;
+                : { restartButton: null, isDisplayed: false };
             if (this.#audioPresenter.playWin) {
                 this.#audioPresenter.playWin();
             }
-            if (restartButton) {
-                restartButton.addEventListener(BrowserEventName.CLICK, () => {
+            if (winningCardInfo && winningCardInfo.restartButton) {
+                winningCardInfo.restartButton.addEventListener(BrowserEventName.CLICK, () => {
                     const revealSection = this.#documentReference.getElementById(this.#controlElementIdMap.REVEAL_SECTION);
                     if (revealSection) {
                         revealSection.setAttribute(
