@@ -1,5 +1,6 @@
 /* File: app.js */
 /* global document, window */
+import { SCREEN_ALLERGY, SCREEN_WHEEL, MODE_STOP, MODE_START } from "./constants.js";
 import {
     renderAllergenList,
     refreshSelectedAllergenBadges,
@@ -44,7 +45,7 @@ const applicationState = {
     selectedAllergenLabel: "",
     currentCandidateDishes: [],
     currentCandidateLabels: [], // array of {label, emoji}
-    stopButtonMode: "stop", // "stop" | "start"
+    stopButtonMode: MODE_STOP, // MODE_STOP | MODE_START
     heartsCount: initialHeartsCount
 };
 
@@ -124,7 +125,7 @@ function toStartMode() {
     centerButton.textContent = "Start";
     centerButton.classList.add("action", "is-start");
     centerButton.classList.remove("is-stop", "primary", "danger");
-    applicationState.stopButtonMode = "start";
+    applicationState.stopButtonMode = MODE_START;
     setWheelControlToStartGame();
 }
 
@@ -134,7 +135,7 @@ function toStopMode() {
     centerButton.textContent = "STOP";
     centerButton.classList.add("action", "is-stop");
     centerButton.classList.remove("is-start", "primary", "danger");
-    applicationState.stopButtonMode = "stop";
+    applicationState.stopButtonMode = MODE_STOP;
     setWheelControlToStop();
 }
 
@@ -148,7 +149,7 @@ function resetGame() {
     const startBtn = document.getElementById("start");
     if (startBtn) startBtn.disabled = true;
     refreshSelectedAllergenBadges([]);
-    showScreen("allergy");
+    showScreen(SCREEN_ALLERGY);
 }
 
 /* ---------- wiring ---------- */
@@ -173,7 +174,7 @@ function wireStartButton() {
     if (!startButton) return;
     startButton.addEventListener("click", function onStartPressed() {
         if (!applicationState.selectedAllergenToken) return;
-        showScreen("wheel");
+        showScreen(SCREEN_WHEEL);
         ensureWheelSize();
         startSpinWithFreshState();
     });
@@ -183,10 +184,10 @@ function wireStopButton() {
     const stopButton = document.getElementById("stop");
     if (!stopButton) return;
     stopButton.addEventListener("click", function onStopPressed() {
-        if (applicationState.stopButtonMode === "stop") {
+        if (applicationState.stopButtonMode === MODE_STOP) {
             forceStopSpin();
         } else {
-            showScreen("allergy");
+            showScreen(SCREEN_ALLERGY);
         }
     });
 }
@@ -392,7 +393,7 @@ async function initializeApp() {
         // Show initial screen
         const loadingEl = document.getElementById("loading");
         if (loadingEl) loadingEl.hidden = true;
-        showScreen("allergy");
+        showScreen(SCREEN_ALLERGY);
     } catch (errorObject) {
         const loadingEl = document.getElementById("loading");
         const loadErrorEl = document.getElementById("load-error");
@@ -406,3 +407,5 @@ async function initializeApp() {
 window.addEventListener("DOMContentLoaded", function onDomReady() {
     initializeApp();
 });
+
+export { SCREEN_ALLERGY, SCREEN_WHEEL, MODE_STOP, MODE_START };
