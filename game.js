@@ -376,8 +376,8 @@ export class GameController {
         if (typeof wireStopButton === "function") {
             wireStopButton({
                 onStopRequested: () => {
-                    if (this.#wheel.forceStop) {
-                        this.#wheel.forceStop();
+                    if (this.#wheel.stop) {
+                        this.#wheel.stop();
                     }
                 },
                 onShowAllergyScreen: () => {
@@ -465,8 +465,8 @@ export class GameController {
 
         this.#applyStopMode();
         const randomIndex = generateRandomIntegerInclusive(0, candidateLabels.length - 1);
-        if (this.#wheel.spinToIndex) {
-            this.#wheel.spinToIndex(randomIndex);
+        if (this.#wheel.spin) {
+            this.#wheel.spin(randomIndex);
         }
     }
 
