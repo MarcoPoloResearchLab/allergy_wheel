@@ -4,18 +4,15 @@ import {
     MODE_STOP,
     MODE_START
 } from "./constants.js";
+import { renderAllergenList, refreshSelectedAllergenBadges } from "./firstCard.js";
+import { populateRevealCard, showGameOver, showWinningCard } from "./lastCard.js";
 import {
-    renderAllergenList,
-    refreshSelectedAllergenBadges,
     showScreen,
-    populateRevealCard,
     setWheelControlToStop,
     setWheelControlToStartGame,
     renderHearts,
-    showGameOver,
     animateHeartGainFromReveal,
-    animateHeartLossAtHeartsBar,
-    showWinningCard
+    animateHeartLossAtHeartsBar
 } from "./ui.js";
 import {
     initWheel,
