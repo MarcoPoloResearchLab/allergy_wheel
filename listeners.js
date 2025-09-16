@@ -1,4 +1,4 @@
-import { MODE_STOP, BrowserEventName, KeyboardKey, AttributeBooleanValue } from "./constants.js";
+import { WheelControlMode, BrowserEventName, KeyboardKey, AttributeBooleanValue } from "./constants.js";
 
 const ListenerErrorMessage = {
     MISSING_DEPENDENCIES: "createListenerBinder requires controlElementId, attributeName, and stateManager",
@@ -28,7 +28,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         const stopButton = documentReference.getElementById(controlElementId.STOP_BUTTON);
         if (!stopButton) return;
         stopButton.addEventListener(BrowserEventName.CLICK, () => {
-            if (stateManager.getStopButtonMode() === MODE_STOP) {
+            if (stateManager.getStopButtonMode() === WheelControlMode.STOP) {
                 if (typeof onStopRequested === "function") onStopRequested();
             } else if (typeof onShowAllergyScreen === "function") {
                 onShowAllergyScreen();

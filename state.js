@@ -1,4 +1,4 @@
-import { MODE_STOP, MODE_START } from "./constants.js";
+import { WheelControlMode } from "./constants.js";
 
 const DEFAULT_INITIAL_HEARTS_COUNT = 5;
 
@@ -28,17 +28,26 @@ class StateManager {
 
     #stopButtonMode;
 
-    constructor({ initialHeartsCount = DEFAULT_INITIAL_HEARTS_COUNT, initialStopButtonMode = MODE_STOP } = {}) {
+    constructor({
+        initialHeartsCount = DEFAULT_INITIAL_HEARTS_COUNT,
+        initialStopButtonMode = WheelControlMode.STOP
+    } = {}) {
         this.initialize({ initialHeartsCount, initialStopButtonMode });
     }
 
-    initialize({ initialHeartsCount = DEFAULT_INITIAL_HEARTS_COUNT, initialStopButtonMode = MODE_STOP } = {}) {
+    initialize({
+        initialHeartsCount = DEFAULT_INITIAL_HEARTS_COUNT,
+        initialStopButtonMode = WheelControlMode.STOP
+    } = {}) {
         if (typeof initialHeartsCount !== "number" || Number.isNaN(initialHeartsCount)) {
             throw new Error(StateManagerErrorMessage.INVALID_INITIAL_HEARTS_COUNT);
         }
         this.#initialHeartsCount = initialHeartsCount;
         this.#heartsCount = initialHeartsCount;
-        this.#stopButtonMode = initialStopButtonMode === MODE_START ? MODE_START : MODE_STOP;
+        this.#stopButtonMode =
+            initialStopButtonMode === WheelControlMode.START
+                ? WheelControlMode.START
+                : WheelControlMode.STOP;
         this.#selectedAllergenToken = null;
         this.#selectedAllergenLabel = TextValue.EMPTY;
         this.#wheelCandidateDishes = [];
@@ -116,7 +125,8 @@ class StateManager {
     }
 
     setStopButtonMode(mode) {
-        this.#stopButtonMode = mode === MODE_START ? MODE_START : MODE_STOP;
+        this.#stopButtonMode =
+            mode === WheelControlMode.START ? WheelControlMode.START : WheelControlMode.STOP;
     }
 
     getStopButtonMode() {
