@@ -98,6 +98,11 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         });
     }
 
+    /**
+     * Connects avatar menu interactions to application state updates.
+     *
+     * @param {{ onAvatarChange: (avatarIdentifier: string) => void }} param0 - Callbacks invoked during avatar selection.
+     */
     function wireAvatarSelector({ onAvatarChange }) {
         const avatarToggleButton = documentReference.getElementById(controlElementId.AVATAR_TOGGLE);
         const avatarMenuElement = documentReference.getElementById(controlElementId.AVATAR_MENU);

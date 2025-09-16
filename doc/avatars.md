@@ -1,0 +1,13 @@
+# Avatar assets
+
+The SVG illustrations stored in `assets/avatars/` were custom-created for this project. They may be used within the Allergy Wheel
+experience under the same license that governs the rest of the repository. Please reach out to the maintainers before reusing the
+artwork in other projects if the repository license does not cover your intended use.
+
+## Contributing new avatars
+
+- Submit only artwork that you created yourself or that you have explicit permission to redistribute with attribution details.
+- Provide vector SVG files optimized for the web (remove unnecessary metadata and keep file sizes low).
+- Include a note in your pull request describing the source of the artwork and the licensing terms.
+- Update any relevant constants, tests, and documentation so the new avatar appears in the selector UI and remains fully covered
+  by automated checks.
