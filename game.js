@@ -1,3 +1,13 @@
+import {
+    ButtonText,
+    ScreenName,
+    MODE_START,
+    MODE_STOP,
+    BrowserEventName,
+    AttributeBooleanValue,
+    DocumentElementId
+} from "./constants.js";
+
 const WheelConfiguration = Object.freeze({
     SEGMENT_COUNT: 8,
     DEFAULT_SPIN_DURATION_MS: 30000,
@@ -21,21 +31,6 @@ const ButtonClassName = Object.freeze({
     DANGER: "danger"
 });
 
-const ButtonText = Object.freeze({
-    START: "Start",
-    STOP: "STOP"
-});
-
-const ScreenName = Object.freeze({
-    ALLERGY: "allergy",
-    WHEEL: "wheel"
-});
-
-const ButtonMode = Object.freeze({
-    START: "start",
-    STOP: "stop"
-});
-
 const GameErrorMessage = Object.freeze({
     MISSING_DEPENDENCIES: "GameController requires wheel, board, listenerBinder, stateManager, uiPresenter, firstCardPresenter, revealCardPresenter, heartsPresenter, audioPresenter, dataLoader, createNormalizationEngine, and pickRandomUnique.",
     INVALID_DATA_LOADER: "GameController requires dataLoader.loadJson to be a function.",
@@ -52,25 +47,11 @@ const DataPath = Object.freeze({
     INGREDIENTS: "./data/ingredients.json"
 });
 
-const DocumentElementId = Object.freeze({
-    LOADING: "loading",
-    LOAD_ERROR: "load-error",
-    WHEEL_CANVAS: "wheel"
-});
-
-const BrowserEventName = Object.freeze({
-    CLICK: "click"
-});
-
 const DataValidationMessage = Object.freeze({
     ALLERGENS: "allergens.json is missing or empty",
     DISHES: "dishes.json is missing or empty",
     NORMALIZATION: "normalization.json is missing or empty",
     INGREDIENTS: "ingredients.json is missing or empty"
-});
-
-const BooleanAttributeValue = Object.freeze({
-    TRUE: "true"
 });
 
 function generateRandomIntegerInclusive(minInclusive, maxInclusive) {
@@ -604,7 +585,7 @@ export class GameController {
                     if (revealSection) {
                         revealSection.setAttribute(
                             this.#attributeNameMap.ARIA_HIDDEN,
-                            BooleanAttributeValue.TRUE
+                            AttributeBooleanValue.TRUE
                         );
                     }
                     this.#resetGame();
@@ -650,7 +631,7 @@ export class GameController {
         const centerButton = this.#documentReference.getElementById(this.#controlElementIdMap.STOP_BUTTON);
         if (!centerButton) {
             if (this.#stateManager.setStopButtonMode) {
-                this.#stateManager.setStopButtonMode(ButtonMode.START);
+                this.#stateManager.setStopButtonMode(MODE_START);
             }
             if (this.#uiPresenter.setWheelControlToStartGame) {
                 this.#uiPresenter.setWheelControlToStartGame();
@@ -661,7 +642,7 @@ export class GameController {
         centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.START);
         centerButton.classList.remove(ButtonClassName.STOP, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
         if (this.#stateManager.setStopButtonMode) {
-            this.#stateManager.setStopButtonMode(ButtonMode.START);
+            this.#stateManager.setStopButtonMode(MODE_START);
         }
         if (this.#uiPresenter.setWheelControlToStartGame) {
             this.#uiPresenter.setWheelControlToStartGame();
@@ -672,7 +653,7 @@ export class GameController {
         const centerButton = this.#documentReference.getElementById(this.#controlElementIdMap.STOP_BUTTON);
         if (!centerButton) {
             if (this.#stateManager.setStopButtonMode) {
-                this.#stateManager.setStopButtonMode(ButtonMode.STOP);
+                this.#stateManager.setStopButtonMode(MODE_STOP);
             }
             if (this.#uiPresenter.setWheelControlToStop) {
                 this.#uiPresenter.setWheelControlToStop();
@@ -683,7 +664,7 @@ export class GameController {
         centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.STOP);
         centerButton.classList.remove(ButtonClassName.START, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
         if (this.#stateManager.setStopButtonMode) {
-            this.#stateManager.setStopButtonMode(ButtonMode.STOP);
+            this.#stateManager.setStopButtonMode(MODE_STOP);
         }
         if (this.#uiPresenter.setWheelControlToStop) {
             this.#uiPresenter.setWheelControlToStop();

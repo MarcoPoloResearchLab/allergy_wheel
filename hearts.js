@@ -1,18 +1,5 @@
 /* global document */
-
-const ElementId = Object.freeze({
-    HEARTS_BAR: "hearts-bar"
-});
-
-const AttributeName = Object.freeze({
-    DATA_COUNT: "data-count",
-    ARIA_LABEL: "aria-label",
-    ARIA_HIDDEN: "aria-hidden"
-});
-
-const AttributeValue = Object.freeze({
-    TRUE: "true"
-});
+import { AttributeName, AttributeBooleanValue, HeartsElementId } from "./constants.js";
 
 const ElementTagName = Object.freeze({
     SPAN: "span"
@@ -50,7 +37,7 @@ function appendHeartElements(heartsBarElement, totalHearts) {
     for (let heartIndex = 0; heartIndex < totalHearts; heartIndex += 1) {
         const heartElement = document.createElement(ElementTagName.SPAN);
         heartElement.className = HeartClassName.HEART;
-        heartElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeValue.TRUE);
+        heartElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
         heartElement.textContent = HeartSymbol;
         heartsBarElement.appendChild(heartElement);
     }
@@ -60,7 +47,7 @@ function appendGainHearts(heartsBarElement, heartsToAdd) {
     for (let heartGainIndex = 0; heartGainIndex < heartsToAdd; heartGainIndex += 1) {
         const heartElement = document.createElement(ElementTagName.SPAN);
         heartElement.className = HeartClassName.HEART_GAIN;
-        heartElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeValue.TRUE);
+        heartElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
         heartElement.textContent = HeartSymbol;
         heartsBarElement.appendChild(heartElement);
     }
@@ -78,7 +65,7 @@ function removeHeartElements(heartsBarElement, heartsToRemove) {
 
 export function renderHearts(count, options = {}) {
     const { animate = false } = options;
-    const heartsBarElement = document.getElementById(ElementId.HEARTS_BAR);
+    const heartsBarElement = document.getElementById(HeartsElementId.HEARTS_BAR);
     if (!heartsBarElement) {
         return;
     }

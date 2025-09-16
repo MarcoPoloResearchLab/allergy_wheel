@@ -1,19 +1,4 @@
-import { MODE_STOP } from "./constants.js";
-
-const DomEventName = {
-    CLICK: "click",
-    KEY_DOWN: "keydown"
-};
-
-const KeyboardKey = {
-    ESCAPE: "Escape",
-    ESC: "Esc"
-};
-
-const AriaHiddenValue = {
-    TRUE: "true",
-    FALSE: "false"
-};
+import { MODE_STOP, BrowserEventName, KeyboardKey, AttributeBooleanValue } from "./constants.js";
 
 const ListenerErrorMessage = {
     MISSING_DEPENDENCIES: "createListenerBinder requires controlElementId, attributeName, and stateManager",
@@ -31,7 +16,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     function wireStartButton({ onStartRequested }) {
         const startButton = documentReference.getElementById(controlElementId.START_BUTTON);
         if (!startButton) return;
-        startButton.addEventListener(DomEventName.CLICK, () => {
+        startButton.addEventListener(BrowserEventName.CLICK, () => {
             if (!stateManager.hasSelectedAllergen()) return;
             if (typeof onStartRequested === "function") {
                 onStartRequested();
@@ -42,7 +27,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     function wireStopButton({ onStopRequested, onShowAllergyScreen }) {
         const stopButton = documentReference.getElementById(controlElementId.STOP_BUTTON);
         if (!stopButton) return;
-        stopButton.addEventListener(DomEventName.CLICK, () => {
+        stopButton.addEventListener(BrowserEventName.CLICK, () => {
             if (stateManager.getStopButtonMode() === MODE_STOP) {
                 if (typeof onStopRequested === "function") onStopRequested();
             } else if (typeof onShowAllergyScreen === "function") {
@@ -54,7 +39,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     function wireFullscreenButton() {
         const fullscreenButton = documentReference.getElementById(controlElementId.FULLSCREEN_BUTTON);
         if (!fullscreenButton) return;
-        fullscreenButton.addEventListener(DomEventName.CLICK, () => {
+        fullscreenButton.addEventListener(BrowserEventName.CLICK, () => {
             const rootElement = documentReference.documentElement;
             if (!documentReference.fullscreenElement) rootElement.requestFullscreen();
             else documentReference.exitFullscreen();
@@ -64,10 +49,10 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     function wireSpinAgainButton({ onSpinAgain }) {
         const spinAgainButton = documentReference.getElementById(controlElementId.SPIN_AGAIN_BUTTON);
         if (!spinAgainButton) return;
-        spinAgainButton.addEventListener(DomEventName.CLICK, () => {
+        spinAgainButton.addEventListener(BrowserEventName.CLICK, () => {
             const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
             if (revealSection) {
-                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AriaHiddenValue.TRUE);
+                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
             }
             if (typeof onSpinAgain === "function") onSpinAgain();
         });
@@ -76,16 +61,16 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     function wireRevealBackdropDismissal() {
         const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
         if (!revealSection) return;
-        revealSection.addEventListener(DomEventName.CLICK, (eventObject) => {
+        revealSection.addEventListener(BrowserEventName.CLICK, (eventObject) => {
             if (eventObject.target === revealSection) {
-                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AriaHiddenValue.TRUE);
+                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
             }
         });
-        documentReference.addEventListener(DomEventName.KEY_DOWN, (eventObject) => {
+        documentReference.addEventListener(BrowserEventName.KEY_DOWN, (eventObject) => {
             const isEscapeKey = eventObject.key === KeyboardKey.ESCAPE || eventObject.key === KeyboardKey.ESC;
-            const isRevealVisible = revealSection.getAttribute(attributeName.ARIA_HIDDEN) === AriaHiddenValue.FALSE;
+            const isRevealVisible = revealSection.getAttribute(attributeName.ARIA_HIDDEN) === AttributeBooleanValue.FALSE;
             if (isEscapeKey && isRevealVisible) {
-                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AriaHiddenValue.TRUE);
+                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
             }
         });
     }
@@ -93,14 +78,14 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     function wireRestartButton({ onRestart }) {
         const restartButton = documentReference.getElementById(controlElementId.RESTART_BUTTON);
         if (!restartButton) return;
-        restartButton.addEventListener(DomEventName.CLICK, () => {
+        restartButton.addEventListener(BrowserEventName.CLICK, () => {
             const gameOverSection = documentReference.getElementById(controlElementId.GAME_OVER_SECTION);
             if (gameOverSection) {
-                gameOverSection.setAttribute(attributeName.ARIA_HIDDEN, AriaHiddenValue.TRUE);
+                gameOverSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
             }
             const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
             if (revealSection) {
-                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AriaHiddenValue.TRUE);
+                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
             }
             if (typeof onRestart === "function") onRestart();
         });

@@ -1,4 +1,5 @@
 /* global document */
+import { BrowserEventName } from "./constants.js";
 
 const ElementClassName = Object.freeze({
     CHIP: "chip",
@@ -20,10 +21,6 @@ const ElementTagName = Object.freeze({
 const TextContent = Object.freeze({
     EMPTY: "",
     SPACE_PREFIX: " "
-});
-
-const EventName = Object.freeze({
-    CHANGE: "change"
 });
 
 const ValueType = Object.freeze({
@@ -71,7 +68,7 @@ export class AllergenCard {
             radioElement.name = RadioInputConfiguration.NAME;
             radioElement.value = allergenToken;
 
-            radioElement.addEventListener(EventName.CHANGE, () => {
+            radioElement.addEventListener(BrowserEventName.CHANGE, () => {
                 this.#handleAllergenSelection({
                     token: allergenToken,
                     label: allergenLabel,

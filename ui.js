@@ -1,18 +1,11 @@
 /* global document */
-import { SCREEN_ALLERGY, SCREEN_WHEEL } from "./constants.js";
-
-const ElementId = Object.freeze({
-    REVEAL_SECTION: "reveal"
-});
-
-const AttributeName = Object.freeze({
-    DATA_SCREEN: "data-screen",
-    ARIA_HIDDEN: "aria-hidden"
-});
-
-const AttributeValue = Object.freeze({
-    TRUE: "true"
-});
+import {
+    SCREEN_ALLERGY,
+    SCREEN_WHEEL,
+    AttributeName,
+    AttributeBooleanValue,
+    ResultCardElementId
+} from "./constants.js";
 
 export function showScreen(screenName) {
     const bodyElement = document.body;
@@ -20,7 +13,7 @@ export function showScreen(screenName) {
         return;
     }
 
-    const revealElement = document.getElementById(ElementId.REVEAL_SECTION);
+    const revealElement = document.getElementById(ResultCardElementId.REVEAL_SECTION);
 
     if (screenName === SCREEN_ALLERGY) {
         bodyElement.setAttribute(AttributeName.DATA_SCREEN, SCREEN_ALLERGY);
@@ -29,7 +22,7 @@ export function showScreen(screenName) {
     }
 
     if (revealElement) {
-        revealElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeValue.TRUE);
+        revealElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
     }
 }
 

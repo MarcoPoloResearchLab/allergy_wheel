@@ -1,16 +1,10 @@
 /* global document */
-
-export const ElementId = Object.freeze({
-    REVEAL_SECTION: "reveal",
-    DISH_TITLE: "dish-title",
-    DISH_CUISINE: "dish-cuisine",
-    RESULT_BANNER: "result",
-    RESULT_TEXT: "result-text",
-    INGREDIENTS_CONTAINER: "dish-ingredients",
-    FACE_SVG: "face",
-    GAME_OVER_SECTION: "gameover",
-    WIN_RESTART_BUTTON: "win-restart"
-});
+import {
+    ResultCardElementId,
+    AttributeName,
+    AttributeBooleanValue,
+    ButtonText
+} from "./constants.js";
 
 const ElementTagName = Object.freeze({
     SPAN: "span",
@@ -29,20 +23,11 @@ const Selector = Object.freeze({
     ACTIONS_CONTAINER: ".actions"
 });
 
-const AttributeName = Object.freeze({
-    ARIA_HIDDEN: "aria-hidden"
-});
-
-const AttributeValue = Object.freeze({
-    FALSE: "false"
-});
-
 const TextContent = Object.freeze({
     EMPTY: "",
     SPACE: " ",
     WIN_TITLE: "You Win! 🏆",
     WIN_MESSAGE: "Amazing! You collected 10 hearts!",
-    RESTART_BUTTON_LABEL: "Restart",
     SAFE_TO_EAT: "Safe to eat. Yummy!",
     RESULT_BAD_PREFIX: "Contains your allergen: "
 });
@@ -270,7 +255,7 @@ export class ResultCard {
         }
 
         if (this.#revealSectionElement) {
-            this.#revealSectionElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeValue.FALSE);
+            this.#revealSectionElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.FALSE);
         }
 
         return { hasTriggeringIngredient };
@@ -278,7 +263,7 @@ export class ResultCard {
 
     showGameOver() {
         if (this.#gameOverSectionElement) {
-            this.#gameOverSectionElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeValue.FALSE);
+            this.#gameOverSectionElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.FALSE);
             return { isDisplayed: true };
         }
         return { isDisplayed: false };
@@ -307,11 +292,11 @@ export class ResultCard {
         this.#actionsContainerElement.textContent = TextContent.EMPTY;
         const restartButton = this.#documentReference.createElement(ElementTagName.BUTTON);
         restartButton.className = ClassName.BUTTON_PRIMARY;
-        restartButton.id = ElementId.WIN_RESTART_BUTTON;
-        restartButton.textContent = TextContent.RESTART_BUTTON_LABEL;
+        restartButton.id = ResultCardElementId.WIN_RESTART_BUTTON;
+        restartButton.textContent = ButtonText.RESTART;
         this.#actionsContainerElement.appendChild(restartButton);
 
-        this.#revealSectionElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeValue.FALSE);
+        this.#revealSectionElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.FALSE);
         return { restartButton, isDisplayed: true };
     }
 
