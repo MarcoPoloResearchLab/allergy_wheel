@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="curiousHair" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#6a4c93"/>
+      <stop offset="1" stop-color="#8a67c4"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="#fce4ec" stroke="#222" stroke-width="4"/>
+  <path d="M20 66c0-30 18-46 40-46s40 16 40 46-18 46-40 46-40-16-40-46z" fill="url(#curiousHair)" stroke="#222" stroke-width="4"/>
+  <circle cx="45" cy="62" r="7" fill="#222"/>
+  <circle cx="75" cy="62" r="7" fill="#222"/>
+  <path d="M46 98c8-8 20-8 28 0" fill="none" stroke="#d46a6a" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="60" cy="38" r="14" fill="#fce4ec" stroke="#222" stroke-width="4"/>
+  <path d="M38 42c6-8 18-10 22-10 4 0 16 2 22 10" fill="none" stroke="#222" stroke-width="5" stroke-linecap="round"/>
+</svg>

@@ -9,12 +9,25 @@ export const ScreenName = Object.freeze({
 const WheelControlModeStringStop = "stop";
 const WheelControlModeStringStart = "start";
 
+const AvatarIdentifierSunnyGirl = "avatar-sunny-girl";
+const AvatarIdentifierCuriousGirl = "avatar-curious-girl";
+const AvatarIdentifierAdventurousBoy = "avatar-adventurous-boy";
+const AvatarIdentifierCreativeBoy = "avatar-creative-boy";
+
 export const MODE_STOP = WheelControlModeStringStop;
 export const MODE_START = WheelControlModeStringStart;
 
 export const WheelControlMode = Object.freeze({
     STOP: WheelControlModeStringStop,
     START: WheelControlModeStringStart
+});
+
+export const AvatarId = Object.freeze({
+    DEFAULT: AvatarIdentifierSunnyGirl,
+    SUNNY_GIRL: AvatarIdentifierSunnyGirl,
+    CURIOUS_GIRL: AvatarIdentifierCuriousGirl,
+    ADVENTUROUS_BOY: AvatarIdentifierAdventurousBoy,
+    CREATIVE_BOY: AvatarIdentifierCreativeBoy
 });
 
 export const ControlElementId = Object.freeze({

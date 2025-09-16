@@ -57,7 +57,87 @@
         }
 
         header h1 { margin: 0; font-size: clamp(18px, 2.2vw, 28px) }
+        .header-left { display: flex; align-items: center; gap: 14px; }
         .header-right { display: flex; align-items: center; gap: 12px; }
+
+        .avatar-menu-wrapper { position: relative; }
+
+        .avatar-button {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 3px solid #000;
+            background: #fff;
+            box-shadow: 3px 3px 0 #000;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            cursor: pointer;
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .avatar-button:hover,
+        .avatar-button:focus-visible {
+            transform: translateY(-1px) scale(1.03);
+            box-shadow: 4px 5px 0 #000;
+            outline: none;
+        }
+
+        .avatar-image { width: 100%; height: 100%; border-radius: 50%; display: block; }
+
+        #avatar-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding: 12px;
+            background: #fff;
+            border: 3px solid #000;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            min-width: 148px;
+            opacity: 0;
+            transform: translateY(-12px) scale(.96);
+            pointer-events: none;
+        }
+
+        #avatar-menu[hidden] { display: none; }
+
+        #avatar-menu.is-open {
+            animation: avatar-menu-show 180ms ease-out forwards;
+            pointer-events: auto;
+        }
+
+        #avatar-menu.is-closing {
+            animation: avatar-menu-hide 160ms ease-in forwards;
+        }
+
+        .avatar-option { width: 58px; height: 58px; }
+
+        @keyframes avatar-menu-show {
+            0% { opacity: 0; transform: translateY(-12px) scale(.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes avatar-menu-hide {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-12px) scale(.96); }
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
 
         .ghost {
             background: #fff;
@@ -256,7 +336,33 @@
 
 <body data-screen="allergy">
 <header>
-    <h1>Allergy Wheel</h1>
+    <div class="header-left">
+        <div class="avatar-menu-wrapper">
+            <button aria-expanded="false" aria-haspopup="true" class="avatar-button" id="avatar-toggle" type="button">
+                <span class="visually-hidden">Choose your avatar</span>
+                <img alt="Sunny girl avatar" class="avatar-image" src="assets/avatars/sunny-girl.svg"/>
+            </button>
+            <div class="avatar-menu" id="avatar-menu" hidden>
+                <button class="avatar-button avatar-option" data-avatar-id="avatar-sunny-girl" type="button">
+                    <span class="visually-hidden">Sunny girl</span>
+                    <img alt="Sunny girl avatar option" class="avatar-image" src="assets/avatars/sunny-girl.svg"/>
+                </button>
+                <button class="avatar-button avatar-option" data-avatar-id="avatar-curious-girl" type="button">
+                    <span class="visually-hidden">Curious girl</span>
+                    <img alt="Curious girl avatar option" class="avatar-image" src="assets/avatars/curious-girl.svg"/>
+                </button>
+                <button class="avatar-button avatar-option" data-avatar-id="avatar-adventurous-boy" type="button">
+                    <span class="visually-hidden">Adventurous boy</span>
+                    <img alt="Adventurous boy avatar option" class="avatar-image" src="assets/avatars/adventurous-boy.svg"/>
+                </button>
+                <button class="avatar-button avatar-option" data-avatar-id="avatar-creative-boy" type="button">
+                    <span class="visually-hidden">Creative boy</span>
+                    <img alt="Creative boy avatar option" class="avatar-image" src="assets/avatars/creative-boy.svg"/>
+                </button>
+            </div>
+        </div>
+        <h1>Allergy Wheel</h1>
+    </div>
     <div class="header-right">
         <div aria-live="polite" class="hearts" id="hearts-bar" title="Hearts"></div>
         <button class="ghost" id="fs">Full Screen</button>
