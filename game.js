@@ -1,377 +1,710 @@
-import {
-    SCREEN_ALLERGY,
-    SCREEN_WHEEL,
-    MODE_STOP,
-    MODE_START
-} from "./constants.js";
-import { renderAllergenList, refreshSelectedAllergenBadges } from "./firstCard.js";
-import { populateRevealCard, showGameOver, showWinningCard } from "./lastCard.js";
-import {
-    showScreen,
-    setWheelControlToStop,
-    setWheelControlToStartGame
-} from "./ui.js";
-import {
-    renderHearts,
-    animateHeartGainFromReveal,
-    animateHeartLossAtHeartsBar
-} from "./hearts.js";
-import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom, playWin } from "./audio.js";
-import { loadJson, NormalizationEngine, pickRandomUnique } from "./utils.js";
-import { Board } from "./board.js";
-import {
-    setBoard,
-    getBoard,
-    setSelectedAllergen,
-    clearSelectedAllergen,
-    getSelectedAllergenToken,
-    getSelectedAllergenLabel,
-    hasSelectedAllergen,
-    setWheelCandidates,
-    resetWheelCandidates,
-    getWheelCandidateDishes,
-    getWheelCandidateLabels,
-    setHeartsCount,
-    incrementHeartsCount,
-    decrementHeartsCount,
-    getInitialHeartsCount,
-    setStopButtonMode
-} from "./state.js";
-
-const WheelConfiguration = {
+const WheelConfiguration = Object.freeze({
     SEGMENT_COUNT: 8,
     DEFAULT_SPIN_DURATION_MS: 30000,
-    WIN_CONDITION_HEARTS: 10
-};
+    WIN_CONDITION_HEARTS: 10,
+    MIN_RANDOM_SPIN_DURATION_MS: 22000,
+    MAX_RANDOM_SPIN_DURATION_MS: 34000,
+    MIN_RANDOM_REVOLUTIONS: 3,
+    MAX_RANDOM_REVOLUTIONS: 6
+});
 
-const ButtonClassName = {
+const WheelLabelFallback = Object.freeze({
+    NO_SELECTION: { label: "No selection", emoji: "" },
+    NO_MATCHES: { label: "No matches", emoji: "" }
+});
+
+const ButtonClassName = Object.freeze({
     ACTION: "action",
     START: "is-start",
     STOP: "is-stop",
     PRIMARY: "primary",
     DANGER: "danger"
-};
+});
 
-const ButtonText = {
+const ButtonText = Object.freeze({
     START: "Start",
     STOP: "STOP"
-};
+});
 
-const GameErrorMessage = {
-    MISSING_DEPENDENCIES: "createGame requires controlElementId, attributeName, listeners, and wheel"
-};
+const ScreenName = Object.freeze({
+    ALLERGY: "allergy",
+    WHEEL: "wheel"
+});
 
-function randomBetween(minInclusive, maxInclusive) {
-    const min = Math.ceil(minInclusive);
-    const max = Math.floor(maxInclusive);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+const ButtonMode = Object.freeze({
+    START: "start",
+    STOP: "stop"
+});
+
+const GameErrorMessage = Object.freeze({
+    MISSING_DEPENDENCIES: "GameController requires wheel, board, listenerBinder, stateManager, uiPresenter, firstCardPresenter, revealCardPresenter, heartsPresenter, audioPresenter, dataLoader, createNormalizationEngine, and pickRandomUnique.",
+    INVALID_DATA_LOADER: "GameController requires dataLoader.loadJson to be a function.",
+    INVALID_NORMALIZATION_FACTORY: "GameController requires createNormalizationEngine to be a function.",
+    INVALID_RANDOM_PICKER: "GameController requires pickRandomUnique to be a function.",
+    NO_DISHES_FOR_ALLERGEN_PREFIX: "Invariant broken: no dishes for allergen token"
+});
+
+const DataPath = Object.freeze({
+    ALLERGENS: "./data/allergens.json",
+    DISHES: "./data/dishes.json",
+    NORMALIZATION: "./data/normalization.json",
+    COUNTRIES: "./data/countries.json",
+    INGREDIENTS: "./data/ingredients.json"
+});
+
+const DocumentElementId = Object.freeze({
+    LOADING: "loading",
+    LOAD_ERROR: "load-error",
+    ALLERGY_LIST: "allergy-list",
+    WHEEL_CANVAS: "wheel"
+});
+
+const BrowserEventName = Object.freeze({
+    CLICK: "click"
+});
+
+const DataValidationMessage = Object.freeze({
+    ALLERGENS: "allergens.json is missing or empty",
+    DISHES: "dishes.json is missing or empty",
+    NORMALIZATION: "normalization.json is missing or empty",
+    INGREDIENTS: "ingredients.json is missing or empty"
+});
+
+const BooleanAttributeValue = Object.freeze({
+    TRUE: "true"
+});
+
+function generateRandomIntegerInclusive(minInclusive, maxInclusive) {
+    const minimum = Math.ceil(minInclusive);
+    const maximum = Math.floor(maxInclusive);
+    return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
 }
 
-function getRandomSpinDurationMs() {
-    return randomBetween(22000, 34000);
+function chooseRandomSpinDurationMs() {
+    return generateRandomIntegerInclusive(
+        WheelConfiguration.MIN_RANDOM_SPIN_DURATION_MS,
+        WheelConfiguration.MAX_RANDOM_SPIN_DURATION_MS
+    );
 }
 
-function getRandomRevolutions() {
-    return randomBetween(3, 6);
+function chooseRandomRevolutions() {
+    return generateRandomIntegerInclusive(
+        WheelConfiguration.MIN_RANDOM_REVOLUTIONS,
+        WheelConfiguration.MAX_RANDOM_REVOLUTIONS
+    );
 }
 
-function createGame({ controlElementId, attributeName, listeners, documentReference = document, wheel }) {
-    if (!controlElementId || !attributeName || !listeners || !wheel) {
-        throw new Error(GameErrorMessage.MISSING_DEPENDENCIES);
+function shuffleArrayInPlace(targetArray) {
+    for (let index = targetArray.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        const temporaryValue = targetArray[index];
+        targetArray[index] = targetArray[randomIndex];
+        targetArray[randomIndex] = temporaryValue;
+    }
+}
+
+function formatMissingDishesMessage(allergenToken) {
+    return `${GameErrorMessage.NO_DISHES_FOR_ALLERGEN_PREFIX} '${allergenToken}'`;
+}
+
+export class GameController {
+    #documentReference;
+
+    #controlElementIdMap;
+
+    #attributeNameMap;
+
+    #wheel;
+
+    #listenerBinder;
+
+    #board;
+
+    #stateManager;
+
+    #firstCardPresenter;
+
+    #revealCardPresenter;
+
+    #heartsPresenter;
+
+    #audioPresenter;
+
+    #uiPresenter;
+
+    #dataLoader;
+
+    #createNormalizationEngine;
+
+    #pickRandomUnique;
+
+    #cuisineToFlagMap;
+
+    #ingredientEmojiByName;
+
+    #normalizationEngine;
+
+    #allergensCatalog;
+
+    constructor({
+        documentReference = document,
+        controlElementIdMap,
+        attributeNameMap,
+        wheel,
+        listenerBinder,
+        board,
+        stateManager,
+        firstCardPresenter,
+        revealCardPresenter,
+        heartsPresenter,
+        audioPresenter,
+        uiPresenter,
+        dataLoader,
+        createNormalizationEngine,
+        pickRandomUnique
+    }) {
+        if (!wheel || !board || !listenerBinder || !stateManager || !uiPresenter || !firstCardPresenter
+            || !revealCardPresenter || !heartsPresenter || !audioPresenter || !dataLoader) {
+            throw new Error(GameErrorMessage.MISSING_DEPENDENCIES);
+        }
+        if (typeof dataLoader.loadJson !== "function") {
+            throw new Error(GameErrorMessage.INVALID_DATA_LOADER);
+        }
+        if (typeof createNormalizationEngine !== "function") {
+            throw new Error(GameErrorMessage.INVALID_NORMALIZATION_FACTORY);
+        }
+        if (typeof pickRandomUnique !== "function") {
+            throw new Error(GameErrorMessage.INVALID_RANDOM_PICKER);
+        }
+
+        this.#documentReference = documentReference;
+        this.#controlElementIdMap = controlElementIdMap || {};
+        this.#attributeNameMap = attributeNameMap || {};
+        this.#wheel = wheel;
+        this.#listenerBinder = listenerBinder;
+        this.#board = board;
+        this.#stateManager = stateManager;
+        this.#firstCardPresenter = firstCardPresenter;
+        this.#revealCardPresenter = revealCardPresenter;
+        this.#heartsPresenter = heartsPresenter;
+        this.#audioPresenter = audioPresenter;
+        this.#uiPresenter = uiPresenter;
+        this.#dataLoader = dataLoader;
+        this.#createNormalizationEngine = createNormalizationEngine;
+        this.#pickRandomUnique = pickRandomUnique;
+        this.#cuisineToFlagMap = new Map();
+        this.#ingredientEmojiByName = new Map();
+        this.#normalizationEngine = null;
+        this.#allergensCatalog = [];
     }
 
-    function recomputeWheelFromSelection() {
-        const board = getBoard();
-        const selectedToken = getSelectedAllergenToken();
+    async bootstrap() {
+        try {
+            const gameData = await this.#loadGameData();
+            this.#prepareBoardAndState(gameData);
+            this.#initializeSelectionUi(gameData.allergensCatalog);
+            this.#configureWheel();
+            this.#wireControlListeners();
+            this.#finalizeBootstrap();
+        } catch (errorObject) {
+            this.#handleBootstrapError(errorObject);
+        }
+    }
 
-        if (!board || !selectedToken) {
-            resetWheelCandidates();
-            wheel.setLabels([{ label: "No selection", emoji: "" }]);
-            wheel.draw();
+    async #loadGameData() {
+        const { loadJson } = this.#dataLoader;
+
+        const [
+            allergensCatalog,
+            dishesCatalog,
+            normalizationRules,
+            countriesCatalog,
+            ingredientsCatalog
+        ] = await Promise.all([
+            loadJson(DataPath.ALLERGENS),
+            loadJson(DataPath.DISHES),
+            loadJson(DataPath.NORMALIZATION),
+            loadJson(DataPath.COUNTRIES),
+            loadJson(DataPath.INGREDIENTS)
+        ]);
+
+        if (!Array.isArray(allergensCatalog) || allergensCatalog.length === 0) {
+            throw new Error(DataValidationMessage.ALLERGENS);
+        }
+        if (!Array.isArray(dishesCatalog) || dishesCatalog.length === 0) {
+            throw new Error(DataValidationMessage.DISHES);
+        }
+        if (!Array.isArray(normalizationRules) || normalizationRules.length === 0) {
+            throw new Error(DataValidationMessage.NORMALIZATION);
+        }
+        if (!Array.isArray(ingredientsCatalog) || ingredientsCatalog.length === 0) {
+            throw new Error(DataValidationMessage.INGREDIENTS);
+        }
+
+        return {
+            allergensCatalog,
+            dishesCatalog,
+            normalizationRules,
+            countriesCatalog,
+            ingredientsCatalog
+        };
+    }
+
+    #prepareBoardAndState({
+        allergensCatalog,
+        dishesCatalog,
+        normalizationRules,
+        countriesCatalog,
+        ingredientsCatalog
+    }) {
+        this.#normalizationEngine = this.#createNormalizationEngine(normalizationRules);
+        this.#board.allergensCatalog = allergensCatalog;
+        this.#board.dishesCatalog = dishesCatalog;
+        this.#board.normalizationEngine = this.#normalizationEngine;
+        this.#board.buildDishIndexByAllergen();
+        this.#board.throwIfAnyAllergenHasNoDishes();
+
+        this.#stateManager.setBoard(this.#board);
+        this.#allergensCatalog = allergensCatalog;
+
+        this.#cuisineToFlagMap = this.#buildCuisineFlagMap(countriesCatalog);
+        this.#ingredientEmojiByName = this.#buildIngredientEmojiMap(ingredientsCatalog);
+
+        const initialHeartsCount = this.#stateManager.getInitialHeartsCount();
+        this.#stateManager.setHeartsCount(initialHeartsCount);
+        this.#heartsPresenter.renderHearts(initialHeartsCount, { animate: false });
+    }
+
+    #buildCuisineFlagMap(countriesCatalog) {
+        const cuisineMap = new Map();
+        if (Array.isArray(countriesCatalog)) {
+            for (const record of countriesCatalog) {
+                const cuisineKey = String(record && record.cuisine ? record.cuisine : "")
+                    .trim()
+                    .toLowerCase();
+                const flagEmoji = String(record && record.flag ? record.flag : "");
+                if (cuisineKey) {
+                    cuisineMap.set(cuisineKey, flagEmoji);
+                }
+            }
+        }
+        return cuisineMap;
+    }
+
+    #buildIngredientEmojiMap(ingredientsCatalog) {
+        const emojiMap = new Map();
+        for (const ingredientRecord of ingredientsCatalog) {
+            const nameKey = String(ingredientRecord && ingredientRecord.name ? ingredientRecord.name : "")
+                .trim()
+                .toLowerCase();
+            const emojiValue = String(ingredientRecord && ingredientRecord.emoji ? ingredientRecord.emoji : "");
+            if (nameKey) {
+                emojiMap.set(nameKey, emojiValue);
+            }
+        }
+        return emojiMap;
+    }
+
+    #initializeSelectionUi(allergensCatalog) {
+        const allergyListContainer = this.#documentReference.getElementById(DocumentElementId.ALLERGY_LIST);
+        if (!allergyListContainer || !this.#firstCardPresenter.renderAllergenList) {
             return;
         }
 
-        const matchingDishes = board.getDishesForAllergen(selectedToken);
-        if (!Array.isArray(matchingDishes) || matchingDishes.length === 0) {
-            throw new Error("Invariant broken: no dishes for allergen token '" + selectedToken + "'");
+        this.#firstCardPresenter.renderAllergenList(
+            allergyListContainer,
+            allergensCatalog,
+            (token, label) => {
+                if (this.#stateManager.setSelectedAllergen) {
+                    this.#stateManager.setSelectedAllergen({ token, label });
+                }
+                const startButton = this.#documentReference.getElementById(this.#controlElementIdMap.START_BUTTON);
+                if (startButton) {
+                    startButton.disabled = false;
+                }
+                if (this.#firstCardPresenter.refreshSelectedAllergenBadges) {
+                    const foundAllergen = allergensCatalog.find((entry) => entry && entry.token === token);
+                    const badgeEntry = { label, emoji: (foundAllergen && foundAllergen.emoji) || "" };
+                    this.#firstCardPresenter.refreshSelectedAllergenBadges([badgeEntry]);
+                }
+            }
+        );
+
+        const startButton = this.#documentReference.getElementById(this.#controlElementIdMap.START_BUTTON);
+        if (startButton) {
+            startButton.disabled = true;
+        }
+        if (this.#firstCardPresenter.refreshSelectedAllergenBadges) {
+            this.#firstCardPresenter.refreshSelectedAllergenBadges([]);
+        }
+    }
+
+    #configureWheel() {
+        const wheelElement = this.#documentReference.getElementById(DocumentElementId.WHEEL_CANVAS);
+        if (this.#wheel.initialize) {
+            this.#wheel.initialize(wheelElement);
+        }
+        if (this.#wheel.setSpinDuration) {
+            this.#wheel.setSpinDuration(WheelConfiguration.DEFAULT_SPIN_DURATION_MS);
+        }
+        if (this.#wheel.registerSpinCallbacks) {
+            this.#wheel.registerSpinCallbacks({
+                onTick: () => {
+                    if (this.#audioPresenter.playTick) {
+                        this.#audioPresenter.playTick();
+                    }
+                    if (this.#wheel.triggerPointerTap) {
+                        this.#wheel.triggerPointerTap();
+                    }
+                },
+                onStop: (winnerIndex) => {
+                    this.#handleSpinResult(winnerIndex);
+                }
+            });
+        }
+    }
+
+    #wireControlListeners() {
+        const {
+            wireStartButton,
+            wireStopButton,
+            wireFullscreenButton,
+            wireSpinAgainButton,
+            wireRevealBackdropDismissal,
+            wireRestartButton
+        } = this.#listenerBinder;
+
+        if (typeof wireStartButton === "function") {
+            wireStartButton({
+                onStartRequested: () => {
+                    if (this.#uiPresenter.showScreen) {
+                        this.#uiPresenter.showScreen(ScreenName.WHEEL);
+                    }
+                    if (this.#wheel.ensureSize) {
+                        this.#wheel.ensureSize();
+                    }
+                    this.#startSpinWithFreshState();
+                }
+            });
+        }
+        if (typeof wireStopButton === "function") {
+            wireStopButton({
+                onStopRequested: () => {
+                    if (this.#wheel.forceStop) {
+                        this.#wheel.forceStop();
+                    }
+                },
+                onShowAllergyScreen: () => {
+                    if (this.#uiPresenter.showScreen) {
+                        this.#uiPresenter.showScreen(ScreenName.ALLERGY);
+                    }
+                }
+            });
+        }
+        if (typeof wireFullscreenButton === "function") {
+            wireFullscreenButton();
+        }
+        if (typeof wireSpinAgainButton === "function") {
+            wireSpinAgainButton({
+                onSpinAgain: () => {
+                    this.#startSpinWithFreshState();
+                }
+            });
+        }
+        if (typeof wireRevealBackdropDismissal === "function") {
+            wireRevealBackdropDismissal();
+        }
+        if (typeof wireRestartButton === "function") {
+            wireRestartButton({
+                onRestart: () => {
+                    this.#resetGame();
+                }
+            });
         }
 
-        const anchorDish = matchingDishes[Math.floor(Math.random() * matchingDishes.length)];
-        const catalog = Array.isArray(board.dishesCatalog) ? board.dishesCatalog : [];
+        if (this.#audioPresenter.primeAudioOnFirstGesture) {
+            this.#audioPresenter.primeAudioOnFirstGesture();
+        }
+    }
+
+    #finalizeBootstrap() {
+        const loadingElement = this.#documentReference.getElementById(DocumentElementId.LOADING);
+        if (loadingElement) {
+            loadingElement.hidden = true;
+        }
+        const loadErrorElement = this.#documentReference.getElementById(DocumentElementId.LOAD_ERROR);
+        if (loadErrorElement) {
+            loadErrorElement.hidden = true;
+        }
+        if (this.#uiPresenter.showScreen) {
+            this.#uiPresenter.showScreen(ScreenName.ALLERGY);
+        }
+    }
+
+    #handleBootstrapError(errorObject) {
+        const loadingElement = this.#documentReference.getElementById(DocumentElementId.LOADING);
+        if (loadingElement) {
+            loadingElement.hidden = true;
+        }
+        const loadErrorElement = this.#documentReference.getElementById(DocumentElementId.LOAD_ERROR);
+        if (loadErrorElement) {
+            loadErrorElement.hidden = false;
+        }
+        // eslint-disable-next-line no-console
+        console.error(errorObject);
+    }
+
+    #startSpinWithFreshState() {
+        if (!this.#stateManager.hasSelectedAllergen || !this.#stateManager.hasSelectedAllergen()) {
+            return;
+        }
+
+        this.#recomputeWheelFromSelection();
+        const candidateLabels = this.#stateManager.getWheelCandidateLabels
+            ? this.#stateManager.getWheelCandidateLabels()
+            : [];
+        if (!candidateLabels.length) {
+            return;
+        }
+
+        if (this.#wheel.resetForNewSpin) {
+            this.#wheel.resetForNewSpin({ randomizeStart: true });
+        }
+        if (this.#wheel.setRevolutions) {
+            this.#wheel.setRevolutions(chooseRandomRevolutions());
+        }
+        if (this.#wheel.setSpinDuration) {
+            this.#wheel.setSpinDuration(chooseRandomSpinDurationMs());
+        }
+
+        this.#applyStopMode();
+        const randomIndex = generateRandomIntegerInclusive(0, candidateLabels.length - 1);
+        if (this.#wheel.spinToIndex) {
+            this.#wheel.spinToIndex(randomIndex);
+        }
+    }
+
+    #recomputeWheelFromSelection() {
+        const boardInstance = this.#stateManager.getBoard ? this.#stateManager.getBoard() : null;
+        const selectedToken = this.#stateManager.getSelectedAllergenToken
+            ? this.#stateManager.getSelectedAllergenToken()
+            : null;
+
+        if (!boardInstance || !selectedToken) {
+            if (this.#stateManager.resetWheelCandidates) {
+                this.#stateManager.resetWheelCandidates();
+            }
+            if (this.#wheel.setLabels) {
+                this.#wheel.setLabels([WheelLabelFallback.NO_SELECTION]);
+            }
+            if (this.#wheel.draw) {
+                this.#wheel.draw();
+            }
+            return;
+        }
+
+        const matchingDishes = boardInstance.getDishesForAllergen(selectedToken);
+        if (!Array.isArray(matchingDishes) || matchingDishes.length === 0) {
+            throw new Error(formatMissingDishesMessage(selectedToken));
+        }
+
+        const anchorIndex = generateRandomIntegerInclusive(0, matchingDishes.length - 1);
+        const anchorDish = matchingDishes[anchorIndex];
+        const catalog = Array.isArray(boardInstance.dishesCatalog) ? boardInstance.dishesCatalog : [];
 
         const slotsToFill = Math.max(0, WheelConfiguration.SEGMENT_COUNT - 1);
         const pool = catalog.filter((dish) => dish !== anchorDish);
 
         let fillerDishes = [];
         if (pool.length >= slotsToFill) {
-            fillerDishes = pickRandomUnique(pool, slotsToFill);
+            fillerDishes = this.#pickRandomUnique(pool, slotsToFill);
         } else {
             fillerDishes = pool.slice();
             while (fillerDishes.length < slotsToFill && catalog.length > 0) {
-                fillerDishes.push(catalog[Math.floor(Math.random() * catalog.length)]);
+                const randomDish = catalog[generateRandomIntegerInclusive(0, catalog.length - 1)];
+                fillerDishes.push(randomDish);
             }
         }
 
         const chosenDishes = [anchorDish, ...fillerDishes];
-        for (let index = chosenDishes.length - 1; index > 0; index -= 1) {
-            const randomIndex = Math.floor(Math.random() * (index + 1));
-            const temporaryDish = chosenDishes[index];
-            chosenDishes[index] = chosenDishes[randomIndex];
-            chosenDishes[randomIndex] = temporaryDish;
-        }
+        shuffleArrayInPlace(chosenDishes);
 
         const limitedDishes = chosenDishes.slice(0, WheelConfiguration.SEGMENT_COUNT);
         const candidateLabels = limitedDishes
-            .map((dish) => ({ label: board.getDishLabel(dish), emoji: dish.emoji || "" }))
+            .map((dish) => ({ label: boardInstance.getDishLabel(dish), emoji: dish.emoji || "" }))
             .filter((entry) => entry.label)
             .slice(0, WheelConfiguration.SEGMENT_COUNT);
 
-        setWheelCandidates({ dishes: limitedDishes, labels: candidateLabels });
+        if (this.#stateManager.setWheelCandidates) {
+            this.#stateManager.setWheelCandidates({ dishes: limitedDishes, labels: candidateLabels });
+        }
 
-        const wheelLabels = candidateLabels.length ? candidateLabels : [{ label: "No matches", emoji: "" }];
-        wheel.setLabels(wheelLabels);
-        wheel.draw();
-    }
-
-    const {
-        wireStartButton,
-        wireStopButton,
-        wireFullscreenButton,
-        wireSpinAgainButton,
-        wireRevealBackdropDismissal,
-        wireRestartButton
-    } = listeners;
-
-    function toStartMode() {
-        const centerButton = documentReference.getElementById(controlElementId.STOP_BUTTON);
-        if (!centerButton) return;
-        centerButton.textContent = ButtonText.START;
-        centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.START);
-        centerButton.classList.remove(ButtonClassName.STOP, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
-        setStopButtonMode(MODE_START);
-        setWheelControlToStartGame();
-    }
-
-    function toStopMode() {
-        const centerButton = documentReference.getElementById(controlElementId.STOP_BUTTON);
-        if (!centerButton) return;
-        centerButton.textContent = ButtonText.STOP;
-        centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.STOP);
-        centerButton.classList.remove(ButtonClassName.START, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
-        setStopButtonMode(MODE_STOP);
-        setWheelControlToStop();
-    }
-
-    function startSpinWithFreshState() {
-        if (!hasSelectedAllergen()) return;
-
-        recomputeWheelFromSelection();
-        const candidateLabels = getWheelCandidateLabels();
-        if (!candidateLabels.length) return;
-
-        wheel.resetForNewSpin({ randomizeStart: true });
-        wheel.setRevolutions(getRandomRevolutions());
-        wheel.setSpinDuration(getRandomSpinDurationMs());
-
-        toStopMode();
-        const randomIndex = Math.floor(Math.random() * candidateLabels.length);
-        wheel.spinToIndex(randomIndex);
-    }
-
-    function resetGame() {
-        const initialHeartsCount = getInitialHeartsCount();
-        setHeartsCount(initialHeartsCount);
-        renderHearts(initialHeartsCount, { animate: false });
-        clearSelectedAllergen();
-        resetWheelCandidates();
-        const startButton = documentReference.getElementById(controlElementId.START_BUTTON);
-        if (startButton) startButton.disabled = true;
-        refreshSelectedAllergenBadges([]);
-        showScreen(SCREEN_ALLERGY);
-        toStartMode();
-    }
-
-    async function bootstrapGame() {
-        try {
-            const [
-                allergensCatalog,
-                dishesCatalog,
-                normalizationRules,
-                countriesCatalogMaybe,
-                ingredientsCatalog
-            ] = await Promise.all([
-                loadJson("./data/allergens.json"),
-                loadJson("./data/dishes.json"),
-                loadJson("./data/normalization.json"),
-                loadJson("./data/countries.json"),
-                loadJson("./data/ingredients.json")
-            ]);
-
-            if (!Array.isArray(allergensCatalog) || allergensCatalog.length === 0) {
-                throw new Error("allergens.json is missing or empty");
-            }
-            if (!Array.isArray(dishesCatalog) || dishesCatalog.length === 0) {
-                throw new Error("dishes.json is missing or empty");
-            }
-            if (!Array.isArray(normalizationRules) || normalizationRules.length === 0) {
-                throw new Error("normalization.json is missing or empty");
-            }
-            if (!Array.isArray(ingredientsCatalog) || ingredientsCatalog.length === 0) {
-                throw new Error("ingredients.json is missing or empty");
-            }
-
-            const cuisineToFlagMap = new Map();
-            if (Array.isArray(countriesCatalogMaybe)) {
-                for (const record of countriesCatalogMaybe) {
-                    const cuisineKey = String(record && record.cuisine ? record.cuisine : "")
-                        .trim()
-                        .toLowerCase();
-                    const flagEmoji = String(record && record.flag ? record.flag : "");
-                    if (cuisineKey) cuisineToFlagMap.set(cuisineKey, flagEmoji);
-                }
-            }
-
-            const ingredientEmojiByName = new Map();
-            for (const item of ingredientsCatalog) {
-                const nameKey = String(item && item.name ? item.name : "").trim().toLowerCase();
-                const emoji = String(item && item.emoji ? item.emoji : "");
-                if (nameKey) ingredientEmojiByName.set(nameKey, emoji);
-            }
-
-            const normalizationEngine = new NormalizationEngine(normalizationRules);
-            const board = new Board({ allergensCatalog, dishesCatalog, normalizationEngine });
-            board.buildDishIndexByAllergen();
-            board.throwIfAnyAllergenHasNoDishes();
-
-            setBoard(board);
-
-            const initialHeartsCount = getInitialHeartsCount();
-            setHeartsCount(initialHeartsCount);
-            renderHearts(initialHeartsCount, { animate: false });
-
-            const allergyListContainer = documentReference.getElementById("allergy-list");
-            if (allergyListContainer) {
-                renderAllergenList(allergyListContainer, allergensCatalog, (token, label) => {
-                    setSelectedAllergen({ token, label });
-                    const startButton = documentReference.getElementById(controlElementId.START_BUTTON);
-                    if (startButton) startButton.disabled = false;
-
-                    const foundAllergen = allergensCatalog.find((entry) => entry && entry.token === token);
-                    const badgeEntry = { label, emoji: (foundAllergen && foundAllergen.emoji) || "" };
-                    refreshSelectedAllergenBadges([badgeEntry]);
-                });
-                const startButton = documentReference.getElementById(controlElementId.START_BUTTON);
-                if (startButton) startButton.disabled = true;
-                refreshSelectedAllergenBadges([]);
-            }
-
-            wheel.initialize(documentReference.getElementById("wheel"));
-            wheel.setSpinDuration(WheelConfiguration.DEFAULT_SPIN_DURATION_MS);
-            wheel.registerSpinCallbacks({
-                onTick() {
-                    playTick();
-                    wheel.triggerPointerTap();
-                },
-                onStop(winnerIndex) {
-                    const candidateDishes = getWheelCandidateDishes();
-                    const dish = candidateDishes[winnerIndex];
-                    if (!dish) return;
-
-                    const revealInfo = populateRevealCard({
-                        dish,
-                        selectedAllergenToken: getSelectedAllergenToken(),
-                        selectedAllergenLabel: getSelectedAllergenLabel(),
-                        normalizationEngine,
-                        allergensCatalog: board.allergensCatalog,
-                        cuisineToFlagMap,
-                        ingredientEmojiByName
-                    });
-
-                    let heartsCountAfterSpin;
-                    if (revealInfo.hasTriggeringIngredient) {
-                        animateHeartLossAtHeartsBar();
-                        heartsCountAfterSpin = decrementHeartsCount();
-                        playSiren(1800);
-                    } else {
-                        animateHeartGainFromReveal();
-                        heartsCountAfterSpin = incrementHeartsCount();
-                        playNomNom(1200);
-                    }
-
-                    renderHearts(heartsCountAfterSpin, { animate: true });
-
-                    if (heartsCountAfterSpin === 0) {
-                        showGameOver();
-                        toStartMode();
-                        return;
-                    }
-
-                    if (heartsCountAfterSpin >= WheelConfiguration.WIN_CONDITION_HEARTS) {
-                        const restartButton = showWinningCard();
-                        playWin();
-
-                        if (restartButton) {
-                            restartButton.addEventListener("click", () => {
-                                const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
-                                if (revealSection) {
-                                    revealSection.setAttribute(attributeName.ARIA_HIDDEN, "true");
-                                }
-                                resetGame();
-                            });
-                        }
-
-                        toStartMode();
-                        return;
-                    }
-
-                    toStartMode();
-                }
-            });
-
-            wireStartButton({
-                onStartRequested: () => {
-                    showScreen(SCREEN_WHEEL);
-                    wheel.ensureSize();
-                    startSpinWithFreshState();
-                }
-            });
-            wireStopButton({
-                onStopRequested: () => {
-                    wheel.forceStop();
-                },
-                onShowAllergyScreen: () => {
-                    showScreen(SCREEN_ALLERGY);
-                }
-            });
-            wireFullscreenButton();
-            wireSpinAgainButton({
-                onSpinAgain: () => {
-                    startSpinWithFreshState();
-                }
-            });
-            wireRevealBackdropDismissal();
-            wireRestartButton({
-                onRestart: () => {
-                    resetGame();
-                }
-            });
-
-            primeAudioOnFirstGesture();
-
-            const loadingElement = documentReference.getElementById("loading");
-            if (loadingElement) loadingElement.hidden = true;
-            showScreen(SCREEN_ALLERGY);
-        } catch (errorObject) {
-            const loadingElement = documentReference.getElementById("loading");
-            const loadErrorElement = documentReference.getElementById("load-error");
-            if (loadingElement) loadingElement.hidden = true;
-            if (loadErrorElement) loadErrorElement.hidden = false;
-            // eslint-disable-next-line no-console
-            console.error(errorObject);
+        const wheelLabels = candidateLabels.length ? candidateLabels : [WheelLabelFallback.NO_MATCHES];
+        if (this.#wheel.setLabels) {
+            this.#wheel.setLabels(wheelLabels);
+        }
+        if (this.#wheel.draw) {
+            this.#wheel.draw();
         }
     }
 
-    return { bootstrapGame };
-}
+    #handleSpinResult(winnerIndex) {
+        const candidateDishes = this.#stateManager.getWheelCandidateDishes
+            ? this.#stateManager.getWheelCandidateDishes()
+            : [];
+        const dish = candidateDishes[winnerIndex];
+        if (!dish) {
+            this.#applyStartMode();
+            return;
+        }
 
-export { createGame };
+        const revealInfo = this.#revealCardPresenter.populateRevealCard
+            ? this.#revealCardPresenter.populateRevealCard({
+                dish,
+                selectedAllergenToken: this.#stateManager.getSelectedAllergenToken
+                    ? this.#stateManager.getSelectedAllergenToken()
+                    : null,
+                selectedAllergenLabel: this.#stateManager.getSelectedAllergenLabel
+                    ? this.#stateManager.getSelectedAllergenLabel()
+                    : "",
+                normalizationEngine: this.#normalizationEngine,
+                allergensCatalog: this.#allergensCatalog,
+                cuisineToFlagMap: this.#cuisineToFlagMap,
+                ingredientEmojiByName: this.#ingredientEmojiByName
+            })
+            : { hasTriggeringIngredient: false };
+
+        let heartsCountAfterSpin;
+        if (revealInfo && revealInfo.hasTriggeringIngredient) {
+            if (this.#heartsPresenter.animateHeartLossAtHeartsBar) {
+                this.#heartsPresenter.animateHeartLossAtHeartsBar();
+            }
+            heartsCountAfterSpin = this.#stateManager.decrementHeartsCount
+                ? this.#stateManager.decrementHeartsCount()
+                : 0;
+            if (this.#audioPresenter.playSiren) {
+                this.#audioPresenter.playSiren(1800);
+            }
+        } else {
+            if (this.#heartsPresenter.animateHeartGainFromReveal) {
+                this.#heartsPresenter.animateHeartGainFromReveal();
+            }
+            heartsCountAfterSpin = this.#stateManager.incrementHeartsCount
+                ? this.#stateManager.incrementHeartsCount()
+                : 0;
+            if (this.#audioPresenter.playNomNom) {
+                this.#audioPresenter.playNomNom(1200);
+            }
+        }
+
+        if (this.#heartsPresenter.renderHearts) {
+            this.#heartsPresenter.renderHearts(heartsCountAfterSpin, { animate: true });
+        }
+
+        if (heartsCountAfterSpin === 0) {
+            if (this.#revealCardPresenter.showGameOver) {
+                this.#revealCardPresenter.showGameOver();
+            }
+            this.#applyStartMode();
+            return;
+        }
+
+        if (heartsCountAfterSpin >= WheelConfiguration.WIN_CONDITION_HEARTS) {
+            const restartButton = this.#revealCardPresenter.showWinningCard
+                ? this.#revealCardPresenter.showWinningCard()
+                : null;
+            if (this.#audioPresenter.playWin) {
+                this.#audioPresenter.playWin();
+            }
+            if (restartButton) {
+                restartButton.addEventListener(BrowserEventName.CLICK, () => {
+                    const revealSection = this.#documentReference.getElementById(this.#controlElementIdMap.REVEAL_SECTION);
+                    if (revealSection) {
+                        revealSection.setAttribute(
+                            this.#attributeNameMap.ARIA_HIDDEN,
+                            BooleanAttributeValue.TRUE
+                        );
+                    }
+                    this.#resetGame();
+                });
+            }
+            this.#applyStartMode();
+            return;
+        }
+
+        this.#applyStartMode();
+    }
+
+    #resetGame() {
+        const initialHeartsCount = this.#stateManager.getInitialHeartsCount
+            ? this.#stateManager.getInitialHeartsCount()
+            : 0;
+        if (this.#stateManager.setHeartsCount) {
+            this.#stateManager.setHeartsCount(initialHeartsCount);
+        }
+        if (this.#heartsPresenter.renderHearts) {
+            this.#heartsPresenter.renderHearts(initialHeartsCount, { animate: false });
+        }
+        if (this.#stateManager.clearSelectedAllergen) {
+            this.#stateManager.clearSelectedAllergen();
+        }
+        if (this.#stateManager.resetWheelCandidates) {
+            this.#stateManager.resetWheelCandidates();
+        }
+        const startButton = this.#documentReference.getElementById(this.#controlElementIdMap.START_BUTTON);
+        if (startButton) {
+            startButton.disabled = true;
+        }
+        if (this.#firstCardPresenter.refreshSelectedAllergenBadges) {
+            this.#firstCardPresenter.refreshSelectedAllergenBadges([]);
+        }
+        if (this.#uiPresenter.showScreen) {
+            this.#uiPresenter.showScreen(ScreenName.ALLERGY);
+        }
+        this.#applyStartMode();
+    }
+
+    #applyStartMode() {
+        const centerButton = this.#documentReference.getElementById(this.#controlElementIdMap.STOP_BUTTON);
+        if (!centerButton) {
+            if (this.#stateManager.setStopButtonMode) {
+                this.#stateManager.setStopButtonMode(ButtonMode.START);
+            }
+            if (this.#uiPresenter.setWheelControlToStartGame) {
+                this.#uiPresenter.setWheelControlToStartGame();
+            }
+            return;
+        }
+        centerButton.textContent = ButtonText.START;
+        centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.START);
+        centerButton.classList.remove(ButtonClassName.STOP, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
+        if (this.#stateManager.setStopButtonMode) {
+            this.#stateManager.setStopButtonMode(ButtonMode.START);
+        }
+        if (this.#uiPresenter.setWheelControlToStartGame) {
+            this.#uiPresenter.setWheelControlToStartGame();
+        }
+    }
+
+    #applyStopMode() {
+        const centerButton = this.#documentReference.getElementById(this.#controlElementIdMap.STOP_BUTTON);
+        if (!centerButton) {
+            if (this.#stateManager.setStopButtonMode) {
+                this.#stateManager.setStopButtonMode(ButtonMode.STOP);
+            }
+            if (this.#uiPresenter.setWheelControlToStop) {
+                this.#uiPresenter.setWheelControlToStop();
+            }
+            return;
+        }
+        centerButton.textContent = ButtonText.STOP;
+        centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.STOP);
+        centerButton.classList.remove(ButtonClassName.START, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
+        if (this.#stateManager.setStopButtonMode) {
+            this.#stateManager.setStopButtonMode(ButtonMode.STOP);
+        }
+        if (this.#uiPresenter.setWheelControlToStop) {
+            this.#uiPresenter.setWheelControlToStop();
+        }
+    }
+}
