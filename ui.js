@@ -1,5 +1,6 @@
 /* File: ui.js */
 /* global document */
+import { SCREEN_ALLERGY, SCREEN_WHEEL } from "./constants.js";
 
 /* allergen list */
 export function renderAllergenList(containerElement, allergenList, onSelectCallback) {
@@ -68,11 +69,11 @@ export function showScreen(screenName) {
     const bodyElement = document.body;
     const revealElement = document.getElementById("reveal");
 
-    if (screenName === "allergy") {
-        bodyElement.setAttribute("data-screen", "allergy");
+    if (screenName === SCREEN_ALLERGY) {
+        bodyElement.setAttribute("data-screen", SCREEN_ALLERGY);
         if (revealElement) revealElement.setAttribute("aria-hidden", "true");
-    } else if (screenName === "wheel") {
-        bodyElement.setAttribute("data-screen", "wheel");
+    } else if (screenName === SCREEN_WHEEL) {
+        bodyElement.setAttribute("data-screen", SCREEN_WHEEL);
         if (revealElement) revealElement.setAttribute("aria-hidden", "true");
     }
 }
