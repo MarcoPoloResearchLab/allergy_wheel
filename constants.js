@@ -8,13 +8,16 @@ export const ScreenName = Object.freeze({
 export const SCREEN_ALLERGY = ScreenName.ALLERGY;
 export const SCREEN_WHEEL = ScreenName.WHEEL;
 
-export const WheelControlMode = Object.freeze({
-    STOP: "stop",
-    START: "start"
-});
+const WheelControlModeStringStop = "stop";
+const WheelControlModeStringStart = "start";
 
-export const MODE_STOP = WheelControlMode.STOP;
-export const MODE_START = WheelControlMode.START;
+export const MODE_STOP = WheelControlModeStringStop;
+export const MODE_START = WheelControlModeStringStart;
+
+export const WheelControlMode = Object.freeze({
+    STOP: WheelControlModeStringStop,
+    START: WheelControlModeStringStart
+});
 
 export const ControlElementId = Object.freeze({
     START_BUTTON: "start",
