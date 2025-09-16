@@ -1,3 +1,4 @@
+/* File: app.js */
 /* global document, window */
 import {
     renderAllergenList,
@@ -215,11 +216,18 @@ function wireRestartButton() {
 /* ---------- bootstrap ---------- */
 async function initializeApp() {
     try {
-        const [allergensCatalog, dishesCatalog, normalizationRules, countriesCatalogMaybe] = await Promise.all([
+        const [
+            allergensCatalog,
+            dishesCatalog,
+            normalizationRules,
+            countriesCatalogMaybe,
+            ingredientsCatalog
+        ] = await Promise.all([
             loadJson("./data/allergens.json"),
             loadJson("./data/dishes.json"),
             loadJson("./data/normalization.json"),
             loadJson("./data/countries.json"),
+            loadJson("./data/ingredients.json")
         ]);
 
         if (!Array.isArray(allergensCatalog) || allergensCatalog.length === 0) {
@@ -230,6 +238,9 @@ async function initializeApp() {
         }
         if (!Array.isArray(normalizationRules) || normalizationRules.length === 0) {
             throw new Error("normalization.json is missing or empty");
+        }
+        if (!Array.isArray(ingredientsCatalog) || ingredientsCatalog.length === 0) {
+            throw new Error("ingredients.json is missing or empty");
         }
 
         // Build cuisine -> flag map (keys in lowercase for robust matching)
@@ -242,6 +253,14 @@ async function initializeApp() {
                 const flagEmoji = String(record && record.flag ? record.flag : "");
                 if (cuisineKey) cuisineToFlagMap.set(cuisineKey, flagEmoji);
             }
+        }
+
+        // Build ingredient name -> emoji map (lowercased keys)
+        const ingredientEmojiByName = new Map();
+        for (const item of ingredientsCatalog) {
+            const nameKey = String(item && item.name ? item.name : "").trim().toLowerCase();
+            const emoji = String(item && item.emoji ? item.emoji : "");
+            if (nameKey) ingredientEmojiByName.set(nameKey, emoji);
         }
 
         const normalizationEngine = new NormalizationEngine(normalizationRules);
@@ -286,7 +305,8 @@ async function initializeApp() {
                     selectedAllergenLabel: applicationState.selectedAllergenLabel,
                     normalizationEngine: normalizationEngine,
                     allergensCatalog: board.allergensCatalog,
-                    cuisineToFlagMap: cuisineToFlagMap
+                    cuisineToFlagMap: cuisineToFlagMap,
+                    ingredientEmojiByName: ingredientEmojiByName
                 });
 
                 if (revealInfo.hasTriggeringIngredient) {

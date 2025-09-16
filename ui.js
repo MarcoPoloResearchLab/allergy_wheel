@@ -1,3 +1,4 @@
+/* File: ui.js */
 /* global document */
 
 /* allergen list */
@@ -81,14 +82,16 @@ export function setWheelControlToStop() { /* no-op for API symmetry */ }
 export function setWheelControlToStartGame() { /* no-op for API symmetry */ }
 
 /* populate reveal card and return outcome
-   Added: cuisineToFlagMap (Map lowercased cuisine -> flag emoji) */
+   Added: cuisineToFlagMap (Map lowercased cuisine -> flag emoji)
+   Added: ingredientEmojiByName (Map lowercased ingredient name -> emoji) */
 export function populateRevealCard({
                                        dish,
                                        selectedAllergenToken,
                                        selectedAllergenLabel,
                                        normalizationEngine,
                                        allergensCatalog,
-                                       cuisineToFlagMap
+                                       cuisineToFlagMap,
+                                       ingredientEmojiByName
                                    }) {
     const revealSection = document.getElementById("reveal");
     const dishTitleElement = document.getElementById("dish-title");
@@ -113,7 +116,7 @@ export function populateRevealCard({
 
     ingredientsContainer.textContent = "";
 
-    // Map allergen token -> emoji for quick lookup
+    // Map allergen token -> emoji for quick fallback lookup
     const emojiByToken = new Map();
     for (const a of allergensCatalog || []) {
         if (a && a.token) emojiByToken.set(a.token, a.emoji || "");
@@ -125,23 +128,36 @@ export function populateRevealCard({
         const spanElement = document.createElement("span");
         spanElement.className = "ingredient";
 
-        const tokensForIngredient = normalizationEngine.tokensForIngredient(ingredientName);
-        let ingredientEmoji = "";
+        const plainName = String(ingredientName || "");
+        const lowered = plainName.trim().toLowerCase();
 
-        if (tokensForIngredient.has(selectedAllergenToken)) {
-            hasTriggeringIngredient = true;
-            spanElement.classList.add("bad");
-            ingredientEmoji = emojiByToken.get(selectedAllergenToken) || "";
-        } else {
-            // If ingredient maps to any known allergen token, show its emoji (first match)
+        // Determine allergen hit using normalization engine
+        const tokensForIngredient = normalizationEngine.tokensForIngredient(plainName);
+
+        // Determine emoji to show:
+        // 1) Prefer explicit ingredient emoji from ingredients.json
+        // 2) Otherwise, if ingredient maps to any allergen token, show that allergen's emoji
+        let ingredientEmoji = "";
+        if (ingredientEmojiByName && typeof ingredientEmojiByName.get === "function") {
+            ingredientEmoji = ingredientEmojiByName.get(lowered) || "";
+        }
+        if (!ingredientEmoji) {
             for (const token of tokensForIngredient) {
                 const maybe = emojiByToken.get(token);
                 if (maybe) { ingredientEmoji = maybe; break; }
             }
         }
 
+        // Highlight as "bad" if this ingredient triggers the selected allergen
+        if (tokensForIngredient.has(selectedAllergenToken)) {
+            hasTriggeringIngredient = true;
+            spanElement.classList.add("bad");
+            // If we still do not have an ingredient-specific emoji, ensure at least the selected allergen's emoji shows
+            if (!ingredientEmoji) ingredientEmoji = emojiByToken.get(selectedAllergenToken) || "";
+        }
+
         const textSpan = document.createElement("span");
-        textSpan.textContent = ingredientName;
+        textSpan.textContent = plainName;
 
         const emojiSpan = document.createElement("span");
         emojiSpan.className = "emoji-large";
@@ -198,99 +214,24 @@ export function renderHearts(count, options = {}) {
     if (delta > 0) {
         for (let i = 0; i < delta; i++) {
             const span = document.createElement("span");
-            span.className = "heart heart-enter";
+            span.className = "heart gain";
             span.setAttribute("aria-hidden", "true");
             span.textContent = "❤️";
             heartsBar.appendChild(span);
-            span.addEventListener("animationend", function onEnd() {
-                span.classList.remove("heart-enter");
-            }, { once: true });
         }
-        showHeartDelta("+" + delta);
-        heartsBar.classList.remove("pulse");
-        // eslint-disable-next-line no-unused-expressions
-        heartsBar.offsetWidth;
-        heartsBar.classList.add("pulse");
     } else if (delta < 0) {
-        for (let i = 0; i < Math.abs(delta); i++) {
-            const last = heartsBar.lastElementChild;
-            if (!last) break;
-            last.classList.add("heart-exit");
-            last.addEventListener("animationend", function onExit() {
-                last.remove();
-            }, { once: true });
+        const toRemove = Math.min(previousCount, -delta);
+        for (let i = 0; i < toRemove; i++) {
+            const child = heartsBar.querySelector(".heart");
+            if (child) heartsBar.removeChild(child);
         }
-        showHeartDelta(String(delta));
-        heartsBar.classList.remove("shake");
-        // eslint-disable-next-line no-unused-expressions
-        heartsBar.offsetWidth;
-        heartsBar.classList.add("shake");
     }
-
     heartsBar.setAttribute("data-count", String(total));
-    heartsBar.setAttribute("aria-label", total + " hearts");
-    heartsBar.title = total + " hearts";
 }
 
-function showHeartDelta(textContent) {
-    const heartsBar = document.getElementById("hearts-bar");
-    if (!heartsBar) return;
-    const bubble = document.createElement("span");
-    bubble.className = "heart-delta";
-    bubble.textContent = textContent;
-    heartsBar.appendChild(bubble);
-    bubble.addEventListener("animationend", function onAnimEnd() { bubble.remove(); }, { once: true });
-}
-
-export function animateHeartGainFromReveal() {
-    const source = document.getElementById("result") || document.getElementById("reveal");
-    const target = document.getElementById("hearts-bar");
-    if (!source || !target) return;
-
-    const srcRect = source.getBoundingClientRect();
-    const tgtRect = target.getBoundingClientRect();
-
-    const startX = srcRect.left + srcRect.width * 0.1;
-    const startY = srcRect.top + 16;
-    const endX = tgtRect.left + tgtRect.width - 8;
-    const endY = tgtRect.top + 8;
-
-    const heart = document.createElement("span");
-    heart.className = "fx-heart fly";
-    heart.textContent = "❤️";
-    heart.style.left = startX + "px";
-    heart.style.top = startY + "px";
-    document.body.appendChild(heart);
-
-    const dx = endX - startX;
-    const dy = endY - startY;
-    heart.style.setProperty("--dx", dx + "px");
-    heart.style.setProperty("--dy", dy + "px");
-
-    requestAnimationFrame(function go() { heart.classList.add("go"); });
-
-    heart.addEventListener("transitionend", function onEnd() { heart.remove(); }, { once: true });
-}
-
-export function animateHeartLossAtHeartsBar() {
-    const target = document.getElementById("hearts-bar");
-    if (!target) return;
-
-    const rect = target.getBoundingClientRect();
-    const cx = rect.left + rect.width - 10;
-    const cy = rect.top + 10;
-
-    const heart = document.createElement("span");
-    heart.className = "fx-heart break";
-    heart.textContent = "💔";
-    heart.style.left = cx + "px";
-    heart.style.top = cy + "px";
-    document.body.appendChild(heart);
-
-    heart.addEventListener("animationend", function onEnd() { heart.remove(); }, { once: true });
-}
-
-/* ---------- Game Over overlay helpers ---------- */
+/* small helpers for hearts animations (no-op stubs to keep API consistent with app.js) */
+export function animateHeartGainFromReveal() { /* handled in CSS or implemented elsewhere */ }
+export function animateHeartLossAtHeartsBar() { /* handled in CSS or implemented elsewhere */ }
 export function showGameOver() {
     const gameoverSection = document.getElementById("gameover");
     if (gameoverSection) gameoverSection.setAttribute("aria-hidden", "false");
