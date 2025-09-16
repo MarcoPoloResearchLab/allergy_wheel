@@ -317,6 +317,7 @@ async function initializeApp() {
         }
 
         initWheel(document.getElementById("wheel"));
+        setSpinDurationMs(spinDurationMsDefault);
         registerSpinCallbacks({
             onTick: function onTick() { playTick(); triggerPointerTap(); },
             onStop: function onStop(winnerIndex) {
