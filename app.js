@@ -5,33 +5,17 @@ import { StateManager } from "./state.js";
 import { Board } from "./board.js";
 import { NormalizationEngine, loadJson, pickRandomUnique } from "./utils.js";
 import { AllergenCard } from "./firstCard.js";
-import { ResultCard, ElementId as ResultCardElementId } from "./lastCard.js";
+import { ResultCard } from "./lastCard.js";
 import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "./hearts.js";
 import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom, playWin } from "./audio.js";
 import { showScreen, setWheelControlToStop, setWheelControlToStartGame } from "./ui.js";
-
-const ControlElementId = Object.freeze({
-    START_BUTTON: "start",
-    STOP_BUTTON: "stop",
-    FULLSCREEN_BUTTON: "fs",
-    SPIN_AGAIN_BUTTON: "again",
-    REVEAL_SECTION: "reveal",
-    GAME_OVER_SECTION: "gameover",
-    RESTART_BUTTON: "restart"
-});
-
-const AttributeName = Object.freeze({
-    ARIA_HIDDEN: "aria-hidden"
-});
-
-const BrowserEventName = Object.freeze({
-    DOM_CONTENT_LOADED: "DOMContentLoaded"
-});
-
-const FirstCardElementId = Object.freeze({
-    LIST_CONTAINER: "allergy-list",
-    BADGE_CONTAINER: "sel-badges"
-});
+import {
+    ControlElementId,
+    AttributeName,
+    BrowserEventName,
+    FirstCardElementId,
+    ResultCardElementId
+} from "./constants.js";
 
 const stateManager = new StateManager();
 
