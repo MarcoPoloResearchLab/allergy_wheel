@@ -1,4 +1,5 @@
 import { createGame } from "./game.js";
+import { Wheel } from "./wheel.js";
 import { createListenerBinder } from "./listeners.js";
 import { initializeState } from "./state.js";
 
@@ -26,11 +27,14 @@ const listenerBinder = createListenerBinder({
     documentReference: document
 });
 
+const wheel = new Wheel();
+
 const { bootstrapGame } = createGame({
     controlElementId: ControlElementId,
     attributeName: AttributeName,
     listeners: listenerBinder,
-    documentReference: document
+    documentReference: document,
+    wheel
 });
 
 initializeState();

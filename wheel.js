@@ -1,125 +1,45 @@
 /* File: wheel.js */
 /* global window */
 
-const wheelState = {
-    canvasElement: null,
-    drawingContext: null,
-    segmentLabels: [],
-    currentAngleRadians: 0,
-
-    isSpinning: false,
-    spinStartAngleRadians: 0,
-    spinTargetAngleRadians: 0,
-    spinStartTimestampMs: 0,
-    spinDurationMs: 30000, // default ~30s (app can override)
-    revolutions: 4,        // default turns (app can override)
-
-    cssSideLengthPixels: 0,
-    resizeObserver: null,
-
-    lastTickedSegmentIndex: null,
-    onTickSegmentBoundary: null,
-    onSpinComplete: null,
-
-    pointerTapActive: false,
-    pointerTapDurationMs: 70,
-
-    // Cached layout (recomputed only when labels or size change)
-    layout: null
-};
+const DEFAULT_SPIN_DURATION_MS = 30000;
+const DEFAULT_REVOLUTIONS = 4;
+const POINTER_TAP_DURATION_MS = 70;
+const RESIZE_DEBOUNCE_DELAY_MS = 120;
 
 const segmentPalette = [
     "#FF6B6B","#FFD166","#06D6A0","#4D96FF","#C77DFF","#FF9F1C",
     "#2EC4B6","#EF476F","#70C1B3","#9B5DE5","#F15BB5","#00BBF9"
 ];
 
-function computeCssSquareSide(wrapperElement) {
-    const rect = wrapperElement.getBoundingClientRect();
-    let w = rect.width || wrapperElement.offsetWidth || window.innerWidth * 0.9;
-    let h = rect.height || wrapperElement.offsetHeight || w;
-    return Math.max(1, Math.min(w, h));
-}
-
-function resizeCanvasBackingStore() {
-    if (!wheelState.canvasElement) return;
-    const cssSide = computeCssSquareSide(wheelState.canvasElement.parentElement || wheelState.canvasElement);
-    wheelState.cssSideLengthPixels = cssSide;
-    const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-    wheelState.canvasElement.style.width = `${cssSide}px`;
-    wheelState.canvasElement.style.height = `${cssSide}px`;
-    wheelState.canvasElement.width = Math.round(cssSide * dpr);
-    wheelState.canvasElement.height = Math.round(cssSide * dpr);
-    const ctx = wheelState.drawingContext;
-    ctx.setTransform(1,0,0,1,0,0);
-    ctx.scale(dpr, dpr);
-    // Invalidate cached layout when size changes
-    wheelState.layout = null;
-}
-
-let resizeTimer;
-window.addEventListener("resize", () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => { resizeCanvasBackingStore(); drawWheel(); }, 120);
+const PointerColor = Object.freeze({
+    DEFAULT: "#000000",
+    ACTIVE: "#DD3333"
 });
 
-export function ensureWheelSize() { resizeCanvasBackingStore(); drawWheel(); }
-export function initWheel(c) {
-    wheelState.canvasElement = c;
-    wheelState.drawingContext = c.getContext("2d");
-    if ("ResizeObserver" in window) {
-        wheelState.resizeObserver = new ResizeObserver(() => { resizeCanvasBackingStore(); drawWheel(); });
-        wheelState.resizeObserver.observe(c.parentElement || c);
+function computeCssSquareSide(wrapperElement, windowReference) {
+    if (!wrapperElement) {
+        return 1;
     }
-    resizeCanvasBackingStore();
-    drawWheel();
+    const hasBoundingClientRect = typeof wrapperElement.getBoundingClientRect === "function";
+    const rect = hasBoundingClientRect ? wrapperElement.getBoundingClientRect() : null;
+    const widthCandidate = (rect && rect.width)
+        || wrapperElement.offsetWidth
+        || (typeof windowReference.innerWidth === "number" ? windowReference.innerWidth * 0.9 : 0);
+    const heightCandidate = (rect && rect.height)
+        || wrapperElement.offsetHeight
+        || widthCandidate;
+    return Math.max(1, Math.min(widthCandidate, heightCandidate));
 }
 
-/**
- * Accepts an array of either strings or objects {label, emoji}
- */
-export function setWheelLabels(arr) {
-    const norm = Array.isArray(arr) ? arr : [];
-    wheelState.segmentLabels = norm
-        .map(item => {
-            if (typeof item === "string") return { label: item, emoji: "" };
-            const label = String(item?.label || "");
-            const emoji = String(item?.emoji || "");
-            return { label, emoji };
-        })
-        .filter(obj => obj.label);
-    wheelState.lastTickedSegmentIndex = null;
-    // Invalidate cached layout when labels change
-    wheelState.layout = null;
-}
-export function registerSpinCallbacks(cbs) {
-    wheelState.onTickSegmentBoundary = cbs?.onTick || null;
-    wheelState.onSpinComplete = cbs?.onStop || null;
-}
-export function setSpinDurationMs(ms) { if (ms>0) wheelState.spinDurationMs=ms; }
-export function setRevolutions(n) { if (typeof n==="number" && n>=1) wheelState.revolutions = n; }
-
-/* Convenience helpers for “fresh” spins */
-export function scrambleStartAngle() {
-    wheelState.currentAngleRadians = Math.random() * Math.PI * 2;
-    drawWheel();
-}
-export function resetForNewSpin({ randomizeStart = true } = {}) {
-    wheelState.isSpinning = false;
-    if (randomizeStart) scrambleStartAngle();
-    wheelState.lastTickedSegmentIndex = null;
-    drawWheel();
-}
-
-/* ---- text wrapping helpers ---- */
 function wrapLabel(ctx, text, maxWidth, fontPx) {
     ctx.font = `${fontPx}px "Fredoka One", sans-serif`;
     const words = text.split(/\s+/);
     const lines = [];
     let line = "";
     for (const word of words) {
-        const test = line ? line + " " + word : word;
-        if (ctx.measureText(test).width <= maxWidth) {
-            line = test;
+        const candidate = line ? `${line} ${word}` : word;
+        if (ctx.measureText(candidate).width <= maxWidth) {
+            line = candidate;
         } else {
             if (line) lines.push(line);
             line = word;
@@ -130,13 +50,16 @@ function wrapLabel(ctx, text, maxWidth, fontPx) {
 }
 
 function computeFontPx(ctx, labels, maxWidth, maxFontPx, minFontPx) {
-    const onlyText = labels.map(l => (typeof l === "string" ? l : (l?.label || "")));
-    for (let size = maxFontPx; size >= minFontPx; size--) {
+    const textOnly = labels.map((entry) => (typeof entry === "string" ? entry : (entry?.label || "")));
+    for (let size = maxFontPx; size >= minFontPx; size -= 1) {
         let fits = true;
-        for (const l of onlyText) {
-            const lines = wrapLabel(ctx, l, maxWidth, size);
-            for (const ln of lines) {
-                if (ctx.measureText(ln).width > maxWidth) { fits = false; break; }
+        for (const label of textOnly) {
+            const lines = wrapLabel(ctx, label, maxWidth, size);
+            for (const line of lines) {
+                if (ctx.measureText(line).width > maxWidth) {
+                    fits = false;
+                    break;
+                }
             }
             if (!fits) break;
         }
@@ -145,181 +68,446 @@ function computeFontPx(ctx, labels, maxWidth, maxFontPx, minFontPx) {
     return minFontPx;
 }
 
-/* ---- compute and cache layout (font sizes, radii) ---- */
-function ensureLayout() {
-    if (wheelState.layout) return wheelState.layout;
-
-    const ctx = wheelState.drawingContext;
-    const side = wheelState.cssSideLengthPixels || 1;
-    const cx = side/2, cy = side/2, R = side*0.45;
-
-    const items = wheelState.segmentLabels;
-    const N = Math.max(1, items.length || 1);
-    const segAngle = 2 * Math.PI / N;
-
-    // Bands and widths
-    const textBandRadius = R * 0.70; // slightly further out to allow bigger text
-    const chordWidth = 2 * textBandRadius * Math.sin(segAngle/2) * 0.88; // allow more width
-
-    // Make labels BIGGER: raise max font bound
-    const fontPx = computeFontPx(ctx, items, chordWidth, /*max*/ 56, /*min*/ 18);
-    const lineHeight = fontPx * 1.18;
-
-    // Emoji near center, sized relative to text
-    const emojiPx = Math.round(fontPx * 1.9);
-    const emojiRadius = R * 0.40;
-
-    wheelState.layout = {
-        cx, cy, R,
-        N, segAngle,
-        textBandRadius, chordWidth,
-        fontPx, lineHeight,
-        emojiPx, emojiRadius
-    };
-    return wheelState.layout;
-}
-
-/* ---- draw wheel ---- */
-export function drawWheel() {
-    const ctx = wheelState.drawingContext;
-    if (!ctx) return;
-    const side = wheelState.cssSideLengthPixels||1;
-    ctx.clearRect(0,0,side,side);
-
-    const L = wheelState.segmentLabels;
-    if (!L.length) {
-        // draw base circle anyway
-        const { cx, cy, R } = ensureLayout();
-        ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
-        ctx.fillStyle="#f5f5f5"; ctx.fill(); ctx.lineWidth=6; ctx.strokeStyle="#000"; ctx.stroke();
-        drawPointer(ctx, cx, cy, R);
-        return;
-    }
-
-    const {
-        cx, cy, R,
-        N, segAngle,
-        textBandRadius, chordWidth,
-        fontPx, lineHeight,
-        emojiPx, emojiRadius
-    } = ensureLayout();
-
-    // Base ring
-    ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle="#fefefe"; ctx.fill(); ctx.lineWidth=6; ctx.strokeStyle="#000"; ctx.stroke();
-
-    for (let i=0;i<N;i++) {
-        const a0=wheelState.currentAngleRadians+i*segAngle, a1=a0+segAngle;
-        // segment fill
-        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R,a0,a1); ctx.closePath();
-        ctx.fillStyle=segmentPalette[i%segmentPalette.length]; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle="#000"; ctx.stroke();
-
-        const mid=a0+segAngle/2;
-        const { label, emoji } = L[i];
-        const lines=wrapLabel(ctx,label,chordWidth,fontPx);
-
-        // Text (upright towards center)
-        ctx.save();
-        ctx.translate(cx+Math.cos(mid)*textBandRadius, cy+Math.sin(mid)*textBandRadius);
-        ctx.rotate(mid+Math.PI/2);
-        ctx.textAlign="center"; ctx.textBaseline="middle";
-        ctx.font=`${fontPx}px "Fredoka One", sans-serif`;
-        ctx.lineWidth=3; ctx.strokeStyle="#fff"; ctx.fillStyle="#111";
-        for (let j=0;j<lines.length;j++){
-            const y=(j-(lines.length-1)/2)*lineHeight;
-            ctx.strokeText(lines[j],0,y);
-            ctx.fillText(lines[j],0,y);
-        }
-        ctx.restore();
-
-        // Emoji nearer to center
-        if (emoji) {
-            ctx.save();
-            ctx.translate(cx+Math.cos(mid)*emojiRadius, cy+Math.sin(mid)*emojiRadius);
-            ctx.rotate(mid+Math.PI/2);
-            ctx.textAlign="center"; ctx.textBaseline="middle";
-            ctx.font=`${emojiPx}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
-            ctx.fillText(emoji, 0, 0);
-            ctx.restore();
-        }
-    }
-
-    // center hub
-    ctx.beginPath(); ctx.arc(cx,cy,R*0.08,0,Math.PI*2); ctx.fillStyle="#fff"; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle="#000"; ctx.stroke();
-
-    drawPointer(ctx, cx, cy, R);
-}
-
-function drawPointer(ctx, cx, cy, R) {
-    const tipX=cx, tipY=cy-R-8;
+function drawPointer(ctx, cx, cy, radius, isTapActive) {
+    const pointerColor = isTapActive ? PointerColor.ACTIVE : PointerColor.DEFAULT;
+    const tipX = cx;
+    const tipY = cy - radius - 8;
     ctx.beginPath();
-    ctx.moveTo(tipX,tipY);
-    ctx.lineTo(tipX-20,tipY-40);
-    ctx.lineTo(tipX+20,tipY-40);
+    ctx.moveTo(tipX, tipY);
+    ctx.lineTo(tipX - 20, tipY - 40);
+    ctx.lineTo(tipX + 20, tipY - 40);
     ctx.closePath();
-    ctx.fillStyle="#000";
+    ctx.fillStyle = pointerColor;
     ctx.fill();
 }
 
-/* ---- spin engine ---- */
-function easeOutCubic(t){t=Math.min(Math.max(t,0),1);return 1-Math.pow(1-t,3);}
-
-/**
- * Compute which segment is under the fixed pointer (triangle at -PI/2).
- * We invert the geometry so the segment whose MID aligns to the pointer returns its index.
- */
-function getCurrentPointerSegmentIndex(){
-    const L=wheelState.segmentLabels; if(!L.length) return null;
-    const { N, segAngle } = ensureLayout();
-    const pa=-Math.PI/2;
-    // Current angle is the start angle of segment 0. Map to index whose mid hits the pointer.
-    let x = (pa - wheelState.currentAngleRadians) / segAngle - 0.5; // segments from 0's mid to pointer
-    let idx = Math.round(x);
-    // normalize to [0, N)
-    idx = ((idx % N) + N) % N;
-    return idx;
+function easeOutCubic(t) {
+    const clamped = Math.min(Math.max(t, 0), 1);
+    return 1 - Math.pow(1 - clamped, 3);
 }
 
-function step(){
-    if(!wheelState.isSpinning)return;
-    const t=Math.min((performance.now()-wheelState.spinStartTimestampMs)/wheelState.spinDurationMs,1);
-    const eased=easeOutCubic(t);
-    wheelState.currentAngleRadians=wheelState.spinStartAngleRadians+eased*(wheelState.spinTargetAngleRadians-wheelState.spinStartAngleRadians);
-    const idx=getCurrentPointerSegmentIndex();
-    if(idx!==null&&idx!==wheelState.lastTickedSegmentIndex){
-        wheelState.lastTickedSegmentIndex=idx;
-        wheelState.onTickSegmentBoundary?.(idx);
+export class Wheel {
+    constructor({ windowReference = (typeof window !== "undefined" ? window : globalThis) } = {}) {
+        this.windowReference = windowReference;
+        this.canvasElement = null;
+        this.drawingContext = null;
+        this.segmentLabels = [];
+        this.currentAngleRadians = 0;
+
+        this.isSpinning = false;
+        this.spinStartAngleRadians = 0;
+        this.spinTargetAngleRadians = 0;
+        this.spinStartTimestampMs = 0;
+        this.spinDurationMs = DEFAULT_SPIN_DURATION_MS;
+        this.revolutions = DEFAULT_REVOLUTIONS;
+
+        this.cssSideLengthPixels = 0;
+        this.resizeObserver = null;
+        this.layout = null;
+
+        this.lastTickedSegmentIndex = null;
+        this.onTickSegmentBoundary = null;
+        this.onSpinComplete = null;
+
+        this.pointerTapActive = false;
+        this.pointerTapDurationMs = POINTER_TAP_DURATION_MS;
+        this.pointerTapTimerId = null;
+
+        this.resizeTimerId = null;
+        this.windowResizeListenerAttached = false;
+        this.animationFrameRequestId = null;
+
+        this.boundAnimationStep = this.handleAnimationStep.bind(this);
+        this.boundWindowResizeHandler = this.handleWindowResize.bind(this);
+
+        const fallbackGlobal = this.windowReference;
+        this.setTimeout = typeof fallbackGlobal.setTimeout === "function"
+            ? fallbackGlobal.setTimeout.bind(fallbackGlobal)
+            : (fn, delay) => setTimeout(fn, delay);
+        this.clearTimeout = typeof fallbackGlobal.clearTimeout === "function"
+            ? fallbackGlobal.clearTimeout.bind(fallbackGlobal)
+            : (id) => clearTimeout(id);
+        this.requestAnimationFrame = typeof fallbackGlobal.requestAnimationFrame === "function"
+            ? fallbackGlobal.requestAnimationFrame.bind(fallbackGlobal)
+            : (fn) => this.setTimeout(() => fn(this.getCurrentTime()), 16);
+        this.cancelAnimationFrame = typeof fallbackGlobal.cancelAnimationFrame === "function"
+            ? fallbackGlobal.cancelAnimationFrame.bind(fallbackGlobal)
+            : (id) => this.clearTimeout(id);
     }
-    drawWheel();
-    if(t>=1){wheelState.isSpinning=false;const win=getCurrentPointerSegmentIndex();wheelState.onSpinComplete?.(win);return;}
-    requestAnimationFrame(step);
-}
 
-export function spinToIndex(reqIdx){
-    const L=wheelState.segmentLabels; if(!L.length||wheelState.isSpinning) return;
-    const { N, segAngle } = ensureLayout();
-    const idx=(typeof reqIdx==="number"&&reqIdx>=0)?reqIdx%N:Math.floor(Math.random()*N);
-    const pa=-Math.PI/2;
+    initialize(canvasElement) {
+        if (!canvasElement || typeof canvasElement.getContext !== "function") {
+            throw new Error("Wheel requires a canvas element with a 2d context");
+        }
 
-    // We want the MID of segment `idx` to align to the fixed pointer at angle `pa`.
-    // Since `currentAngleRadians` represents the START angle of segment 0,
-    // set destination so that: current + idx*segA + segA/2 === pa (mod 2π)
-    const dest = pa - idx*segAngle - segAngle/2;
+        this.canvasElement = canvasElement;
+        this.drawingContext = canvasElement.getContext("2d");
+        if (!this.drawingContext) {
+            throw new Error("Wheel could not acquire a 2d drawing context");
+        }
 
-    wheelState.spinStartAngleRadians=wheelState.currentAngleRadians;
-    wheelState.spinTargetAngleRadians=dest+Math.PI*2*wheelState.revolutions; // add revolutions
-    wheelState.spinStartTimestampMs=performance.now();
-    wheelState.isSpinning=true;
-    wheelState.lastTickedSegmentIndex=getCurrentPointerSegmentIndex();
-    requestAnimationFrame(step);
-}
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+            this.resizeObserver = null;
+        }
 
-export function forceStopSpin(){
-    wheelState.isSpinning=false;
-    const idx=getCurrentPointerSegmentIndex();
-    wheelState.onSpinComplete?.(idx);
-}
-export function triggerPointerTap(){
-    wheelState.pointerTapActive=true;
-    setTimeout(()=>{wheelState.pointerTapActive=false;drawWheel();},wheelState.pointerTapDurationMs);
-    drawWheel();
+        const { ResizeObserver } = this.windowReference;
+        if (typeof ResizeObserver === "function") {
+            this.resizeObserver = new ResizeObserver(() => {
+                this.resizeCanvasBackingStore();
+                this.draw();
+            });
+            const target = canvasElement.parentElement || canvasElement;
+            if (target) {
+                this.resizeObserver.observe(target);
+            }
+        }
+
+        if (!this.windowResizeListenerAttached && typeof this.windowReference.addEventListener === "function") {
+            this.windowReference.addEventListener("resize", this.boundWindowResizeHandler);
+            this.windowResizeListenerAttached = true;
+        }
+
+        this.resizeCanvasBackingStore();
+        this.draw();
+    }
+
+    ensureSize() {
+        this.resizeCanvasBackingStore();
+        this.draw();
+    }
+
+    setLabels(labelEntries) {
+        const normalized = Array.isArray(labelEntries) ? labelEntries : [];
+        this.segmentLabels = normalized
+            .map((entry) => {
+                if (typeof entry === "string") {
+                    return { label: entry, emoji: "" };
+                }
+                const label = String(entry?.label || "");
+                const emoji = String(entry?.emoji || "");
+                return { label, emoji };
+            })
+            .filter((entry) => Boolean(entry.label));
+        this.lastTickedSegmentIndex = null;
+        this.layout = null;
+    }
+
+    registerSpinCallbacks(callbacks) {
+        this.onTickSegmentBoundary = typeof callbacks?.onTick === "function" ? callbacks.onTick : null;
+        this.onSpinComplete = typeof callbacks?.onStop === "function" ? callbacks.onStop : null;
+    }
+
+    setSpinDuration(durationMs) {
+        if (typeof durationMs === "number" && durationMs > 0) {
+            this.spinDurationMs = durationMs;
+        }
+    }
+
+    setRevolutions(revolutionsCount) {
+        if (typeof revolutionsCount === "number" && revolutionsCount >= 1) {
+            this.revolutions = revolutionsCount;
+        }
+    }
+
+    scrambleStartAngle() {
+        this.currentAngleRadians = Math.random() * Math.PI * 2;
+        this.draw();
+    }
+
+    resetForNewSpin({ randomizeStart = true } = {}) {
+        this.cancelScheduledAnimation();
+        this.isSpinning = false;
+        if (randomizeStart) {
+            this.scrambleStartAngle();
+        }
+        this.lastTickedSegmentIndex = null;
+        if (!randomizeStart) {
+            this.draw();
+        }
+    }
+
+    draw() {
+        const ctx = this.drawingContext;
+        if (!ctx) {
+            return;
+        }
+
+        const side = this.cssSideLengthPixels || 1;
+        ctx.clearRect(0, 0, side, side);
+
+        const labels = this.segmentLabels;
+        if (!labels.length) {
+            const { cx, cy, R } = this.ensureLayout();
+            ctx.beginPath();
+            ctx.arc(cx, cy, R, 0, Math.PI * 2);
+            ctx.fillStyle = "#f5f5f5";
+            ctx.fill();
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = "#000";
+            ctx.stroke();
+            drawPointer(ctx, cx, cy, R, this.pointerTapActive);
+            return;
+        }
+
+        const {
+            cx,
+            cy,
+            R,
+            N,
+            segAngle,
+            textBandRadius,
+            chordWidth,
+            fontPx,
+            lineHeight,
+            emojiPx,
+            emojiRadius
+        } = this.ensureLayout();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, R, 0, Math.PI * 2);
+        ctx.fillStyle = "#fefefe";
+        ctx.fill();
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = "#000";
+        ctx.stroke();
+
+        for (let index = 0; index < N; index += 1) {
+            const startAngle = this.currentAngleRadians + index * segAngle;
+            const endAngle = startAngle + segAngle;
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, R, startAngle, endAngle);
+            ctx.closePath();
+            ctx.fillStyle = segmentPalette[index % segmentPalette.length];
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#000";
+            ctx.stroke();
+
+            const midAngle = startAngle + segAngle / 2;
+            const { label, emoji } = labels[index];
+            const wrappedLines = wrapLabel(ctx, label, chordWidth, fontPx);
+
+            ctx.save();
+            ctx.translate(
+                cx + Math.cos(midAngle) * textBandRadius,
+                cy + Math.sin(midAngle) * textBandRadius
+            );
+            ctx.rotate(midAngle + Math.PI / 2);
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.font = `${fontPx}px "Fredoka One", sans-serif`;
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#fff";
+            ctx.fillStyle = "#111";
+            for (let lineIndex = 0; lineIndex < wrappedLines.length; lineIndex += 1) {
+                const y = (lineIndex - (wrappedLines.length - 1) / 2) * lineHeight;
+                ctx.strokeText(wrappedLines[lineIndex], 0, y);
+                ctx.fillText(wrappedLines[lineIndex], 0, y);
+            }
+            ctx.restore();
+
+            if (emoji) {
+                ctx.save();
+                ctx.translate(
+                    cx + Math.cos(midAngle) * emojiRadius,
+                    cy + Math.sin(midAngle) * emojiRadius
+                );
+                ctx.rotate(midAngle + Math.PI / 2);
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.font = `${emojiPx}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+                ctx.fillText(emoji, 0, 0);
+                ctx.restore();
+            }
+        }
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, R * 0.08, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#000";
+        ctx.stroke();
+
+        drawPointer(ctx, cx, cy, R, this.pointerTapActive);
+    }
+
+    ensureLayout() {
+        if (this.layout) {
+            return this.layout;
+        }
+
+        if (!this.drawingContext) {
+            throw new Error("Wheel has not been initialized with a drawing context");
+        }
+
+        const side = this.cssSideLengthPixels || 1;
+        const cx = side / 2;
+        const cy = side / 2;
+        const radius = side * 0.45;
+
+        const items = this.segmentLabels;
+        const segmentCount = Math.max(1, items.length || 1);
+        const segmentAngle = (2 * Math.PI) / segmentCount;
+
+        const textBandRadius = radius * 0.70;
+        const chordWidth = 2 * textBandRadius * Math.sin(segmentAngle / 2) * 0.88;
+
+        const fontPx = computeFontPx(this.drawingContext, items, chordWidth, 56, 18);
+        const lineHeight = fontPx * 1.18;
+        const emojiPx = Math.round(fontPx * 1.9);
+        const emojiRadius = radius * 0.40;
+
+        this.layout = {
+            cx,
+            cy,
+            R: radius,
+            N: segmentCount,
+            segAngle: segmentAngle,
+            textBandRadius,
+            chordWidth,
+            fontPx,
+            lineHeight,
+            emojiPx,
+            emojiRadius
+        };
+
+        return this.layout;
+    }
+
+    getCurrentPointerSegmentIndex() {
+        if (!this.segmentLabels.length) {
+            return null;
+        }
+        const { N, segAngle } = this.ensureLayout();
+        const pointerAngle = -Math.PI / 2;
+        let indexEstimate = (pointerAngle - this.currentAngleRadians) / segAngle - 0.5;
+        let normalizedIndex = Math.round(indexEstimate);
+        normalizedIndex = ((normalizedIndex % N) + N) % N;
+        return normalizedIndex;
+    }
+
+    spinToIndex(requestedIndex) {
+        if (this.isSpinning || !this.segmentLabels.length) {
+            return;
+        }
+
+        const { N, segAngle } = this.ensureLayout();
+        const chosenIndex = typeof requestedIndex === "number" && requestedIndex >= 0
+            ? requestedIndex % N
+            : Math.floor(Math.random() * N);
+        const pointerAngle = -Math.PI / 2;
+        const destinationAngle = pointerAngle - chosenIndex * segAngle - segAngle / 2;
+
+        this.cancelScheduledAnimation();
+        this.spinStartAngleRadians = this.currentAngleRadians;
+        this.spinTargetAngleRadians = destinationAngle + Math.PI * 2 * this.revolutions;
+        this.spinStartTimestampMs = this.getCurrentTime();
+        this.isSpinning = true;
+        this.lastTickedSegmentIndex = this.getCurrentPointerSegmentIndex();
+        this.animationFrameRequestId = this.requestAnimationFrame(this.boundAnimationStep);
+    }
+
+    forceStop() {
+        this.cancelScheduledAnimation();
+        this.isSpinning = false;
+        const index = this.getCurrentPointerSegmentIndex();
+        if (typeof this.onSpinComplete === "function") {
+            this.onSpinComplete(index);
+        }
+        this.draw();
+    }
+
+    triggerPointerTap() {
+        this.pointerTapActive = true;
+        this.draw();
+        if (this.pointerTapTimerId !== null) {
+            this.clearTimeout(this.pointerTapTimerId);
+        }
+        this.pointerTapTimerId = this.setTimeout(() => {
+            this.pointerTapActive = false;
+            this.pointerTapTimerId = null;
+            this.draw();
+        }, this.pointerTapDurationMs);
+    }
+
+    handleWindowResize() {
+        if (this.resizeTimerId !== null) {
+            this.clearTimeout(this.resizeTimerId);
+        }
+        this.resizeTimerId = this.setTimeout(() => {
+            this.resizeCanvasBackingStore();
+            this.draw();
+        }, RESIZE_DEBOUNCE_DELAY_MS);
+    }
+
+    resizeCanvasBackingStore() {
+        if (!this.canvasElement || !this.drawingContext) {
+            return;
+        }
+        const element = this.canvasElement.parentElement || this.canvasElement;
+        const cssSideLength = computeCssSquareSide(element, this.windowReference);
+        this.cssSideLengthPixels = cssSideLength;
+        const pixelRatio = Math.max(1, Math.floor(this.windowReference.devicePixelRatio || 1));
+        this.canvasElement.style.width = `${cssSideLength}px`;
+        this.canvasElement.style.height = `${cssSideLength}px`;
+        this.canvasElement.width = Math.round(cssSideLength * pixelRatio);
+        this.canvasElement.height = Math.round(cssSideLength * pixelRatio);
+        this.drawingContext.setTransform(1, 0, 0, 1, 0, 0);
+        this.drawingContext.scale(pixelRatio, pixelRatio);
+        this.layout = null;
+    }
+
+    cancelScheduledAnimation() {
+        if (this.animationFrameRequestId !== null) {
+            this.cancelAnimationFrame(this.animationFrameRequestId);
+            this.animationFrameRequestId = null;
+        }
+    }
+
+    handleAnimationStep() {
+        if (!this.isSpinning) {
+            return;
+        }
+        const elapsed = this.getCurrentTime() - this.spinStartTimestampMs;
+        const progress = Math.min(elapsed / this.spinDurationMs, 1);
+        const eased = easeOutCubic(progress);
+
+        this.currentAngleRadians = this.spinStartAngleRadians
+            + eased * (this.spinTargetAngleRadians - this.spinStartAngleRadians);
+
+        const currentIndex = this.getCurrentPointerSegmentIndex();
+        if (currentIndex !== null && currentIndex !== this.lastTickedSegmentIndex) {
+            this.lastTickedSegmentIndex = currentIndex;
+            if (typeof this.onTickSegmentBoundary === "function") {
+                this.onTickSegmentBoundary(currentIndex);
+            }
+        }
+
+        this.draw();
+
+        if (progress >= 1) {
+            this.isSpinning = false;
+            this.animationFrameRequestId = null;
+            const winner = this.getCurrentPointerSegmentIndex();
+            if (typeof this.onSpinComplete === "function") {
+                this.onSpinComplete(winner);
+            }
+            return;
+        }
+
+        this.animationFrameRequestId = this.requestAnimationFrame(this.boundAnimationStep);
+    }
+
+    getCurrentTime() {
+        const performanceLike = this.windowReference.performance
+            || (typeof performance !== "undefined" ? performance : null);
+        if (performanceLike && typeof performanceLike.now === "function") {
+            return performanceLike.now();
+        }
+        return Date.now();
+    }
 }
