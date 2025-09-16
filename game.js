@@ -16,19 +16,6 @@ import {
     animateHeartGainFromReveal,
     animateHeartLossAtHeartsBar
 } from "./hearts.js";
-import {
-    initWheel,
-    setWheelLabels,
-    drawWheel,
-    spinToIndex,
-    ensureWheelSize,
-    registerSpinCallbacks,
-    forceStopSpin,
-    setSpinDurationMs,
-    triggerPointerTap,
-    resetForNewSpin,
-    setRevolutions
-} from "./wheel.js";
 import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom, playWin } from "./audio.js";
 import { loadJson, NormalizationEngine, pickRandomUnique } from "./utils.js";
 import { Board } from "./board.js";
@@ -71,7 +58,7 @@ const ButtonText = {
 };
 
 const GameErrorMessage = {
-    MISSING_DEPENDENCIES: "createGame requires controlElementId, attributeName, and listeners"
+    MISSING_DEPENDENCIES: "createGame requires controlElementId, attributeName, listeners, and wheel"
 };
 
 function randomBetween(minInclusive, maxInclusive) {
@@ -88,62 +75,62 @@ function getRandomRevolutions() {
     return randomBetween(3, 6);
 }
 
-function recomputeWheelFromSelection() {
-    const board = getBoard();
-    const selectedToken = getSelectedAllergenToken();
-
-    if (!board || !selectedToken) {
-        resetWheelCandidates();
-        setWheelLabels([{ label: "No selection", emoji: "" }]);
-        drawWheel();
-        return;
-    }
-
-    const matchingDishes = board.getDishesForAllergen(selectedToken);
-    if (!Array.isArray(matchingDishes) || matchingDishes.length === 0) {
-        throw new Error("Invariant broken: no dishes for allergen token '" + selectedToken + "'");
-    }
-
-    const anchorDish = matchingDishes[Math.floor(Math.random() * matchingDishes.length)];
-    const catalog = Array.isArray(board.dishesCatalog) ? board.dishesCatalog : [];
-
-    const slotsToFill = Math.max(0, WheelConfiguration.SEGMENT_COUNT - 1);
-    const pool = catalog.filter((dish) => dish !== anchorDish);
-
-    let fillerDishes = [];
-    if (pool.length >= slotsToFill) {
-        fillerDishes = pickRandomUnique(pool, slotsToFill);
-    } else {
-        fillerDishes = pool.slice();
-        while (fillerDishes.length < slotsToFill && catalog.length > 0) {
-            fillerDishes.push(catalog[Math.floor(Math.random() * catalog.length)]);
-        }
-    }
-
-    const chosenDishes = [anchorDish, ...fillerDishes];
-    for (let index = chosenDishes.length - 1; index > 0; index -= 1) {
-        const randomIndex = Math.floor(Math.random() * (index + 1));
-        const temporaryDish = chosenDishes[index];
-        chosenDishes[index] = chosenDishes[randomIndex];
-        chosenDishes[randomIndex] = temporaryDish;
-    }
-
-    const limitedDishes = chosenDishes.slice(0, WheelConfiguration.SEGMENT_COUNT);
-    const candidateLabels = limitedDishes
-        .map((dish) => ({ label: board.getDishLabel(dish), emoji: dish.emoji || "" }))
-        .filter((entry) => entry.label)
-        .slice(0, WheelConfiguration.SEGMENT_COUNT);
-
-    setWheelCandidates({ dishes: limitedDishes, labels: candidateLabels });
-
-    const wheelLabels = candidateLabels.length ? candidateLabels : [{ label: "No matches", emoji: "" }];
-    setWheelLabels(wheelLabels);
-    drawWheel();
-}
-
-function createGame({ controlElementId, attributeName, listeners, documentReference = document }) {
-    if (!controlElementId || !attributeName || !listeners) {
+function createGame({ controlElementId, attributeName, listeners, documentReference = document, wheel }) {
+    if (!controlElementId || !attributeName || !listeners || !wheel) {
         throw new Error(GameErrorMessage.MISSING_DEPENDENCIES);
+    }
+
+    function recomputeWheelFromSelection() {
+        const board = getBoard();
+        const selectedToken = getSelectedAllergenToken();
+
+        if (!board || !selectedToken) {
+            resetWheelCandidates();
+            wheel.setLabels([{ label: "No selection", emoji: "" }]);
+            wheel.draw();
+            return;
+        }
+
+        const matchingDishes = board.getDishesForAllergen(selectedToken);
+        if (!Array.isArray(matchingDishes) || matchingDishes.length === 0) {
+            throw new Error("Invariant broken: no dishes for allergen token '" + selectedToken + "'");
+        }
+
+        const anchorDish = matchingDishes[Math.floor(Math.random() * matchingDishes.length)];
+        const catalog = Array.isArray(board.dishesCatalog) ? board.dishesCatalog : [];
+
+        const slotsToFill = Math.max(0, WheelConfiguration.SEGMENT_COUNT - 1);
+        const pool = catalog.filter((dish) => dish !== anchorDish);
+
+        let fillerDishes = [];
+        if (pool.length >= slotsToFill) {
+            fillerDishes = pickRandomUnique(pool, slotsToFill);
+        } else {
+            fillerDishes = pool.slice();
+            while (fillerDishes.length < slotsToFill && catalog.length > 0) {
+                fillerDishes.push(catalog[Math.floor(Math.random() * catalog.length)]);
+            }
+        }
+
+        const chosenDishes = [anchorDish, ...fillerDishes];
+        for (let index = chosenDishes.length - 1; index > 0; index -= 1) {
+            const randomIndex = Math.floor(Math.random() * (index + 1));
+            const temporaryDish = chosenDishes[index];
+            chosenDishes[index] = chosenDishes[randomIndex];
+            chosenDishes[randomIndex] = temporaryDish;
+        }
+
+        const limitedDishes = chosenDishes.slice(0, WheelConfiguration.SEGMENT_COUNT);
+        const candidateLabels = limitedDishes
+            .map((dish) => ({ label: board.getDishLabel(dish), emoji: dish.emoji || "" }))
+            .filter((entry) => entry.label)
+            .slice(0, WheelConfiguration.SEGMENT_COUNT);
+
+        setWheelCandidates({ dishes: limitedDishes, labels: candidateLabels });
+
+        const wheelLabels = candidateLabels.length ? candidateLabels : [{ label: "No matches", emoji: "" }];
+        wheel.setLabels(wheelLabels);
+        wheel.draw();
     }
 
     const {
@@ -182,13 +169,13 @@ function createGame({ controlElementId, attributeName, listeners, documentRefere
         const candidateLabels = getWheelCandidateLabels();
         if (!candidateLabels.length) return;
 
-        resetForNewSpin({ randomizeStart: true });
-        setRevolutions(getRandomRevolutions());
-        setSpinDurationMs(getRandomSpinDurationMs());
+        wheel.resetForNewSpin({ randomizeStart: true });
+        wheel.setRevolutions(getRandomRevolutions());
+        wheel.setSpinDuration(getRandomSpinDurationMs());
 
         toStopMode();
         const randomIndex = Math.floor(Math.random() * candidateLabels.length);
-        spinToIndex(randomIndex);
+        wheel.spinToIndex(randomIndex);
     }
 
     function resetGame() {
@@ -278,12 +265,12 @@ function createGame({ controlElementId, attributeName, listeners, documentRefere
                 refreshSelectedAllergenBadges([]);
             }
 
-            initWheel(documentReference.getElementById("wheel"));
-            setSpinDurationMs(WheelConfiguration.DEFAULT_SPIN_DURATION_MS);
-            registerSpinCallbacks({
+            wheel.initialize(documentReference.getElementById("wheel"));
+            wheel.setSpinDuration(WheelConfiguration.DEFAULT_SPIN_DURATION_MS);
+            wheel.registerSpinCallbacks({
                 onTick() {
                     playTick();
-                    triggerPointerTap();
+                    wheel.triggerPointerTap();
                 },
                 onStop(winnerIndex) {
                     const candidateDishes = getWheelCandidateDishes();
@@ -344,13 +331,13 @@ function createGame({ controlElementId, attributeName, listeners, documentRefere
             wireStartButton({
                 onStartRequested: () => {
                     showScreen(SCREEN_WHEEL);
-                    ensureWheelSize();
+                    wheel.ensureSize();
                     startSpinWithFreshState();
                 }
             });
             wireStopButton({
                 onStopRequested: () => {
-                    forceStopSpin();
+                    wheel.forceStop();
                 },
                 onShowAllergyScreen: () => {
                     showScreen(SCREEN_ALLERGY);
