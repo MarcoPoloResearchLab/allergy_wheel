@@ -142,6 +142,12 @@ class StateManager {
         return this.#stopButtonMode;
     }
 
+    /**
+     * Validates and stores the active avatar identifier.
+     * Falls back to the default avatar when the provided identifier is not recognized.
+     *
+     * @param {string} avatarId - Candidate avatar identifier selected by the user.
+     */
     setSelectedAvatar(avatarId) {
         const validatedAvatarIdentifier =
             typeof avatarId === "string" && ValidAvatarIdentifierSet.has(avatarId)

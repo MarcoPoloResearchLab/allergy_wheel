@@ -95,6 +95,12 @@ const headerAvatarImageElement = headerAvatarToggleElement
     ? headerAvatarToggleElement.getElementsByClassName(AvatarClassName.IMAGE)[0] || null
     : null;
 
+/**
+ * Updates the header avatar image element with the resource mapped to the selected identifier.
+ * Falls back to the default avatar asset when the provided identifier is not available.
+ *
+ * @param {string} avatarIdentifier - Identifier representing the avatar to display.
+ */
 const updateHeaderAvatarImage = (avatarIdentifier) => {
     if (!headerAvatarImageElement) {
         return;
