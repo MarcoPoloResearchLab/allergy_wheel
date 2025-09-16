@@ -120,6 +120,10 @@ class StateManager {
         return this.#heartsCount;
     }
 
+    getHeartsCount() {
+        return this.#heartsCount;
+    }
+
     getInitialHeartsCount() {
         return this.#initialHeartsCount;
     }

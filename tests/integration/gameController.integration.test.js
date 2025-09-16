@@ -24,6 +24,32 @@ const DishRecord = Object.freeze({
   SAFE: { id: "dish-safe", name: "Fruit Tart", emoji: "🍓" }
 });
 
+const WheelSegmentCount = 8;
+
+const WheelDistributionDescription = Object.freeze({
+  LOW_HEARTS: "allocates minimal allergen segments when hearts are low",
+  MID_HEARTS: "increases allergen segments for moderate hearts",
+  HIGH_HEARTS: "maximizes allergen segments when hearts are high"
+});
+
+const WheelDistributionDishCatalog = Object.freeze({
+  HAZARDOUS: [
+    { id: "dish-hazard-1", name: "Peanut Satay", emoji: "🥜" },
+    { id: "dish-hazard-2", name: "Walnut Brownie", emoji: "🍫" },
+    { id: "dish-hazard-3", name: "Almond Croissant", emoji: "🥐" },
+    { id: "dish-hazard-4", name: "Hazelnut Gelato", emoji: "🍨" },
+    { id: "dish-hazard-5", name: "Cashew Stir Fry", emoji: "🥦" },
+    { id: "dish-hazard-6", name: "Pecan Pie", emoji: "🥧" },
+    { id: "dish-hazard-7", name: "Nut Brittle", emoji: "🍬" }
+  ],
+  SAFE: [
+    { id: "dish-safe-1", name: "Garden Salad", emoji: "🥗" },
+    { id: "dish-safe-2", name: "Fruit Tart", emoji: "🍓" },
+    { id: "dish-safe-3", name: "Tomato Soup", emoji: "🍅" },
+    { id: "dish-safe-4", name: "Veggie Sushi", emoji: "🍣" }
+  ]
+});
+
 const DataPathString = Object.freeze({
   ALLERGENS: "./data/allergens.json",
   DISHES: "./data/dishes.json",
@@ -76,14 +102,19 @@ function createWheelStub() {
 }
 
 function createListenerBinderStub() {
-  return {
-    wireStartButton: jest.fn(),
-    wireStopButton: jest.fn(),
-    wireFullscreenButton: jest.fn(),
-    wireSpinAgainButton: jest.fn(),
-    wireRevealBackdropDismissal: jest.fn(),
-    wireRestartButton: jest.fn()
+  const binder = {
+    startHandler: null
   };
+  binder.wireStartButton = jest.fn(({ onStartRequested }) => {
+    binder.startHandler = typeof onStartRequested === "function" ? onStartRequested : null;
+  });
+  binder.wireStopButton = jest.fn();
+  binder.wireFullscreenButton = jest.fn();
+  binder.wireSpinAgainButton = jest.fn();
+  binder.wireRevealBackdropDismissal = jest.fn();
+  binder.wireRestartButton = jest.fn();
+  binder.getStartHandler = () => binder.startHandler;
+  return binder;
 }
 
 function createFirstCardPresenterStub() {
@@ -216,6 +247,24 @@ const GameOutcomeScenarios = [
   }
 ];
 
+const WheelDistributionScenarios = [
+  {
+    description: WheelDistributionDescription.LOW_HEARTS,
+    initialHearts: 1,
+    expectedAllergenSegments: 1
+  },
+  {
+    description: WheelDistributionDescription.MID_HEARTS,
+    initialHearts: 5,
+    expectedAllergenSegments: 4
+  },
+  {
+    description: WheelDistributionDescription.HIGH_HEARTS,
+    initialHearts: 9,
+    expectedAllergenSegments: 7
+  }
+];
+
 describe("GameController integration", () => {
   test.each(GameOutcomeScenarios)(
     "%s",
@@ -313,6 +362,80 @@ describe("GameController integration", () => {
           expect.any(Function)
         );
       }
+    }
+  );
+});
+
+describe("GameController wheel allergen distribution", () => {
+  test.each(WheelDistributionScenarios)(
+    "%s",
+    async ({ initialHearts, expectedAllergenSegments }) => {
+      createDomSkeleton();
+
+      const { wheelStub } = createWheelStub();
+      const listenerBinder = createListenerBinderStub();
+      const board = createBoardStub({
+        [TestAllergen.TOKEN]: WheelDistributionDishCatalog.HAZARDOUS
+      });
+      const stateManager = new StateManager({ initialHeartsCount: initialHearts });
+      const firstCardPresenter = createFirstCardPresenterStub();
+      const revealCardPresenter = createRevealCardPresenterStub({
+        revealInfo: { hasTriggeringIngredient: false },
+        winningCardInfo: { restartButton: null, isDisplayed: false }
+      });
+      const heartsPresenter = createHeartsPresenterStub();
+      const audioPresenter = createAudioPresenterStub();
+      const uiPresenter = createUiPresenterStub();
+      const normalizationFactory = createNormalizationFactoryStub();
+      const randomPicker = createPickRandomUniqueStub();
+
+      const dishesForData = [
+        ...WheelDistributionDishCatalog.HAZARDOUS,
+        ...WheelDistributionDishCatalog.SAFE
+      ];
+      const gameDataByPath = {
+        [DataPathString.ALLERGENS]: [{ token: TestAllergen.TOKEN, label: TestAllergen.LABEL }],
+        [DataPathString.DISHES]: dishesForData,
+        [DataPathString.NORMALIZATION]: [{ pattern: NormalizationRule.PATTERN, token: TestAllergen.TOKEN }],
+        [DataPathString.COUNTRIES]: [{ cuisine: CountryRecord.CUISINE, flag: CountryRecord.FLAG }],
+        [DataPathString.INGREDIENTS]: [{ name: IngredientRecord.NAME, emoji: IngredientRecord.EMOJI }]
+      };
+      const dataLoader = createDataLoaderStub(gameDataByPath);
+
+      const gameController = new GameController({
+        documentReference: document,
+        controlElementIdMap: ControlElementId,
+        attributeNameMap: AttributeName,
+        wheel: wheelStub,
+        listenerBinder,
+        board,
+        stateManager,
+        firstCardPresenter,
+        revealCardPresenter,
+        heartsPresenter,
+        audioPresenter,
+        uiPresenter,
+        dataLoader,
+        createNormalizationEngine: normalizationFactory,
+        pickRandomUnique: randomPicker
+      });
+
+      await gameController.bootstrap();
+
+      stateManager.setSelectedAllergen({ token: TestAllergen.TOKEN, label: TestAllergen.LABEL });
+      const startHandler = listenerBinder.getStartHandler();
+      expect(typeof startHandler).toBe("function");
+      startHandler();
+
+      const hazardIdentifiers = new Set(
+        WheelDistributionDishCatalog.HAZARDOUS.map((dish) => dish.id)
+      );
+      const candidateDishes = stateManager.getWheelCandidateDishes();
+      expect(candidateDishes).toHaveLength(WheelSegmentCount);
+      const allergenDishCount = candidateDishes.filter((dish) => hazardIdentifiers.has(dish.id)).length;
+      expect(allergenDishCount).toBe(expectedAllergenSegments);
+      const safeDishCount = candidateDishes.length - allergenDishCount;
+      expect(safeDishCount).toBe(WheelSegmentCount - expectedAllergenSegments);
     }
   );
 });
