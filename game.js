@@ -17,6 +17,13 @@ const WheelConfiguration = Object.freeze({
     MAX_RANDOM_REVOLUTIONS: 6
 });
 
+const AllergenDistributionConfiguration = Object.freeze({
+    MIN_HEARTS_FOR_DISTRIBUTION: 1,
+    MAX_HEARTS_FOR_DISTRIBUTION: 9,
+    MIN_ALLERGEN_SEGMENTS: 1,
+    MAX_ALLERGEN_SEGMENTS: 7
+});
+
 const WheelLabelFallback = Object.freeze({
     NO_SELECTION: { label: "No selection", emoji: "" },
     NO_MATCHES: { label: "No matches", emoji: "" }
@@ -52,6 +59,24 @@ const DataValidationMessage = Object.freeze({
     NORMALIZATION: "normalization.json is missing or empty",
     INGREDIENTS: "ingredients.json is missing or empty"
 });
+
+function clampNumberWithinRange(value, minimum, maximum) {
+    const normalizedMinimum = typeof minimum === "number" ? minimum : value;
+    const normalizedMaximum = typeof maximum === "number" ? maximum : value;
+    if (normalizedMinimum > normalizedMaximum) {
+        return clampNumberWithinRange(value, normalizedMaximum, normalizedMinimum);
+    }
+    const numericValue = typeof value === "number" && !Number.isNaN(value)
+        ? value
+        : normalizedMinimum;
+    if (numericValue < normalizedMinimum) {
+        return normalizedMinimum;
+    }
+    if (numericValue > normalizedMaximum) {
+        return normalizedMaximum;
+    }
+    return numericValue;
+}
 
 /**
  * Generates a random integer within the inclusive range defined by the provided bounds.
@@ -89,6 +114,55 @@ function shuffleArrayInPlace(targetArray) {
         targetArray[index] = targetArray[randomIndex];
         targetArray[randomIndex] = temporaryValue;
     }
+}
+
+function calculateAllergenSegmentTarget(heartsCount) {
+    const sanitizedHeartsCount = clampNumberWithinRange(
+        Math.floor(typeof heartsCount === "number" ? heartsCount : AllergenDistributionConfiguration.MIN_HEARTS_FOR_DISTRIBUTION),
+        AllergenDistributionConfiguration.MIN_HEARTS_FOR_DISTRIBUTION,
+        AllergenDistributionConfiguration.MAX_HEARTS_FOR_DISTRIBUTION
+    );
+    const heartsRange = AllergenDistributionConfiguration.MAX_HEARTS_FOR_DISTRIBUTION
+        - AllergenDistributionConfiguration.MIN_HEARTS_FOR_DISTRIBUTION;
+    if (heartsRange <= 0) {
+        return Math.min(WheelConfiguration.SEGMENT_COUNT, AllergenDistributionConfiguration.MAX_ALLERGEN_SEGMENTS);
+    }
+    const progress = sanitizedHeartsCount - AllergenDistributionConfiguration.MIN_HEARTS_FOR_DISTRIBUTION;
+    const allergenSegmentRange = AllergenDistributionConfiguration.MAX_ALLERGEN_SEGMENTS
+        - AllergenDistributionConfiguration.MIN_ALLERGEN_SEGMENTS;
+    const computedSegments = AllergenDistributionConfiguration.MIN_ALLERGEN_SEGMENTS
+        + Math.floor((progress * allergenSegmentRange) / heartsRange);
+    const clampedSegments = clampNumberWithinRange(
+        computedSegments,
+        AllergenDistributionConfiguration.MIN_ALLERGEN_SEGMENTS,
+        AllergenDistributionConfiguration.MAX_ALLERGEN_SEGMENTS
+    );
+    return Math.min(WheelConfiguration.SEGMENT_COUNT, clampedSegments);
+}
+
+function selectDishesWithFallback(sourceDishes, desiredCount, pickRandomUnique) {
+    if (!Array.isArray(sourceDishes) || sourceDishes.length === 0 || desiredCount <= 0) {
+        return [];
+    }
+
+    const uniqueSelectionLimit = Math.min(desiredCount, sourceDishes.length);
+    let initialSelection = [];
+    if (typeof pickRandomUnique === "function") {
+        const requestedSelection = pickRandomUnique(sourceDishes, uniqueSelectionLimit);
+        if (Array.isArray(requestedSelection)) {
+            initialSelection = requestedSelection.slice(0, uniqueSelectionLimit);
+        }
+    } else {
+        initialSelection = sourceDishes.slice(0, uniqueSelectionLimit);
+    }
+
+    const selectedDishes = initialSelection.slice(0, desiredCount);
+    while (selectedDishes.length < desiredCount) {
+        const randomIndex = generateRandomIntegerInclusive(0, sourceDishes.length - 1);
+        selectedDishes.push(sourceDishes[randomIndex]);
+    }
+
+    return selectedDishes;
 }
 
 function formatMissingDishesMessage(allergenToken) {
@@ -483,32 +557,57 @@ export class GameController {
             throw new Error(formatMissingDishesMessage(selectedToken));
         }
 
-        const anchorIndex = generateRandomIntegerInclusive(0, matchingDishes.length - 1);
-        const anchorDish = matchingDishes[anchorIndex];
         const catalog = Array.isArray(boardInstance.dishesCatalog) ? boardInstance.dishesCatalog : [];
+        const heartsCount = this.#stateManager.getHeartsCount
+            ? this.#stateManager.getHeartsCount()
+            : (this.#stateManager.getInitialHeartsCount
+                ? this.#stateManager.getInitialHeartsCount()
+                : AllergenDistributionConfiguration.MIN_HEARTS_FOR_DISTRIBUTION);
 
-        const slotsToFill = Math.max(0, WheelConfiguration.SEGMENT_COUNT - 1);
-        const pool = catalog.filter((dish) => dish !== anchorDish);
+        const totalSegments = WheelConfiguration.SEGMENT_COUNT;
+        const desiredAllergenSegments = calculateAllergenSegmentTarget(heartsCount);
+        const allergenSegmentTarget = Math.max(1, Math.min(totalSegments, desiredAllergenSegments));
+        const safeSegmentTarget = Math.max(0, totalSegments - allergenSegmentTarget);
 
-        let fillerDishes = [];
-        if (pool.length >= slotsToFill) {
-            fillerDishes = this.#pickRandomUnique(pool, slotsToFill);
-        } else {
-            fillerDishes = pool.slice();
-            while (fillerDishes.length < slotsToFill && catalog.length > 0) {
-                const randomDish = catalog[generateRandomIntegerInclusive(0, catalog.length - 1)];
-                fillerDishes.push(randomDish);
-            }
+        const allergenDishes = selectDishesWithFallback(
+            matchingDishes,
+            allergenSegmentTarget,
+            this.#pickRandomUnique
+        );
+
+        const matchingDishSet = new Set(matchingDishes);
+        const safeDishPool = catalog.filter((dish) => !matchingDishSet.has(dish));
+        let safeDishes = selectDishesWithFallback(safeDishPool, safeSegmentTarget, this.#pickRandomUnique);
+
+        if (safeDishes.length < safeSegmentTarget) {
+            const remainingSlots = safeSegmentTarget - safeDishes.length;
+            const fallbackPool = catalog.filter((dish) => !safeDishes.includes(dish));
+            const fallbackDishes = selectDishesWithFallback(
+                fallbackPool,
+                remainingSlots,
+                this.#pickRandomUnique
+            );
+            safeDishes = safeDishes.concat(fallbackDishes);
         }
 
-        const chosenDishes = [anchorDish, ...fillerDishes];
-        shuffleArrayInPlace(chosenDishes);
+        if (safeDishes.length < safeSegmentTarget) {
+            const deficit = safeSegmentTarget - safeDishes.length;
+            const additionalAllergenDishes = selectDishesWithFallback(
+                matchingDishes,
+                deficit,
+                this.#pickRandomUnique
+            );
+            safeDishes = safeDishes.concat(additionalAllergenDishes);
+        }
 
-        const limitedDishes = chosenDishes.slice(0, WheelConfiguration.SEGMENT_COUNT);
+        const combinedDishes = [...allergenDishes, ...safeDishes];
+        shuffleArrayInPlace(combinedDishes);
+
+        const limitedDishes = combinedDishes.slice(0, totalSegments);
         const candidateLabels = limitedDishes
             .map((dish) => ({ label: boardInstance.getDishLabel(dish), emoji: dish.emoji || "" }))
             .filter((entry) => entry.label)
-            .slice(0, WheelConfiguration.SEGMENT_COUNT);
+            .slice(0, totalSegments);
 
         if (this.#stateManager.setWheelCandidates) {
             this.#stateManager.setWheelCandidates({ dishes: limitedDishes, labels: candidateLabels });

@@ -31,6 +31,7 @@ const StateTestDescription = Object.freeze({
   HEARTS_CLAMPING: "clamps negative hearts to zero",
   HEARTS_NO_UNDERFLOW: "decrement does not reduce hearts below zero",
   HEARTS_INVALID_INPUT: "setHeartsCount rejects invalid inputs",
+  HEARTS_RETRIEVAL: "reports current hearts count",
   SELECTION_RECORDS: "records provided allergen token and label",
   SELECTION_CLEARS: "clears selection when null values are provided",
   SELECTION_RESET: "clearSelectedAllergen resets selection state",
@@ -97,6 +98,15 @@ describe("StateManager heart management", () => {
     const stateManager = new StateManager({ initialHeartsCount: 1 });
     stateManager.decrementHeartsCount();
     expect(stateManager.decrementHeartsCount()).toBe(0);
+  });
+
+  test(StateTestDescription.HEARTS_RETRIEVAL, () => {
+    const stateManager = new StateManager({ initialHeartsCount: 3 });
+    expect(stateManager.getHeartsCount()).toBe(3);
+    stateManager.incrementHeartsCount();
+    expect(stateManager.getHeartsCount()).toBe(4);
+    stateManager.decrementHeartsCount();
+    expect(stateManager.getHeartsCount()).toBe(3);
   });
 
   test(StateTestDescription.HEARTS_INVALID_INPUT, () => {
