@@ -10,7 +10,8 @@ import {
     renderHearts,
     showGameOver,
     animateHeartGainFromReveal,
-    animateHeartLossAtHeartsBar
+    animateHeartLossAtHeartsBar,
+    showWinningCard
 } from "./ui.js";
 import {
     initWheel,
@@ -26,7 +27,7 @@ import {
     resetForNewSpin,
     setRevolutions
 } from "./wheel.js";
-import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom } from "./audio.js";
+import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom, playWin } from "./audio.js";
 import { loadJson, NormalizationEngine, pickRandomUnique } from "./utils.js";
 import { Board } from "./board.js";
 
@@ -34,6 +35,7 @@ import { Board } from "./board.js";
 const wheelSegmentCount = 8;
 const spinDurationMsDefault = 30000;
 const initialHeartsCount = 5;
+const winningHeartsCount = 10;
 
 /* ---------- app state ---------- */
 const applicationState = {
@@ -224,12 +226,15 @@ function wireRevealBackdropDismissal() {
 
 function wireRestartButton() {
     const restartButton = document.getElementById("restart");
-    if (!restartButton) return;
-    restartButton.addEventListener("click", function onRestartPressed() {
-        const gameoverSection = document.getElementById("gameover");
-        if (gameoverSection) gameoverSection.setAttribute("aria-hidden", "true");
-        resetGame();
-    });
+    if (restartButton) {
+        restartButton.addEventListener("click", function onRestartPressed() {
+            const gameoverSection = document.getElementById("gameover");
+            if (gameoverSection) gameoverSection.setAttribute("aria-hidden", "true");
+            const revealSection = document.getElementById("reveal");
+            if (revealSection) revealSection.setAttribute("aria-hidden", "true");
+            resetGame();
+        });
+    }
 }
 
 /* ---------- bootstrap ---------- */
@@ -343,10 +348,33 @@ async function initializeApp() {
                 // Update the toolbar hearts with animation
                 renderHearts(applicationState.heartsCount, { animate: true });
 
+                // Check lose condition
                 if (applicationState.heartsCount === 0) {
                     showGameOver();
+                    toStartMode();
+                    return;
                 }
 
+                // Check win condition (10 hearts)
+                if (applicationState.heartsCount >= winningHeartsCount) {
+                    // Replace the reveal with a winning card that only allows restart
+                    const restartBtn = showWinningCard();
+                    playWin();
+
+                    // Wire the restart button inside the winning card
+                    if (restartBtn) {
+                        restartBtn.addEventListener("click", function onWinRestart() {
+                            const revealSection = document.getElementById("reveal");
+                            if (revealSection) revealSection.setAttribute("aria-hidden", "true");
+                            resetGame();
+                        });
+                    }
+
+                    toStartMode();
+                    return;
+                }
+
+                // Otherwise, normal end-of-spin state
                 toStartMode();
             }
         });

@@ -149,6 +149,55 @@ export function playNomNom(durationMs = 1200) {
     }
 }
 
+/* ---------- triumphant win melody ---------- */
+export function playWin() {
+    const ctx = ensureAudioContext();
+    const out = ctx.createGain();
+    out.gain.setValueAtTime(0.0001, ctx.currentTime);
+    expTo(ctx, out.gain, 0.9, ctx.currentTime + 0.05);
+    out.connect(ctx.destination);
+
+    // Simple I–V–vi–IV style arpeggio in C major (C, G, A, F) + sparkle
+    const notesHz = [261.63, 392.00, 440.00, 349.23];
+    const start = ctx.currentTime + 0.02;
+
+    for (let i = 0; i < notesHz.length; i++) {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "triangle";
+        o.frequency.setValueAtTime(notesHz[i], start + i * 0.18);
+        g.gain.setValueAtTime(0.0001, start + i * 0.18);
+        expTo(ctx, g.gain, 0.7, start + i * 0.18 + 0.03);
+        expTo(ctx, g.gain, 0.0001, start + i * 0.18 + 0.28);
+        o.connect(g).connect(out);
+        o.start(start + i * 0.18);
+        o.stop(start + i * 0.18 + 0.3);
+    }
+
+    // Sparkle noise burst at the end
+    const sparkleDelay = start + notesHz.length * 0.18 + 0.05;
+    const dur = 0.2;
+    const noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = noiseBuf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuf;
+    const nf = ctx.createBiquadFilter();
+    nf.type = "highpass";
+    nf.frequency.setValueAtTime(3000, sparkleDelay);
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.0001, sparkleDelay);
+    expTo(ctx, ng.gain, 0.4, sparkleDelay + 0.02);
+    expTo(ctx, ng.gain, 0.0001, sparkleDelay + dur);
+    noise.connect(nf).connect(ng).connect(out);
+    noise.start(sparkleDelay);
+    noise.stop(sparkleDelay + dur);
+
+    // Fade out the master gain after ~1s
+    const end = sparkleDelay + dur + 0.15;
+    expTo(ctx, out.gain, 0.0001, end);
+}
+
 /* ---------- prime on first user gesture ---------- */
 export function primeAudioOnFirstGesture() {
     const onceHandler = () => {

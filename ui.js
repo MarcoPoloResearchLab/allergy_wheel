@@ -16,7 +16,7 @@ export function renderAllergenList(containerElement, allergenList, onSelectCallb
 
         const radioElement = document.createElement("input");
         radioElement.type = "radio";
-        radioElement.name = radioGroupName;
+        radioElement.name = "allergen_single";
         radioElement.value = allergenToken;
 
         radioElement.addEventListener("change", () => {
@@ -235,4 +235,44 @@ export function animateHeartLossAtHeartsBar() { /* handled in CSS or implemented
 export function showGameOver() {
     const gameoverSection = document.getElementById("gameover");
     if (gameoverSection) gameoverSection.setAttribute("aria-hidden", "false");
+}
+
+/* ---------- Winning Card (10 hearts) ---------- */
+export function showWinningCard() {
+    const revealSection = document.getElementById("reveal");
+    const dishTitleElement = document.getElementById("dish-title");
+    const dishCuisineElement = document.getElementById("dish-cuisine");
+    const resultBannerElement = document.getElementById("result");
+    const resultTextElement = document.getElementById("result-text");
+    const ingredientsContainer = document.getElementById("dish-ingredients");
+    const faceSvg = document.getElementById("face");
+    const actionsContainer = revealSection ? revealSection.querySelector(".actions") : null;
+
+    if (!revealSection || !dishTitleElement || !resultBannerElement || !resultTextElement || !ingredientsContainer || !actionsContainer) {
+        return null;
+    }
+
+    // Title & sub
+    dishTitleElement.textContent = "You Win! 🏆";
+    dishCuisineElement.textContent = "";
+
+    // Banner
+    resultBannerElement.classList.remove("bad");
+    resultBannerElement.classList.add("ok");
+    resultTextElement.textContent = "Amazing! You collected 10 hearts!";
+    if (faceSvg) faceSvg.hidden = true;
+
+    // No ingredients on win card
+    ingredientsContainer.textContent = "";
+
+    // Replace actions with only Restart
+    actionsContainer.textContent = "";
+    const restartBtn = document.createElement("button");
+    restartBtn.className = "btn primary";
+    restartBtn.id = "win-restart";
+    restartBtn.textContent = "Restart";
+    actionsContainer.appendChild(restartBtn);
+
+    revealSection.setAttribute("aria-hidden", "false");
+    return restartBtn;
 }
