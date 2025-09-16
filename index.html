@@ -164,30 +164,14 @@
         .card {
             width: min(900px, 92vw);
             background: var(--card);
-            /* unified with reveal-card */
-            border: 4px solid #000;
-            border-radius: 24px;
+            border-radius: 18px;
             box-shadow: var(--shadow);
             padding: 20px
         }
 
-        .title {
-            margin: 0 0 10px 0;
-            font-size: clamp(22px, 3.4vw, 34px);
-            /* unify with wheel/reveal vibe */
-            font-weight: 900;
-            font-family: "Fredoka One", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-        }
+        .title { margin: 0 0 10px 0; font-size: clamp(22px, 3.4vw, 34px) }
         .muted { color: var(--muted) }
         .actions { margin-top: 12px }
-
-        /* Make the first helper line inside .card look like a dashed banner */
-        .card > .muted:first-of-type {
-            display: flex; align-items: center; gap: 12px;
-            border: 3px dashed #000; border-radius: 16px;
-            padding: 10px; background: #fffef3;
-            color: inherit; font-weight: 800;
-        }
 
         /* Base buttons */
         .btn { border: 0; border-radius: 999px; padding: 12px 18px; font-weight: 800; cursor: pointer }
@@ -205,7 +189,13 @@
         .chip {
             display: flex; align-items: center; gap: 10px;
             padding: 12px 14px; border-radius: 999px;
-            background: #fff7c8; border: 2px solid #000; box-shadow: 2px 2px 0 #000
+            background: #fff7c8; border: 2px solid #000; box-shadow: 2px 2px 0 #000;
+
+            /* NEW: kid-friendly font for allergen names */
+            font-family: "Fredoka One", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            font-weight: 900;
+            letter-spacing: .2px;
+            font-size: clamp(16px, 1.6vw, 20px);
         }
         .chip input { width: 20px; height: 20px }
         .chip .emoji-large { margin-left: auto; }
@@ -280,8 +270,7 @@
         <p class="muted">Choose anything that might cause trouble. You can change this later.</p>
         <div class="grid cols-2" id="allergy-list"></div>
         <div class="actions">
-            <!-- unified chunky CTA -->
-            <button class="btn action is-start" disabled id="start">Spin the Wheel</button>
+            <button class="btn primary" disabled id="start">Spin the Wheel</button>
         </div>
         <p class="muted" id="loading">Loading data…</p>
         <p class="muted" hidden id="load-error">Could not load data. Check JSON paths.</p>
