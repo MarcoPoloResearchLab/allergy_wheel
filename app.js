@@ -14,7 +14,9 @@ import {
     AttributeName,
     BrowserEventName,
     FirstCardElementId,
-    ResultCardElementId
+    ResultCardElementId,
+    AvatarId,
+    AvatarAssetPath
 } from "./constants.js";
 
 const stateManager = new StateManager();
@@ -62,6 +64,13 @@ const firstCardPresenter = new AllergenCard({
     }
 });
 
+const avatarResourceMap = new Map([
+    [AvatarId.SUNNY_GIRL, AvatarAssetPath.SUNNY_GIRL],
+    [AvatarId.CURIOUS_GIRL, AvatarAssetPath.CURIOUS_GIRL],
+    [AvatarId.ADVENTUROUS_BOY, AvatarAssetPath.ADVENTUROUS_BOY],
+    [AvatarId.CREATIVE_BOY, AvatarAssetPath.CREATIVE_BOY]
+]);
+
 const revealCardPresenter = new ResultCard({
     documentReference: document,
     revealSectionElement: document.getElementById(ResultCardElementId.REVEAL_SECTION),
@@ -75,7 +84,9 @@ const revealCardPresenter = new ResultCard({
     normalizationEngine: board.normalizationEngine,
     allergensCatalog: board.allergensCatalog,
     cuisineToFlagMap: new Map(),
-    ingredientEmojiByName: new Map()
+    ingredientEmojiByName: new Map(),
+    avatarMap: avatarResourceMap,
+    selectedAvatarId: stateManager.getSelectedAvatar()
 });
 
 const heartsPresenter = {

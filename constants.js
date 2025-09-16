@@ -30,6 +30,18 @@ export const AvatarId = Object.freeze({
     CREATIVE_BOY: AvatarIdentifierCreativeBoy
 });
 
+const AvatarAssetPathSunnyGirl = "assets/avatars/sunny-girl.svg";
+const AvatarAssetPathCuriousGirl = "assets/avatars/curious-girl.svg";
+const AvatarAssetPathAdventurousBoy = "assets/avatars/adventurous-boy.svg";
+const AvatarAssetPathCreativeBoy = "assets/avatars/creative-boy.svg";
+
+export const AvatarAssetPath = Object.freeze({
+    SUNNY_GIRL: AvatarAssetPathSunnyGirl,
+    CURIOUS_GIRL: AvatarAssetPathCuriousGirl,
+    ADVENTUROUS_BOY: AvatarAssetPathAdventurousBoy,
+    CREATIVE_BOY: AvatarAssetPathCreativeBoy
+});
+
 export const ControlElementId = Object.freeze({
     START_BUTTON: "start",
     STOP_BUTTON: "stop",

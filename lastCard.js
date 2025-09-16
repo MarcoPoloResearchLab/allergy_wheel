@@ -3,7 +3,8 @@ import {
     ResultCardElementId,
     AttributeName,
     AttributeBooleanValue,
-    ButtonText
+    ButtonText,
+    AvatarId
 } from "./constants.js";
 
 const ElementTagName = Object.freeze({
@@ -34,6 +35,27 @@ const TextContent = Object.freeze({
 
 const ValueType = Object.freeze({
     FUNCTION: typeof Function
+});
+
+const SvgNamespaceValue = Object.freeze({
+    SVG: "http://www.w3.org/2000/svg",
+    XLINK: "http://www.w3.org/1999/xlink"
+});
+
+const SvgTagName = Object.freeze({
+    IMAGE: "image"
+});
+
+const SvgAttributeName = Object.freeze({
+    HREF: "href",
+    WIDTH: "width",
+    HEIGHT: "height",
+    PRESERVE_ASPECT_RATIO: "preserveAspectRatio"
+});
+
+const SvgAttributeValue = Object.freeze({
+    FULL_SIZE: "100%",
+    PRESERVE_ASPECT_RATIO: "xMidYMid meet"
 });
 
 function normalizeToMap(candidateMap) {
@@ -90,6 +112,10 @@ export class ResultCard {
 
     #emojiByTokenMap;
 
+    #avatarMap;
+
+    #selectedAvatarId;
+
     constructor({
         documentReference = document,
         revealSectionElement,
@@ -103,7 +129,9 @@ export class ResultCard {
         normalizationEngine,
         allergensCatalog,
         cuisineToFlagMap,
-        ingredientEmojiByName
+        ingredientEmojiByName,
+        avatarMap,
+        selectedAvatarId = AvatarId.DEFAULT
     }) {
         this.#documentReference = documentReference;
         this.#revealSectionElement = revealSectionElement || null;
@@ -123,6 +151,9 @@ export class ResultCard {
         this.#cuisineToFlagMap = normalizeToMap(cuisineToFlagMap);
         this.#ingredientEmojiByName = normalizeToMap(ingredientEmojiByName);
         this.#emojiByTokenMap = this.#buildEmojiByTokenMap(this.#allergensCatalog);
+        this.#avatarMap = normalizeToMap(avatarMap);
+        this.#selectedAvatarId = AvatarId.DEFAULT;
+        this.updateAvatarSelection(selectedAvatarId);
     }
 
     updateDataDependencies({
@@ -144,6 +175,38 @@ export class ResultCard {
         if (ingredientEmojiByName) {
             this.#ingredientEmojiByName = normalizeToMap(ingredientEmojiByName);
         }
+    }
+
+    updateAvatarSelection(avatarIdentifierCandidate) {
+        const normalizedCandidate = typeof avatarIdentifierCandidate === "string"
+            ? avatarIdentifierCandidate.trim()
+            : TextContent.EMPTY;
+
+        let resolvedIdentifier = this.#selectedAvatarId;
+        if (typeof resolvedIdentifier !== "string" || !resolvedIdentifier) {
+            resolvedIdentifier = AvatarId.DEFAULT;
+        }
+
+        if (normalizedCandidate && this.#avatarMap.has(normalizedCandidate)) {
+            resolvedIdentifier = normalizedCandidate;
+        } else if (!this.#avatarMap.has(resolvedIdentifier)) {
+            if (this.#avatarMap.has(AvatarId.DEFAULT)) {
+                resolvedIdentifier = AvatarId.DEFAULT;
+            } else {
+                const firstEntryIterator = this.#avatarMap.keys().next();
+                resolvedIdentifier = !firstEntryIterator.done
+                    ? firstEntryIterator.value
+                    : AvatarId.DEFAULT;
+            }
+        }
+
+        this.#selectedAvatarId = resolvedIdentifier;
+        const hasRenderableAvatar = this.#renderSelectedAvatar();
+
+        return {
+            selectedAvatarId: this.#selectedAvatarId,
+            hasRenderableAvatar
+        };
     }
 
     populateRevealCard({
@@ -242,6 +305,7 @@ export class ResultCard {
                 this.#resultBannerElement.classList.add(ClassName.BAD);
                 this.#resultTextElement.textContent = `${TextContent.RESULT_BAD_PREFIX}${selectedAllergenLabel}`;
                 if (this.#faceSvgElement) {
+                    this.#renderSelectedAvatar();
                     this.#faceSvgElement.hidden = false;
                 }
             } else {
@@ -298,6 +362,54 @@ export class ResultCard {
 
         this.#revealSectionElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.FALSE);
         return { restartButton, isDisplayed: true };
+    }
+
+    #renderSelectedAvatar() {
+        if (!this.#faceSvgElement) {
+            return false;
+        }
+
+        const avatarResource = this.#avatarMap.get(this.#selectedAvatarId);
+        if (!avatarResource) {
+            this.#faceSvgElement.innerHTML = TextContent.EMPTY;
+            return false;
+        }
+
+        if (typeof avatarResource === "string") {
+            const trimmedResource = avatarResource.trim();
+            if (!trimmedResource) {
+                this.#faceSvgElement.innerHTML = TextContent.EMPTY;
+                return false;
+            }
+
+            if (trimmedResource.startsWith("<")) {
+                this.#faceSvgElement.innerHTML = trimmedResource;
+                return true;
+            }
+
+            if (this.#documentReference && typeof this.#documentReference.createElementNS === ValueType.FUNCTION) {
+                const avatarImageElement = this.#documentReference.createElementNS(
+                    SvgNamespaceValue.SVG,
+                    SvgTagName.IMAGE
+                );
+                avatarImageElement.setAttribute(SvgAttributeName.WIDTH, SvgAttributeValue.FULL_SIZE);
+                avatarImageElement.setAttribute(SvgAttributeName.HEIGHT, SvgAttributeValue.FULL_SIZE);
+                avatarImageElement.setAttribute(
+                    SvgAttributeName.PRESERVE_ASPECT_RATIO,
+                    SvgAttributeValue.PRESERVE_ASPECT_RATIO
+                );
+                avatarImageElement.setAttributeNS(SvgNamespaceValue.XLINK, SvgAttributeName.HREF, trimmedResource);
+                avatarImageElement.setAttribute(SvgAttributeName.HREF, trimmedResource);
+                this.#faceSvgElement.replaceChildren(avatarImageElement);
+                return true;
+            }
+
+            this.#faceSvgElement.innerHTML = TextContent.EMPTY;
+            return false;
+        }
+
+        this.#faceSvgElement.innerHTML = TextContent.EMPTY;
+        return false;
     }
 
     #buildEmojiByTokenMap(allergensCatalog) {
