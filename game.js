@@ -9,11 +9,13 @@ import { populateRevealCard, showGameOver, showWinningCard } from "./lastCard.js
 import {
     showScreen,
     setWheelControlToStop,
-    setWheelControlToStartGame,
+    setWheelControlToStartGame
+} from "./ui.js";
+import {
     renderHearts,
     animateHeartGainFromReveal,
     animateHeartLossAtHeartsBar
-} from "./ui.js";
+} from "./hearts.js";
 import {
     initWheel,
     setWheelLabels,
