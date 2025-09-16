@@ -82,6 +82,16 @@
   { "name": "carrot", "allergen": "", "emoji": "🥕" },
   { "name": "scallions", "allergen": "", "emoji": "🧅" },
   { "name": "lime", "allergen": "", "emoji": "🍋" },
-  { "name": "lemon", "allergen": "", "emoji": "🍋" }
+  { "name": "lemon", "allergen": "", "emoji": "🍋" },
+  { "name": "cheddar",           "allergen": "milk",        "emoji": "🧀" },
+  { "name": "clams",             "allergen": "shellfish",   "emoji": "🦪" },
+  { "name": "fish sauce",        "allergen": "fish",        "emoji": "🐟" },
+  { "name": "wheat noodles",     "allergen": "wheat",       "emoji": "🍜" },
+  { "name": "crema",             "allergen": "milk",        "emoji": "🥛" },
+  { "name": "ricotta",           "allergen": "milk",        "emoji": "🧀" },
+  { "name": "tzatziki",          "allergen": "milk",        "emoji": "🥛" },
+  { "name": "corn tortillas",    "allergen": "",            "emoji": "🌮" },
+  { "name": "bread crumbs",      "allergen": "wheat",       "emoji": "🍞" },
+  { "name": "rice noodles",      "allergen": "",            "emoji": "🍜" }
 ]
 
