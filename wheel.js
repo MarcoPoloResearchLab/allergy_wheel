@@ -1,3 +1,4 @@
+/* File: wheel.js */
 /* global window */
 
 const wheelState = {
@@ -10,7 +11,8 @@ const wheelState = {
     spinStartAngleRadians: 0,
     spinTargetAngleRadians: 0,
     spinStartTimestampMs: 0,
-    spinDurationMs: 2600,
+    spinDurationMs: 30000, // default ~30s (app can override)
+    revolutions: 4,        // default turns (app can override)
 
     cssSideLengthPixels: 0,
     resizeObserver: null,
@@ -94,6 +96,19 @@ export function registerSpinCallbacks(cbs) {
     wheelState.onSpinComplete = cbs?.onStop || null;
 }
 export function setSpinDurationMs(ms) { if (ms>0) wheelState.spinDurationMs=ms; }
+export function setRevolutions(n) { if (typeof n==="number" && n>=1) wheelState.revolutions = n; }
+
+/* Convenience helpers for “fresh” spins */
+export function scrambleStartAngle() {
+    wheelState.currentAngleRadians = Math.random() * Math.PI * 2;
+    drawWheel();
+}
+export function resetForNewSpin({ randomizeStart = true } = {}) {
+    wheelState.isSpinning = false;
+    if (randomizeStart) scrambleStartAngle();
+    wheelState.lastTickedSegmentIndex = null;
+    drawWheel();
+}
 
 /* ---- text wrapping helpers ---- */
 function wrapLabel(ctx, text, maxWidth, fontPx) {
@@ -291,7 +306,7 @@ export function spinToIndex(reqIdx){
     const dest = pa - idx*segAngle - segAngle/2;
 
     wheelState.spinStartAngleRadians=wheelState.currentAngleRadians;
-    wheelState.spinTargetAngleRadians=dest+Math.PI*2*4; // add revolutions
+    wheelState.spinTargetAngleRadians=dest+Math.PI*2*wheelState.revolutions; // add revolutions
     wheelState.spinStartTimestampMs=performance.now();
     wheelState.isSpinning=true;
     wheelState.lastTickedSegmentIndex=getCurrentPointerSegmentIndex();

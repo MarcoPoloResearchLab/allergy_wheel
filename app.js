@@ -21,7 +21,10 @@ import {
     registerSpinCallbacks,
     forceStopSpin,
     setSpinDurationMs,
-    triggerPointerTap
+    triggerPointerTap,
+    scrambleStartAngle,
+    resetForNewSpin,
+    setRevolutions
 } from "./wheel.js";
 import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom } from "./audio.js";
 import { loadJson, NormalizationEngine, pickRandomUnique } from "./utils.js";
@@ -44,6 +47,20 @@ const applicationState = {
 };
 
 /* ---------- helpers ---------- */
+function randomBetween(minInclusive, maxInclusive) {
+    const min = Math.ceil(minInclusive);
+    const max = Math.floor(maxInclusive);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function getRandomSpinDurationMs() {
+    // Keep it kid-friendly but varied; center around ~30s with some variance
+    return randomBetween(22000, 34000);
+}
+function getRandomRevolutions() {
+    // Vary the "force"; 3–6 full turns feels nice with easing
+    return randomBetween(3, 6);
+}
+
 function recomputeWheelFromSelection() {
     const board = applicationState.board;
     const selectedToken = applicationState.selectedAllergenToken;
@@ -133,19 +150,30 @@ function resetGame() {
 }
 
 /* ---------- wiring ---------- */
-function wireStartButton(cuisineToFlagMap) {
+function startSpinWithFreshState() {
+    // Build a NEW wheel (new random dishes) + fresh start angle + new speed/force
+    if (!applicationState.selectedAllergenToken) return;
+    recomputeWheelFromSelection();
+    if (!applicationState.currentCandidateLabels.length) return;
+
+    // Fresh angle & speed
+    resetForNewSpin({ randomizeStart: true });
+    setRevolutions(getRandomRevolutions());
+    setSpinDurationMs(getRandomSpinDurationMs());
+
+    toStopMode();
+    const randomIndex = Math.floor(Math.random() * applicationState.currentCandidateLabels.length);
+    spinToIndex(randomIndex);
+}
+
+function wireStartButton() {
     const startButton = document.getElementById("start");
     if (!startButton) return;
     startButton.addEventListener("click", function onStartPressed() {
         if (!applicationState.selectedAllergenToken) return;
         showScreen("wheel");
         ensureWheelSize();
-        recomputeWheelFromSelection();
-        if (!applicationState.currentCandidateLabels.length) return;
-        toStopMode();
-        setSpinDurationMs(spinDurationMsDefault);
-        const randomIndex = Math.floor(Math.random() * applicationState.currentCandidateLabels.length);
-        spinToIndex(randomIndex);
+        startSpinWithFreshState();
     });
 }
 
@@ -177,16 +205,7 @@ function wireSpinAgainButton() {
     againButton.addEventListener("click", function onAgainPressed() {
         const revealSection = document.getElementById("reveal");
         if (revealSection) revealSection.setAttribute("aria-hidden", "true");
-
-        // Always build a NEW wheel (new random dishes) for the same allergen
-        if (!applicationState.selectedAllergenToken) return;
-        recomputeWheelFromSelection();
-        if (!applicationState.currentCandidateLabels.length) return;
-
-        toStopMode();
-        setSpinDurationMs(spinDurationMsDefault);
-        const randomIndex = Math.floor(Math.random() * applicationState.currentCandidateLabels.length);
-        spinToIndex(randomIndex);
+        startSpinWithFreshState();
     });
 }
 
@@ -332,7 +351,7 @@ async function initializeApp() {
             }
         });
 
-        wireStartButton(cuisineToFlagMap);
+        wireStartButton();
         wireStopButton();
         wireFullscreenButton();
         wireSpinAgainButton();
