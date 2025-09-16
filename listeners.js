@@ -1,4 +1,11 @@
-import { WheelControlMode, BrowserEventName, KeyboardKey, AttributeBooleanValue } from "./constants.js";
+import {
+    WheelControlMode,
+    BrowserEventName,
+    KeyboardKey,
+    AttributeBooleanValue,
+    AvatarClassName,
+    AvatarMenuClassName
+} from "./constants.js";
 
 const ListenerErrorMessage = {
     MISSING_DEPENDENCIES: "createListenerBinder requires controlElementId, attributeName, and stateManager",
@@ -91,13 +98,67 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         });
     }
 
+    function wireAvatarSelector({ onAvatarChange }) {
+        const avatarToggleButton = documentReference.getElementById(controlElementId.AVATAR_TOGGLE);
+        const avatarMenuElement = documentReference.getElementById(controlElementId.AVATAR_MENU);
+        if (!avatarToggleButton || !avatarMenuElement) {
+            return;
+        }
+
+        const menuOpenClassName = AvatarMenuClassName.OPEN;
+        const ariaExpandedAttributeName = attributeName.ARIA_EXPANDED;
+
+        const setMenuVisibility = (shouldShowMenu) => {
+            if (shouldShowMenu) {
+                avatarMenuElement.hidden = false;
+                if (menuOpenClassName) {
+                    avatarMenuElement.classList.add(menuOpenClassName);
+                }
+                if (ariaExpandedAttributeName) {
+                    avatarToggleButton.setAttribute(ariaExpandedAttributeName, AttributeBooleanValue.TRUE);
+                }
+            } else {
+                if (menuOpenClassName) {
+                    avatarMenuElement.classList.remove(menuOpenClassName);
+                }
+                avatarMenuElement.hidden = true;
+                if (ariaExpandedAttributeName) {
+                    avatarToggleButton.setAttribute(ariaExpandedAttributeName, AttributeBooleanValue.FALSE);
+                }
+            }
+        };
+
+        setMenuVisibility(false);
+
+        avatarToggleButton.addEventListener(BrowserEventName.CLICK, () => {
+            const shouldOpenMenu = avatarMenuElement.hidden;
+            setMenuVisibility(shouldOpenMenu);
+        });
+
+        const avatarOptionClassName = AvatarClassName.OPTION;
+        const avatarOptionElements = avatarOptionClassName
+            ? Array.from(avatarMenuElement.getElementsByClassName(avatarOptionClassName))
+            : [];
+
+        for (const avatarOptionElement of avatarOptionElements) {
+            avatarOptionElement.addEventListener(BrowserEventName.CLICK, () => {
+                const selectedAvatarIdentifier = avatarOptionElement.dataset.avatarId;
+                if (typeof onAvatarChange === "function" && selectedAvatarIdentifier) {
+                    onAvatarChange(selectedAvatarIdentifier);
+                }
+                setMenuVisibility(false);
+            });
+        }
+    }
+
     return {
         wireStartButton,
         wireStopButton,
         wireFullscreenButton,
         wireSpinAgainButton,
         wireRevealBackdropDismissal,
-        wireRestartButton
+        wireRestartButton,
+        wireAvatarSelector
     };
 }
 

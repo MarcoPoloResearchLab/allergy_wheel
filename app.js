@@ -16,7 +16,8 @@ import {
     FirstCardElementId,
     ResultCardElementId,
     AvatarId,
-    AvatarAssetPath
+    AvatarAssetPath,
+    AvatarClassName
 } from "./constants.js";
 
 const stateManager = new StateManager();
@@ -89,6 +90,22 @@ const revealCardPresenter = new ResultCard({
     selectedAvatarId: stateManager.getSelectedAvatar()
 });
 
+const headerAvatarToggleElement = document.getElementById(ControlElementId.AVATAR_TOGGLE);
+const headerAvatarImageElement = headerAvatarToggleElement
+    ? headerAvatarToggleElement.getElementsByClassName(AvatarClassName.IMAGE)[0] || null
+    : null;
+
+const updateHeaderAvatarImage = (avatarIdentifier) => {
+    if (!headerAvatarImageElement) {
+        return;
+    }
+    const resolvedAvatarResource =
+        avatarResourceMap.get(avatarIdentifier) || avatarResourceMap.get(AvatarId.DEFAULT);
+    if (resolvedAvatarResource) {
+        headerAvatarImageElement.src = resolvedAvatarResource;
+    }
+};
+
 const heartsPresenter = {
     renderHearts,
     animateHeartGainFromReveal,
@@ -134,6 +151,17 @@ const gameController = new GameController({
 });
 
 stateManager.initialize();
+
+listenerBinder.wireAvatarSelector({
+    onAvatarChange: (avatarIdentifier) => {
+        stateManager.setSelectedAvatar(avatarIdentifier);
+        const resolvedAvatarIdentifier = stateManager.getSelectedAvatar();
+        revealCardPresenter.updateAvatarSelection(resolvedAvatarIdentifier);
+        updateHeaderAvatarImage(resolvedAvatarIdentifier);
+    }
+});
+
+updateHeaderAvatarImage(stateManager.getSelectedAvatar());
 
 window.addEventListener(BrowserEventName.DOM_CONTENT_LOADED, () => {
     gameController.bootstrap();

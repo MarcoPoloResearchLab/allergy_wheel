@@ -49,7 +49,22 @@ export const ControlElementId = Object.freeze({
     SPIN_AGAIN_BUTTON: "again",
     REVEAL_SECTION: "reveal",
     GAME_OVER_SECTION: "gameover",
-    RESTART_BUTTON: "restart"
+    RESTART_BUTTON: "restart",
+    AVATAR_TOGGLE: "avatar-toggle",
+    AVATAR_MENU: "avatar-menu"
+});
+
+const AvatarOptionClassName = "avatar-option";
+const AvatarImageClassName = "avatar-image";
+const AvatarMenuOpenClassName = "is-open";
+
+export const AvatarClassName = Object.freeze({
+    OPTION: AvatarOptionClassName,
+    IMAGE: AvatarImageClassName
+});
+
+export const AvatarMenuClassName = Object.freeze({
+    OPEN: AvatarMenuOpenClassName
 });
 
 export const FirstCardElementId = Object.freeze({
@@ -83,7 +98,8 @@ export const AttributeName = Object.freeze({
     ARIA_HIDDEN: "aria-hidden",
     DATA_SCREEN: "data-screen",
     DATA_COUNT: "data-count",
-    ARIA_LABEL: "aria-label"
+    ARIA_LABEL: "aria-label",
+    ARIA_EXPANDED: "aria-expanded"
 });
 
 export const AttributeBooleanValue = Object.freeze({
