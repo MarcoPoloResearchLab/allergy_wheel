@@ -1,5 +1,4 @@
 import { MODE_STOP } from "./constants.js";
-import { getSelectedAllergenToken, getStopButtonMode } from "./state.js";
 
 const DomEventName = {
     CLICK: "click",
@@ -17,19 +16,23 @@ const AriaHiddenValue = {
 };
 
 const ListenerErrorMessage = {
-    MISSING_DEPENDENCIES: "createListenerBinder requires controlElementId and attributeName"
+    MISSING_DEPENDENCIES: "createListenerBinder requires controlElementId, attributeName, and stateManager",
+    MISSING_STATE_MANAGER_METHODS: "createListenerBinder requires stateManager methods hasSelectedAllergen and getStopButtonMode"
 };
 
-function createListenerBinder({ controlElementId, attributeName, documentReference = document }) {
-    if (!controlElementId || !attributeName) {
+function createListenerBinder({ controlElementId, attributeName, documentReference = document, stateManager }) {
+    if (!controlElementId || !attributeName || !stateManager) {
         throw new Error(ListenerErrorMessage.MISSING_DEPENDENCIES);
+    }
+    if (typeof stateManager.hasSelectedAllergen !== "function" || typeof stateManager.getStopButtonMode !== "function") {
+        throw new Error(ListenerErrorMessage.MISSING_STATE_MANAGER_METHODS);
     }
 
     function wireStartButton({ onStartRequested }) {
         const startButton = documentReference.getElementById(controlElementId.START_BUTTON);
         if (!startButton) return;
         startButton.addEventListener(DomEventName.CLICK, () => {
-            if (!getSelectedAllergenToken()) return;
+            if (!stateManager.hasSelectedAllergen()) return;
             if (typeof onStartRequested === "function") {
                 onStartRequested();
             }
@@ -40,7 +43,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         const stopButton = documentReference.getElementById(controlElementId.STOP_BUTTON);
         if (!stopButton) return;
         stopButton.addEventListener(DomEventName.CLICK, () => {
-            if (getStopButtonMode() === MODE_STOP) {
+            if (stateManager.getStopButtonMode() === MODE_STOP) {
                 if (typeof onStopRequested === "function") onStopRequested();
             } else if (typeof onShowAllergyScreen === "function") {
                 onShowAllergyScreen();

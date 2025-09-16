@@ -1,25 +1,7 @@
 import { GameController } from "./game.js";
 import { Wheel } from "./wheel.js";
 import { createListenerBinder } from "./listeners.js";
-import {
-    initializeState,
-    setBoard,
-    getBoard,
-    setSelectedAllergen,
-    clearSelectedAllergen,
-    getSelectedAllergenToken,
-    getSelectedAllergenLabel,
-    hasSelectedAllergen,
-    setWheelCandidates,
-    resetWheelCandidates,
-    getWheelCandidateDishes,
-    getWheelCandidateLabels,
-    setHeartsCount,
-    incrementHeartsCount,
-    decrementHeartsCount,
-    getInitialHeartsCount,
-    setStopButtonMode
-} from "./state.js";
+import { StateManager } from "./state.js";
 import { Board } from "./board.js";
 import { NormalizationEngine, loadJson, pickRandomUnique } from "./utils.js";
 import { AllergenCard } from "./firstCard.js";
@@ -51,10 +33,13 @@ const FirstCardElementId = Object.freeze({
     BADGE_CONTAINER: "sel-badges"
 });
 
+const stateManager = new StateManager();
+
 const listenerBinder = createListenerBinder({
     controlElementId: ControlElementId,
     attributeName: AttributeName,
-    documentReference: document
+    documentReference: document,
+    stateManager
 });
 
 const wheel = new Wheel();
@@ -64,25 +49,6 @@ const board = new Board({
     dishesCatalog: [],
     normalizationEngine: new NormalizationEngine([])
 });
-
-const stateManager = {
-    setBoard,
-    getBoard,
-    setSelectedAllergen,
-    clearSelectedAllergen,
-    getSelectedAllergenToken,
-    getSelectedAllergenLabel,
-    hasSelectedAllergen,
-    setWheelCandidates,
-    resetWheelCandidates,
-    getWheelCandidateDishes,
-    getWheelCandidateLabels,
-    setHeartsCount,
-    incrementHeartsCount,
-    decrementHeartsCount,
-    getInitialHeartsCount,
-    setStopButtonMode
-};
 
 const firstCardPresenter = new AllergenCard({
     listContainerElement: document.getElementById(FirstCardElementId.LIST_CONTAINER),
@@ -94,12 +60,10 @@ const firstCardPresenter = new AllergenCard({
 
         const selectedLabel = allergenDescriptor.label || allergenDescriptor.token;
 
-        if (stateManager.setSelectedAllergen) {
-            stateManager.setSelectedAllergen({
-                token: allergenDescriptor.token,
-                label: selectedLabel
-            });
-        }
+        stateManager.setSelectedAllergen({
+            token: allergenDescriptor.token,
+            label: selectedLabel
+        });
 
         const startButtonElement = document.getElementById(ControlElementId.START_BUTTON);
         if (startButtonElement) {
@@ -174,7 +138,7 @@ const gameController = new GameController({
     pickRandomUnique
 });
 
-initializeState();
+stateManager.initialize();
 
 window.addEventListener(BrowserEventName.DOM_CONTENT_LOADED, () => {
     gameController.bootstrap();

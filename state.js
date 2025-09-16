@@ -2,125 +2,126 @@ import { MODE_STOP, MODE_START } from "./constants.js";
 
 const DEFAULT_INITIAL_HEARTS_COUNT = 5;
 
-const gameState = {
-    board: null,
-    initialHeartsCount: DEFAULT_INITIAL_HEARTS_COUNT,
-    heartsCount: DEFAULT_INITIAL_HEARTS_COUNT,
-    selectedAllergenToken: null,
-    selectedAllergenLabel: "",
-    wheelCandidateDishes: [],
-    wheelCandidateLabels: [],
-    stopButtonMode: MODE_STOP
-};
+const TextValue = Object.freeze({
+    EMPTY: ""
+});
 
-function initializeState({ initialHeartsCount = DEFAULT_INITIAL_HEARTS_COUNT, initialStopButtonMode = MODE_STOP } = {}) {
-    if (typeof initialHeartsCount !== "number" || Number.isNaN(initialHeartsCount)) {
-        throw new Error("initializeState requires a numeric initialHeartsCount");
+const StateManagerErrorMessage = Object.freeze({
+    INVALID_INITIAL_HEARTS_COUNT: "StateManager.initialize requires a numeric initialHeartsCount",
+    INVALID_HEARTS_COUNT: "StateManager.setHeartsCount requires a numeric value"
+});
+
+class StateManager {
+    #board;
+
+    #initialHeartsCount;
+
+    #heartsCount;
+
+    #selectedAllergenToken;
+
+    #selectedAllergenLabel;
+
+    #wheelCandidateDishes;
+
+    #wheelCandidateLabels;
+
+    #stopButtonMode;
+
+    constructor({ initialHeartsCount = DEFAULT_INITIAL_HEARTS_COUNT, initialStopButtonMode = MODE_STOP } = {}) {
+        this.initialize({ initialHeartsCount, initialStopButtonMode });
     }
-    gameState.initialHeartsCount = initialHeartsCount;
-    gameState.heartsCount = initialHeartsCount;
-    gameState.stopButtonMode = initialStopButtonMode === MODE_START ? MODE_START : MODE_STOP;
-    gameState.selectedAllergenToken = null;
-    gameState.selectedAllergenLabel = "";
-    gameState.wheelCandidateDishes = [];
-    gameState.wheelCandidateLabels = [];
-    gameState.board = null;
-}
 
-function setBoard(boardInstance) {
-    gameState.board = boardInstance || null;
-}
-
-function getBoard() {
-    return gameState.board;
-}
-
-function setSelectedAllergen({ token, label }) {
-    gameState.selectedAllergenToken = token || null;
-    gameState.selectedAllergenLabel = label || "";
-}
-
-function clearSelectedAllergen() {
-    gameState.selectedAllergenToken = null;
-    gameState.selectedAllergenLabel = "";
-}
-
-function getSelectedAllergenToken() {
-    return gameState.selectedAllergenToken;
-}
-
-function getSelectedAllergenLabel() {
-    return gameState.selectedAllergenLabel;
-}
-
-function hasSelectedAllergen() {
-    return Boolean(gameState.selectedAllergenToken);
-}
-
-function setWheelCandidates({ dishes = [], labels = [] }) {
-    gameState.wheelCandidateDishes = Array.isArray(dishes) ? dishes.slice() : [];
-    gameState.wheelCandidateLabels = Array.isArray(labels) ? labels.slice() : [];
-}
-
-function resetWheelCandidates() {
-    gameState.wheelCandidateDishes = [];
-    gameState.wheelCandidateLabels = [];
-}
-
-function getWheelCandidateDishes() {
-    return gameState.wheelCandidateDishes.slice();
-}
-
-function getWheelCandidateLabels() {
-    return gameState.wheelCandidateLabels.slice();
-}
-
-function setHeartsCount(newHeartsCount) {
-    if (typeof newHeartsCount !== "number" || Number.isNaN(newHeartsCount)) {
-        throw new Error("setHeartsCount requires a numeric value");
+    initialize({ initialHeartsCount = DEFAULT_INITIAL_HEARTS_COUNT, initialStopButtonMode = MODE_STOP } = {}) {
+        if (typeof initialHeartsCount !== "number" || Number.isNaN(initialHeartsCount)) {
+            throw new Error(StateManagerErrorMessage.INVALID_INITIAL_HEARTS_COUNT);
+        }
+        this.#initialHeartsCount = initialHeartsCount;
+        this.#heartsCount = initialHeartsCount;
+        this.#stopButtonMode = initialStopButtonMode === MODE_START ? MODE_START : MODE_STOP;
+        this.#selectedAllergenToken = null;
+        this.#selectedAllergenLabel = TextValue.EMPTY;
+        this.#wheelCandidateDishes = [];
+        this.#wheelCandidateLabels = [];
+        this.#board = null;
     }
-    gameState.heartsCount = Math.max(0, Math.floor(newHeartsCount));
+
+    setBoard(boardInstance) {
+        this.#board = boardInstance || null;
+    }
+
+    getBoard() {
+        return this.#board;
+    }
+
+    setSelectedAllergen({ token, label } = {}) {
+        this.#selectedAllergenToken = token || null;
+        this.#selectedAllergenLabel = label || TextValue.EMPTY;
+    }
+
+    clearSelectedAllergen() {
+        this.#selectedAllergenToken = null;
+        this.#selectedAllergenLabel = TextValue.EMPTY;
+    }
+
+    getSelectedAllergenToken() {
+        return this.#selectedAllergenToken;
+    }
+
+    getSelectedAllergenLabel() {
+        return this.#selectedAllergenLabel;
+    }
+
+    hasSelectedAllergen() {
+        return Boolean(this.#selectedAllergenToken);
+    }
+
+    setWheelCandidates({ dishes = [], labels = [] } = {}) {
+        this.#wheelCandidateDishes = Array.isArray(dishes) ? dishes.slice() : [];
+        this.#wheelCandidateLabels = Array.isArray(labels) ? labels.slice() : [];
+    }
+
+    resetWheelCandidates() {
+        this.#wheelCandidateDishes = [];
+        this.#wheelCandidateLabels = [];
+    }
+
+    getWheelCandidateDishes() {
+        return this.#wheelCandidateDishes.slice();
+    }
+
+    getWheelCandidateLabels() {
+        return this.#wheelCandidateLabels.slice();
+    }
+
+    setHeartsCount(newHeartsCount) {
+        if (typeof newHeartsCount !== "number" || Number.isNaN(newHeartsCount)) {
+            throw new Error(StateManagerErrorMessage.INVALID_HEARTS_COUNT);
+        }
+        this.#heartsCount = Math.max(0, Math.floor(newHeartsCount));
+    }
+
+    incrementHeartsCount() {
+        this.#heartsCount += 1;
+        return this.#heartsCount;
+    }
+
+    decrementHeartsCount() {
+        this.#heartsCount = Math.max(0, this.#heartsCount - 1);
+        return this.#heartsCount;
+    }
+
+    getInitialHeartsCount() {
+        return this.#initialHeartsCount;
+    }
+
+    setStopButtonMode(mode) {
+        this.#stopButtonMode = mode === MODE_START ? MODE_START : MODE_STOP;
+    }
+
+    getStopButtonMode() {
+        return this.#stopButtonMode;
+    }
 }
 
-function incrementHeartsCount() {
-    gameState.heartsCount += 1;
-    return gameState.heartsCount;
-}
-
-function decrementHeartsCount() {
-    gameState.heartsCount = Math.max(0, gameState.heartsCount - 1);
-    return gameState.heartsCount;
-}
-
-function getInitialHeartsCount() {
-    return gameState.initialHeartsCount;
-}
-
-function setStopButtonMode(mode) {
-    gameState.stopButtonMode = mode === MODE_START ? MODE_START : MODE_STOP;
-}
-
-function getStopButtonMode() {
-    return gameState.stopButtonMode;
-}
-
-export {
-    initializeState,
-    setBoard,
-    getBoard,
-    setSelectedAllergen,
-    clearSelectedAllergen,
-    getSelectedAllergenToken,
-    getSelectedAllergenLabel,
-    hasSelectedAllergen,
-    setWheelCandidates,
-    resetWheelCandidates,
-    getWheelCandidateDishes,
-    getWheelCandidateLabels,
-    setHeartsCount,
-    incrementHeartsCount,
-    decrementHeartsCount,
-    getInitialHeartsCount,
-    setStopButtonMode,
-    getStopButtonMode
-};
+export { StateManager, DEFAULT_INITIAL_HEARTS_COUNT };
