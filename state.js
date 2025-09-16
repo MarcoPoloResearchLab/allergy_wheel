@@ -1,4 +1,4 @@
-import { WheelControlMode } from "./constants.js";
+import { WheelControlMode, AvatarId } from "./constants.js";
 
 const DEFAULT_INITIAL_HEARTS_COUNT = 5;
 
@@ -10,6 +10,8 @@ const StateManagerErrorMessage = Object.freeze({
     INVALID_INITIAL_HEARTS_COUNT: "StateManager.initialize requires a numeric initialHeartsCount",
     INVALID_HEARTS_COUNT: "StateManager.setHeartsCount requires a numeric value"
 });
+
+const ValidAvatarIdentifierSet = new Set(Object.values(AvatarId));
 
 class StateManager {
     #board;
@@ -27,6 +29,8 @@ class StateManager {
     #wheelCandidateLabels;
 
     #stopButtonMode;
+
+    #selectedAvatarId = AvatarId.DEFAULT;
 
     constructor({
         initialHeartsCount = DEFAULT_INITIAL_HEARTS_COUNT,
@@ -53,6 +57,7 @@ class StateManager {
         this.#wheelCandidateDishes = [];
         this.#wheelCandidateLabels = [];
         this.#board = null;
+        this.#selectedAvatarId = AvatarId.DEFAULT;
     }
 
     setBoard(boardInstance) {
@@ -135,6 +140,22 @@ class StateManager {
 
     getStopButtonMode() {
         return this.#stopButtonMode;
+    }
+
+    setSelectedAvatar(avatarId) {
+        const validatedAvatarIdentifier =
+            typeof avatarId === "string" && ValidAvatarIdentifierSet.has(avatarId)
+                ? avatarId
+                : AvatarId.DEFAULT;
+        this.#selectedAvatarId = validatedAvatarIdentifier;
+    }
+
+    getSelectedAvatar() {
+        return this.#selectedAvatarId;
+    }
+
+    hasSelectedAvatar() {
+        return ValidAvatarIdentifierSet.has(this.#selectedAvatarId);
     }
 }
 
