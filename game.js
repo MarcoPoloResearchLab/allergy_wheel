@@ -1,8 +1,7 @@
 import {
     ButtonText,
     ScreenName,
-    MODE_START,
-    MODE_STOP,
+    WheelControlMode,
     BrowserEventName,
     AttributeBooleanValue,
     DocumentElementId
@@ -640,7 +639,7 @@ export class GameController {
         const centerButton = this.#documentReference.getElementById(this.#controlElementIdMap.STOP_BUTTON);
         if (!centerButton) {
             if (this.#stateManager.setStopButtonMode) {
-                this.#stateManager.setStopButtonMode(MODE_START);
+                this.#stateManager.setStopButtonMode(WheelControlMode.START);
             }
             if (this.#uiPresenter.setWheelControlToStartGame) {
                 this.#uiPresenter.setWheelControlToStartGame();
@@ -651,7 +650,7 @@ export class GameController {
         centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.START);
         centerButton.classList.remove(ButtonClassName.STOP, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
         if (this.#stateManager.setStopButtonMode) {
-            this.#stateManager.setStopButtonMode(MODE_START);
+            this.#stateManager.setStopButtonMode(WheelControlMode.START);
         }
         if (this.#uiPresenter.setWheelControlToStartGame) {
             this.#uiPresenter.setWheelControlToStartGame();
@@ -662,7 +661,7 @@ export class GameController {
         const centerButton = this.#documentReference.getElementById(this.#controlElementIdMap.STOP_BUTTON);
         if (!centerButton) {
             if (this.#stateManager.setStopButtonMode) {
-                this.#stateManager.setStopButtonMode(MODE_STOP);
+                this.#stateManager.setStopButtonMode(WheelControlMode.STOP);
             }
             if (this.#uiPresenter.setWheelControlToStop) {
                 this.#uiPresenter.setWheelControlToStop();
@@ -673,7 +672,7 @@ export class GameController {
         centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.STOP);
         centerButton.classList.remove(ButtonClassName.START, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
         if (this.#stateManager.setStopButtonMode) {
-            this.#stateManager.setStopButtonMode(MODE_STOP);
+            this.#stateManager.setStopButtonMode(WheelControlMode.STOP);
         }
         if (this.#uiPresenter.setWheelControlToStop) {
             this.#uiPresenter.setWheelControlToStop();

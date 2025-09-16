@@ -5,16 +5,12 @@ export const ScreenName = Object.freeze({
     WHEEL: "wheel"
 });
 
-export const SCREEN_ALLERGY = ScreenName.ALLERGY;
-export const SCREEN_WHEEL = ScreenName.WHEEL;
 
 export const WheelControlMode = Object.freeze({
     STOP: "stop",
     START: "start"
 });
 
-export const MODE_STOP = WheelControlMode.STOP;
-export const MODE_START = WheelControlMode.START;
 
 export const ControlElementId = Object.freeze({
     START_BUTTON: "start",

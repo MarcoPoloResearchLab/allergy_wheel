@@ -1,7 +1,6 @@
 /* global document */
 import {
-    SCREEN_ALLERGY,
-    SCREEN_WHEEL,
+    ScreenName,
     AttributeName,
     AttributeBooleanValue,
     ResultCardElementId
@@ -15,10 +14,10 @@ export function showScreen(screenName) {
 
     const revealElement = document.getElementById(ResultCardElementId.REVEAL_SECTION);
 
-    if (screenName === SCREEN_ALLERGY) {
-        bodyElement.setAttribute(AttributeName.DATA_SCREEN, SCREEN_ALLERGY);
-    } else if (screenName === SCREEN_WHEEL) {
-        bodyElement.setAttribute(AttributeName.DATA_SCREEN, SCREEN_WHEEL);
+    if (screenName === ScreenName.ALLERGY) {
+        bodyElement.setAttribute(AttributeName.DATA_SCREEN, ScreenName.ALLERGY);
+    } else if (screenName === ScreenName.WHEEL) {
+        bodyElement.setAttribute(AttributeName.DATA_SCREEN, ScreenName.WHEEL);
     }
 
     if (revealElement) {
