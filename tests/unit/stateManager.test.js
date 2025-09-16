@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 import { StateManager, DEFAULT_INITIAL_HEARTS_COUNT } from "../../state.js";
-import { MODE_START, MODE_STOP } from "../../constants.js";
+import { MODE_START, MODE_STOP, AvatarId } from "../../constants.js";
 
 const ErrorPattern = Object.freeze({
   INVALID_INITIAL_HEARTS: /requires a numeric initialHeartsCount/iu,
@@ -37,10 +37,20 @@ const StateTestDescription = Object.freeze({
   SELECTION_RESET: "clearSelectedAllergen resets selection state",
   CANDIDATE_DEFENSIVE_COPY: "creates defensive copies of candidate arrays",
   CANDIDATE_RESET: "resetWheelCandidates clears stored dishes and labels",
-  STOP_BUTTON_SWITCH: "switches between start and stop modes"
+  STOP_BUTTON_SWITCH: "switches between start and stop modes",
+  AVATAR_DEFAULT: "provides the default avatar when initialized",
+  AVATAR_VALID_SELECTION: "stores a provided valid avatar identifier",
+  AVATAR_INVALID_UNKNOWN: "falls back to the default avatar when given an unknown identifier",
+  AVATAR_INVALID_NON_STRING: "falls back to the default avatar when given a non-string identifier",
+  AVATAR_RESET_ON_INITIALIZE: "reinitialize restores the default avatar"
 });
 
 const InvalidModeValue = Object.freeze({ VALUE: "invalid mode" });
+
+const InvalidAvatarSelection = Object.freeze({
+  UNKNOWN: "invalid-avatar",
+  NON_STRING: 12345
+});
 
 const InvalidInitializationCases = [
   {
@@ -68,6 +78,8 @@ describe("StateManager initialization", () => {
     expect(stateManager.getInitialHeartsCount()).toBe(DEFAULT_INITIAL_HEARTS_COUNT);
     expect(stateManager.getStopButtonMode()).toBe(MODE_STOP);
     expect(stateManager.hasSelectedAllergen()).toBe(false);
+    expect(stateManager.getSelectedAvatar()).toBe(AvatarId.DEFAULT);
+    expect(stateManager.hasSelectedAvatar()).toBe(true);
   });
 });
 
@@ -130,6 +142,36 @@ const AllergenSelectionCases = [
   }
 ];
 
+const AvatarSelectionCases = [
+  {
+    description: StateTestDescription.AVATAR_VALID_SELECTION,
+    avatarIdentifier: AvatarId.CURIOUS_GIRL,
+    expectedStoredIdentifier: AvatarId.CURIOUS_GIRL,
+    expectedHasSelection: true
+  },
+  {
+    description: StateTestDescription.AVATAR_INVALID_UNKNOWN,
+    avatarIdentifier: InvalidAvatarSelection.UNKNOWN,
+    expectedStoredIdentifier: AvatarId.DEFAULT,
+    expectedHasSelection: true
+  },
+  {
+    description: StateTestDescription.AVATAR_INVALID_NON_STRING,
+    avatarIdentifier: InvalidAvatarSelection.NON_STRING,
+    expectedStoredIdentifier: AvatarId.DEFAULT,
+    expectedHasSelection: true
+  }
+];
+
+const AvatarReinitializationCases = [
+  {
+    description: StateTestDescription.AVATAR_RESET_ON_INITIALIZE,
+    initialAvatarIdentifier: AvatarId.ADVENTUROUS_BOY,
+    reinitializeOptions: {},
+    expectedStoredIdentifier: AvatarId.DEFAULT
+  }
+];
+
 describe("StateManager allergen selection", () => {
   test.each(AllergenSelectionCases)(
     "%s",
@@ -150,6 +192,35 @@ describe("StateManager allergen selection", () => {
     expect(stateManager.getSelectedAllergenToken()).toBeNull();
     expect(stateManager.getSelectedAllergenLabel()).toBe(AllergenSelection.EMPTY_LABEL);
   });
+});
+
+describe("StateManager avatar selection", () => {
+  test(StateTestDescription.AVATAR_DEFAULT, () => {
+    const stateManager = new StateManager();
+    expect(stateManager.getSelectedAvatar()).toBe(AvatarId.DEFAULT);
+    expect(stateManager.hasSelectedAvatar()).toBe(true);
+  });
+
+  test.each(AvatarSelectionCases)(
+    "%s",
+    ({ avatarIdentifier, expectedStoredIdentifier, expectedHasSelection }) => {
+      const stateManager = new StateManager();
+      stateManager.setSelectedAvatar(avatarIdentifier);
+      expect(stateManager.getSelectedAvatar()).toBe(expectedStoredIdentifier);
+      expect(stateManager.hasSelectedAvatar()).toBe(expectedHasSelection);
+    }
+  );
+
+  test.each(AvatarReinitializationCases)(
+    "%s",
+    ({ initialAvatarIdentifier, reinitializeOptions, expectedStoredIdentifier }) => {
+      const stateManager = new StateManager();
+      stateManager.setSelectedAvatar(initialAvatarIdentifier);
+      stateManager.initialize(reinitializeOptions);
+      expect(stateManager.getSelectedAvatar()).toBe(expectedStoredIdentifier);
+      expect(stateManager.hasSelectedAvatar()).toBe(true);
+    }
+  );
 });
 
 describe("StateManager wheel candidate management", () => {
