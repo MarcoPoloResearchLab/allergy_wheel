@@ -25,12 +25,20 @@ const ClassName = Object.freeze({
     INGREDIENT_BAD: "bad",
     EMOJI_LARGE: "emoji-large",
     CUISINE_BADGE: "menu-cuisine-badge",
-    NARRATIVE: "menu-narrative"
+    NARRATIVE: "menu-narrative",
+    EMPTY_ROW: "menu-row menu-row--empty",
+    EMPTY_CELL: "menu-cell menu-cell--empty"
 });
 
 const ValueType = Object.freeze({
     FUNCTION: typeof Function
 });
+
+const MenuMessage = Object.freeze({
+    NO_MATCHES: "No dishes match the selected filters."
+});
+
+const MenuColumnCount = 4;
 
 function normalizeToMap(candidate) {
     if (candidate instanceof Map) {
@@ -67,6 +75,16 @@ export class MenuView {
 
     #emojiByTokenMap = new Map();
 
+    #availableCuisineFilters = new Map();
+
+    #availableIngredientFilters = new Map();
+
+    #selectedCuisineFilters = new Set();
+
+    #selectedIngredientFilters = new Set();
+
+    #filterOptionsChangeHandler = null;
+
     #selectedAllergenToken = null;
 
     #selectedAllergenLabel = TextContent.EMPTY;
@@ -88,6 +106,7 @@ export class MenuView {
     } = {}) {
         if (Array.isArray(dishesCatalog)) {
             this.#dishesCatalog = dishesCatalog.slice();
+            this.#rebuildFilterOptionsFromCatalog();
         }
         if (normalizationEngine) {
             this.#normalizationEngine = normalizationEngine;
@@ -101,12 +120,69 @@ export class MenuView {
         if (Array.isArray(allergensCatalog)) {
             this.#emojiByTokenMap = this.#buildEmojiByTokenMap(allergensCatalog);
         }
+
+        this.#emitFilterOptionsChange();
+    }
+
+    bindFilterOptionsChangeHandler(handlerFunction) {
+        if (typeof handlerFunction !== ValueType.FUNCTION) {
+            this.#filterOptionsChangeHandler = null;
+            return;
+        }
+        this.#filterOptionsChangeHandler = handlerFunction;
+        this.#emitFilterOptionsChange();
     }
 
     updateSelectedAllergen({ token, label } = {}) {
         this.#selectedAllergenToken = token || null;
         this.#selectedAllergenLabel = label || TextContent.EMPTY;
         this.renderMenu();
+    }
+
+    toggleCuisineFilter(filterValue) {
+        const normalizedFilterValue = this.#normalizeFilterValue(filterValue);
+        if (!normalizedFilterValue) {
+            return;
+        }
+        if (this.#selectedCuisineFilters.has(normalizedFilterValue)) {
+            this.#selectedCuisineFilters.delete(normalizedFilterValue);
+        } else if (this.#availableCuisineFilters.has(normalizedFilterValue)) {
+            this.#selectedCuisineFilters.add(normalizedFilterValue);
+        }
+        this.renderMenu();
+        this.#emitFilterOptionsChange();
+    }
+
+    toggleIngredientFilter(filterValue) {
+        const normalizedFilterValue = this.#normalizeFilterValue(filterValue);
+        if (!normalizedFilterValue) {
+            return;
+        }
+        if (this.#selectedIngredientFilters.has(normalizedFilterValue)) {
+            this.#selectedIngredientFilters.delete(normalizedFilterValue);
+        } else if (this.#availableIngredientFilters.has(normalizedFilterValue)) {
+            this.#selectedIngredientFilters.add(normalizedFilterValue);
+        }
+        this.renderMenu();
+        this.#emitFilterOptionsChange();
+    }
+
+    clearCuisineFilters() {
+        if (this.#selectedCuisineFilters.size === 0) {
+            return;
+        }
+        this.#selectedCuisineFilters.clear();
+        this.renderMenu();
+        this.#emitFilterOptionsChange();
+    }
+
+    clearIngredientFilters() {
+        if (this.#selectedIngredientFilters.size === 0) {
+            return;
+        }
+        this.#selectedIngredientFilters.clear();
+        this.renderMenu();
+        this.#emitFilterOptionsChange();
     }
 
     renderMenu() {
@@ -116,7 +192,15 @@ export class MenuView {
 
         this.#menuTableBodyElement.textContent = TextContent.EMPTY;
 
-        for (const dishRecord of this.#dishesCatalog) {
+        const dishesToRender = this.#filterDishes(this.#dishesCatalog);
+
+        if (dishesToRender.length === 0) {
+            const emptyStateRow = this.#createEmptyStateRow();
+            this.#menuTableBodyElement.appendChild(emptyStateRow);
+            return;
+        }
+
+        for (const dishRecord of dishesToRender) {
             if (!dishRecord) {
                 continue;
             }
@@ -216,6 +300,165 @@ export class MenuView {
 
         cellElement.appendChild(paragraphElement);
         return cellElement;
+    }
+
+    #filterDishes(dishCatalog) {
+        const sourceCatalog = Array.isArray(dishCatalog) ? dishCatalog : [];
+        const filteredDishes = [];
+        for (const dishRecord of sourceCatalog) {
+            if (!dishRecord) {
+                continue;
+            }
+            if (!this.#passesCuisineFilter(dishRecord)) {
+                continue;
+            }
+            if (!this.#passesIngredientFilter(dishRecord)) {
+                continue;
+            }
+            filteredDishes.push(dishRecord);
+        }
+        return filteredDishes;
+    }
+
+    #passesCuisineFilter(dishRecord) {
+        if (this.#selectedCuisineFilters.size === 0) {
+            return true;
+        }
+        const normalizedCuisine = this.#normalizeFilterValue(dishRecord && dishRecord.cuisine);
+        if (!normalizedCuisine) {
+            return false;
+        }
+        return this.#selectedCuisineFilters.has(normalizedCuisine);
+    }
+
+    #passesIngredientFilter(dishRecord) {
+        if (this.#selectedIngredientFilters.size === 0) {
+            return true;
+        }
+        const ingredientList = normalizeToArray(dishRecord && dishRecord.ingredients);
+        if (ingredientList.length === 0) {
+            return false;
+        }
+        const normalizedIngredients = new Set();
+        for (const ingredientName of ingredientList) {
+            const normalizedName = this.#normalizeFilterValue(ingredientName);
+            if (normalizedName) {
+                normalizedIngredients.add(normalizedName);
+            }
+        }
+        if (normalizedIngredients.size === 0) {
+            return false;
+        }
+        for (const selectedIngredient of this.#selectedIngredientFilters) {
+            if (!normalizedIngredients.has(selectedIngredient)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    #rebuildFilterOptionsFromCatalog() {
+        this.#availableCuisineFilters = this.#buildCuisineFilterMap(this.#dishesCatalog);
+        this.#availableIngredientFilters = this.#buildIngredientFilterMap(this.#dishesCatalog);
+        this.#pruneUnavailableSelections();
+    }
+
+    #buildCuisineFilterMap(dishesCatalog) {
+        const cuisineMap = new Map();
+        for (const dishRecord of dishesCatalog || []) {
+            if (!dishRecord) {
+                continue;
+            }
+            const cuisineLabel = String(dishRecord.cuisine || TextContent.EMPTY).trim();
+            const normalizedCuisine = this.#normalizeFilterValue(cuisineLabel);
+            if (!normalizedCuisine || cuisineMap.has(normalizedCuisine)) {
+                continue;
+            }
+            cuisineMap.set(normalizedCuisine, Object.freeze({
+                value: normalizedCuisine,
+                label: cuisineLabel || normalizedCuisine
+            }));
+        }
+        return this.#sortFilterMapByLabel(cuisineMap);
+    }
+
+    #buildIngredientFilterMap(dishesCatalog) {
+        const ingredientMap = new Map();
+        for (const dishRecord of dishesCatalog || []) {
+            if (!dishRecord) {
+                continue;
+            }
+            const ingredientList = normalizeToArray(dishRecord.ingredients);
+            for (const ingredientName of ingredientList) {
+                const ingredientLabel = String(ingredientName || TextContent.EMPTY).trim();
+                const normalizedIngredient = this.#normalizeFilterValue(ingredientLabel);
+                if (!normalizedIngredient || ingredientMap.has(normalizedIngredient)) {
+                    continue;
+                }
+                ingredientMap.set(normalizedIngredient, Object.freeze({
+                    value: normalizedIngredient,
+                    label: ingredientLabel || normalizedIngredient
+                }));
+            }
+        }
+        return this.#sortFilterMapByLabel(ingredientMap);
+    }
+
+    #sortFilterMapByLabel(filterMap) {
+        const sortableEntries = Array.from(filterMap.entries());
+        sortableEntries.sort((entryA, entryB) => {
+            const labelA = entryA[1] && entryA[1].label ? entryA[1].label : TextContent.EMPTY;
+            const labelB = entryB[1] && entryB[1].label ? entryB[1].label : TextContent.EMPTY;
+            return labelA.localeCompare(labelB, undefined, { sensitivity: "base" });
+        });
+        return new Map(sortableEntries);
+    }
+
+    #normalizeFilterValue(rawValue) {
+        if (rawValue === null || rawValue === undefined) {
+            return null;
+        }
+        const textualValue = String(rawValue).trim().toLowerCase();
+        return textualValue ? textualValue : null;
+    }
+
+    #pruneUnavailableSelections() {
+        for (const selectedCuisine of Array.from(this.#selectedCuisineFilters)) {
+            if (!this.#availableCuisineFilters.has(selectedCuisine)) {
+                this.#selectedCuisineFilters.delete(selectedCuisine);
+            }
+        }
+        for (const selectedIngredient of Array.from(this.#selectedIngredientFilters)) {
+            if (!this.#availableIngredientFilters.has(selectedIngredient)) {
+                this.#selectedIngredientFilters.delete(selectedIngredient);
+            }
+        }
+    }
+
+    #emitFilterOptionsChange() {
+        if (typeof this.#filterOptionsChangeHandler !== ValueType.FUNCTION) {
+            return;
+        }
+        const payload = {
+            cuisines: Array.from(this.#availableCuisineFilters.values()),
+            ingredients: Array.from(this.#availableIngredientFilters.values()),
+            selectedCuisineValues: Array.from(this.#selectedCuisineFilters.values()),
+            selectedIngredientValues: Array.from(this.#selectedIngredientFilters.values())
+        };
+        this.#filterOptionsChangeHandler(payload);
+    }
+
+    #createEmptyStateRow() {
+        const rowElement = this.#documentReference.createElement(HtmlTagName.TR);
+        rowElement.className = ClassName.EMPTY_ROW;
+
+        const cellElement = this.#documentReference.createElement(HtmlTagName.TD);
+        cellElement.className = ClassName.EMPTY_CELL;
+        cellElement.colSpan = MenuColumnCount;
+        cellElement.textContent = MenuMessage.NO_MATCHES;
+
+        rowElement.appendChild(cellElement);
+        return rowElement;
     }
 
     #createIngredientChip(ingredientName) {
