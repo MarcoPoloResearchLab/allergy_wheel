@@ -267,10 +267,10 @@
             position: relative;
             z-index: 0;
             isolation: isolate;
-            background: linear-gradient(145deg, #fff6f4 0%, #ffffff 100%);
+            background: var(--card);
             border: 4px solid #000;
             border-radius: 28px;
-            box-shadow: 0 20px 38px rgba(255, 77, 109, .18);
+            box-shadow: var(--shadow);
             padding: clamp(28px, 4vw, 42px);
             min-height: min(640px, 90vh);
             display: flex;
@@ -279,13 +279,7 @@
         }
 
         .card::before {
-            content: "";
-            position: absolute;
-            inset: var(--card-inset);
-            border: 3px dotted rgba(255, 77, 109, .6);
-            border-radius: calc(28px - (var(--card-inset) * .6));
-            pointer-events: none;
-            z-index: -1
+            content: none;
         }
 
         .card__body {
