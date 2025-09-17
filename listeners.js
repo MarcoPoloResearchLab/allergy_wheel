@@ -4,7 +4,8 @@ import {
     KeyboardKey,
     AttributeBooleanValue,
     AvatarClassName,
-    AvatarMenuClassName
+    AvatarMenuClassName,
+    TitleClassName
 } from "./constants.js";
 
 const ListenerErrorMessage = {
@@ -23,8 +24,35 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     function wireStartButton({ onStartRequested }) {
         const startButton = documentReference.getElementById(controlElementId.START_BUTTON);
         if (!startButton) return;
+
+        const allergyTitleElement = documentReference.getElementById(controlElementId.ALLERGY_TITLE);
+        const attentionAnimationClassName = TitleClassName.ATTENTION;
+
+        if (allergyTitleElement && attentionAnimationClassName) {
+            const handleTitleAnimationEnd = () => {
+                allergyTitleElement.classList.remove(attentionAnimationClassName);
+            };
+            allergyTitleElement.addEventListener(
+                BrowserEventName.ANIMATION_END,
+                handleTitleAnimationEnd
+            );
+        }
+
         startButton.addEventListener(BrowserEventName.CLICK, () => {
-            if (!stateManager.hasSelectedAllergen()) return;
+            const hasSelectedAllergen = stateManager.hasSelectedAllergen();
+            if (!hasSelectedAllergen) {
+                if (allergyTitleElement && attentionAnimationClassName) {
+                    allergyTitleElement.classList.remove(attentionAnimationClassName);
+                    void allergyTitleElement.offsetWidth;
+                    allergyTitleElement.classList.add(attentionAnimationClassName);
+                }
+                return;
+            }
+
+            if (allergyTitleElement && attentionAnimationClassName) {
+                allergyTitleElement.classList.remove(attentionAnimationClassName);
+            }
+
             if (typeof onStartRequested === "function") {
                 onStartRequested();
             }
