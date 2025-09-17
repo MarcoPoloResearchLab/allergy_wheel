@@ -12,19 +12,6 @@ const RandomValueMaximum = 0.999999;
 const AudioBufferCache = new Map();
 const AudioBufferPromiseCache = new Map();
 
-const SirenToneConfiguration = Object.freeze([
-    Object.freeze({ baseFrequencyHz: 650, sweepDepthHz: 70 }),
-    Object.freeze({ baseFrequencyHz: 920, sweepDepthHz: 60 })
-]);
-
-const SirenTimingConfiguration = Object.freeze({
-    attackSeconds: 0.08,
-    releaseSeconds: 0.18,
-    crossfadeIntervalSeconds: 0.55,
-    fadeSeconds: 0.18,
-    sweepPeriodSeconds: 2.0
-});
-
 const SirenGainLevel = Object.freeze({
     minimal: 0.0001,
     active: 0.85
@@ -121,10 +108,6 @@ export async function preloadNomNom() {
 function expTo(ctx, param, value, t, min = 0.0001) {
     const safe = Math.max(Math.abs(value), min);
     param.exponentialRampToValueAtTime(safe, t);
-}
-
-function linearTo(ctx, param, value, t) {
-    param.linearRampToValueAtTime(value, t);
 }
 
 async function fetchSirenArrayBuffer() {
