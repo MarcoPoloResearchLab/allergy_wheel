@@ -100,7 +100,7 @@ export class AllergenCard {
             labelSpan.textContent = allergenLabel;
 
             const emojiSpan = document.createElement(ElementTagName.SPAN);
-            emojiSpan.classList.add(ElementClassName.EMOJI_LARGE, ElementClassName.CHIP_EMOJI);
+            emojiSpan.classList.add(ElementClassName.CHIP_EMOJI);
             emojiSpan.textContent = allergenEmoji;
             emojiSpan.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
 
