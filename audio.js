@@ -2,6 +2,27 @@
 
 let sharedAudioContext;
 
+const SirenToneConfiguration = Object.freeze([
+    Object.freeze({ baseFrequencyHz: 650, sweepDepthHz: 70 }),
+    Object.freeze({ baseFrequencyHz: 920, sweepDepthHz: 60 })
+]);
+
+const SirenTimingConfiguration = Object.freeze({
+    attackSeconds: 0.08,
+    releaseSeconds: 0.18,
+    crossfadeIntervalSeconds: 0.55,
+    fadeSeconds: 0.18,
+    sweepPeriodSeconds: 2.0
+});
+
+const SirenGainLevel = Object.freeze({
+    minimal: 0.0001,
+    active: 0.85
+});
+
+const SirenOscillatorWaveform = "sine";
+const WaveShaperOversampleSetting = "2x";
+
 function ensureAudioContext() {
     if (!sharedAudioContext) {
         sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -35,6 +56,36 @@ function linearTo(ctx, param, value, t) {
     param.linearRampToValueAtTime(value, t);
 }
 
+function createMildDistortionCurve(resolution = 256, intensity = 0.42) {
+    const curve = new Float32Array(resolution);
+    for (let index = 0; index < resolution; index++) {
+        const normalizedPosition = (index / (resolution - 1)) * 2 - 1;
+        curve[index] = Math.tanh(intensity * normalizedPosition);
+    }
+    return curve;
+}
+
+function scheduleToneAlternation(context, toneGainNodes, startTime, scheduleEndTime) {
+    const { crossfadeIntervalSeconds, fadeSeconds } = SirenTimingConfiguration;
+    const { minimal, active } = SirenGainLevel;
+    for (let segmentIndex = 0, segmentStart = startTime; segmentStart < scheduleEndTime; segmentIndex += 1, segmentStart += crossfadeIntervalSeconds) {
+        const toneIndex = segmentIndex % toneGainNodes.length;
+        const toneGainNode = toneGainNodes[toneIndex];
+        const gainParam = toneGainNode.gain;
+
+        const fadeInStart = segmentStart;
+        const fadeInEnd = Math.min(segmentStart + fadeSeconds, scheduleEndTime);
+        gainParam.setValueAtTime(minimal, fadeInStart);
+        linearTo(context, gainParam, active, fadeInEnd);
+
+        const fadeOutStart = Math.min(segmentStart + crossfadeIntervalSeconds, scheduleEndTime);
+        if (fadeOutStart > fadeInEnd) {
+            gainParam.setValueAtTime(active, fadeOutStart);
+        }
+        linearTo(context, gainParam, minimal, fadeOutStart + fadeSeconds);
+    }
+}
+
 /* ---------- simple tick ---------- */
 export function playTick() {
     const context = ensureAudioContext();
@@ -53,31 +104,66 @@ export function playTick() {
 /* ---------- siren ---------- */
 export async function playSiren(durationMs = 1800) {
     const context = ensureAudioContext();
-    const carrier = context.createOscillator();
-    const mod = context.createOscillator();
-    const deviation = context.createGain();
-    const out = context.createGain();
+    const now = context.currentTime;
+    const requestedDurationSeconds = Math.max(durationMs, 0) / 1000;
+    const scheduleEndTime = now + requestedDurationSeconds;
 
-    carrier.type = "sine";
-    mod.type = "sine";
-    deviation.gain.value = 40;
-    mod.frequency.setValueAtTime(4.2, context.currentTime);
-    carrier.frequency.setValueAtTime(700, context.currentTime);
+    const masterGainNode = context.createGain();
+    masterGainNode.gain.setValueAtTime(SirenGainLevel.minimal, now);
 
-    out.gain.setValueAtTime(0.0001, context.currentTime);
-    expTo(context, out.gain, 0.8, context.currentTime + 0.08);
+    const colorationNode = context.createWaveShaper();
+    colorationNode.curve = createMildDistortionCurve();
+    colorationNode.oversample = WaveShaperOversampleSetting;
 
-    mod.connect(deviation);
-    deviation.connect(carrier.frequency);
-    carrier.connect(out).connect(context.destination);
-    carrier.start();
-    mod.start();
+    masterGainNode.connect(colorationNode).connect(context.destination);
+    expTo(context, masterGainNode.gain, 0.9, now + SirenTimingConfiguration.attackSeconds);
+
+    const toneGainNodes = [];
+    const toneControllers = [];
+
+    for (const toneConfig of SirenToneConfiguration) {
+        const toneGainNode = context.createGain();
+        toneGainNode.gain.setValueAtTime(SirenGainLevel.minimal, now);
+
+        const toneOscillator = context.createOscillator();
+        toneOscillator.type = SirenOscillatorWaveform;
+        toneOscillator.frequency.setValueAtTime(toneConfig.baseFrequencyHz, now);
+
+        const modulationOscillator = context.createOscillator();
+        modulationOscillator.type = SirenOscillatorWaveform;
+        modulationOscillator.frequency.setValueAtTime(1 / SirenTimingConfiguration.sweepPeriodSeconds, now);
+
+        const modulationGainNode = context.createGain();
+        modulationGainNode.gain.setValueAtTime(toneConfig.sweepDepthHz, now);
+
+        modulationOscillator.connect(modulationGainNode).connect(toneOscillator.frequency);
+
+        toneOscillator.connect(toneGainNode).connect(masterGainNode);
+        toneOscillator.start(now);
+        modulationOscillator.start(now);
+
+        toneGainNodes.push(toneGainNode);
+        toneControllers.push({ toneOscillator, modulationOscillator });
+    }
+
+    scheduleToneAlternation(context, toneGainNodes, now, scheduleEndTime);
 
     await new Promise(r => setTimeout(r, durationMs));
-    const fadeEnd = context.currentTime + 0.12;
-    expTo(context, out.gain, 0.0001, fadeEnd);
-    carrier.stop(fadeEnd);
-    mod.stop(fadeEnd);
+
+    const releaseStartTime = Math.max(scheduleEndTime, context.currentTime);
+    const releaseEndTime = releaseStartTime + SirenTimingConfiguration.releaseSeconds;
+    expTo(context, masterGainNode.gain, SirenGainLevel.minimal, releaseEndTime);
+    toneGainNodes.forEach(toneGainNode => {
+        const gainParam = toneGainNode.gain;
+        gainParam.cancelScheduledValues?.(releaseStartTime);
+        gainParam.setValueAtTime(SirenGainLevel.minimal, releaseStartTime);
+        linearTo(context, gainParam, SirenGainLevel.minimal, releaseEndTime);
+    });
+
+    for (const controller of toneControllers) {
+        controller.toneOscillator.stop(releaseEndTime);
+        controller.modulationOscillator.stop(releaseEndTime);
+    }
 }
 
 /* ---------- synthesized "nom-nom" chew ---------- */
