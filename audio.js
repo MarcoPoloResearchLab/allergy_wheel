@@ -167,55 +167,185 @@ export async function playSiren(durationMs = 1800) {
 }
 
 /* ---------- synthesized "nom-nom" chew ---------- */
-function scheduleChew(context, startTime) {
-    const duration = 0.22;
-    const endTime = startTime + duration;
+/**
+ * Tunable parameters for the synthesized chewing effect. Values are grouped by
+ * their role so that designers can experiment with the feel of each bite
+ * without diving into the implementation details.
+ */
+const NomNomChewParameters = Object.freeze({
+    mix: Object.freeze({
+        silentGainLevel: 0.0001
+    }),
+    durations: Object.freeze({
+        chewSeconds: 0.22,
+        toneAttackSeconds: 0.015,
+        crunchNoiseSeconds: 0.08,
+        crunchBaseOffsetSeconds: 0.02,
+        crunchOffsetJitterSeconds: 0.012,
+        crunchGainAttackSeconds: 0.01,
+        thumpDurationSeconds: 0.12,
+        thumpAttackSeconds: 0.008,
+        formantReleaseSeconds: 0.18
+    }),
+    tone: Object.freeze({
+        waveform: "triangle",
+        baseFrequencyHz: 240,
+        targetFrequencyHz: 180,
+        gainPeakLevel: 0.60,
+        pitchVariationRatio: 0.10
+    }),
+    bodyFilter: Object.freeze({
+        type: "bandpass",
+        frequencyHz: 950,
+        qFactor: 1.2
+    }),
+    thump: Object.freeze({
+        waveform: "sine",
+        baseFrequencyHz: 68,
+        gainPeakLevel: 0.28,
+        frequencyVariationRatio: 0.08
+    }),
+    crunchNoise: Object.freeze({
+        amplitudeScale: 0.7,
+        filterType: "bandpass",
+        filterFrequencyHz: 1700,
+        filterFrequencyJitterHz: 220,
+        filterQ: 2.0,
+        filterQJitter: 0.6,
+        gainPeakLevel: 0.35,
+        minimumFilterFrequencyHz: 80,
+        minimumFilterQ: 0.4
+    }),
+    mouthFormant: Object.freeze({
+        filterType: "lowpass",
+        startFrequencyHz: 2200,
+        endFrequencyHz: 1100,
+        qFactor: 2.6
+    })
+});
 
-    const osc = context.createOscillator();
-    osc.type = "triangle";
-    const bodyFilter = context.createBiquadFilter();
-    bodyFilter.type = "bandpass";
-    bodyFilter.frequency.setValueAtTime(950, startTime);
-    bodyFilter.Q.setValueAtTime(1.2, startTime);
-
-    const bodyGain = context.createGain();
-    bodyGain.gain.setValueAtTime(0.0001, startTime);
-    expTo(context, bodyGain.gain, 0.60, startTime + 0.015);
-    expTo(context, bodyGain.gain, 0.0001, endTime);
-
-    osc.frequency.setValueAtTime(240, startTime);
-    linearTo(context, osc.frequency, 180, endTime);
-
-    osc.connect(bodyFilter).connect(bodyGain).connect(context.destination);
-    osc.start(startTime);
-    osc.stop(endTime);
-
-    const crunchDur = 0.08;
-    const crunchStart = startTime + 0.02;
-    const noiseBuf = context.createBuffer(1, Math.floor(context.sampleRate * crunchDur), context.sampleRate);
-    const channel = noiseBuf.getChannelData(0);
-    for (let index = 0; index < channel.length; index++) {
-        channel[index] = (Math.random() * 2 - 1) * 0.7;
-    }
-    const noise = context.createBufferSource();
-    noise.buffer = noiseBuf;
-
-    const crunchFilter = context.createBiquadFilter();
-    crunchFilter.type = "bandpass";
-    crunchFilter.frequency.setValueAtTime(1700, crunchStart);
-    crunchFilter.Q.setValueAtTime(2.0, crunchStart);
-
-    const noiseGain = context.createGain();
-    noiseGain.gain.setValueAtTime(0.0001, crunchStart);
-    expTo(context, noiseGain.gain, 0.35, crunchStart + 0.01);
-    expTo(context, noiseGain.gain, 0.0001, crunchStart + crunchDur);
-
-    noise.connect(crunchFilter).connect(noiseGain).connect(context.destination);
-    noise.start(crunchStart);
-    noise.stop(crunchStart + crunchDur);
+function clampToMinimum(value, minimum) {
+    return Math.max(value, minimum);
 }
 
-export function playNomNom(durationMs = 1200) {
+function randomMultiplier(randomGenerator, variationRatio) {
+    if (variationRatio <= 0) {
+        return 1;
+    }
+    const deviation = (randomGenerator() * 2 - 1) * variationRatio;
+    return 1 + deviation;
+}
+
+function randomOffset(randomGenerator, spread) {
+    if (spread <= 0) {
+        return 0;
+    }
+    return (randomGenerator() * 2 - 1) * spread;
+}
+
+function scheduleChew(context, startTime, randomGenerator = Math.random) {
+    const {
+        mix,
+        durations,
+        tone,
+        bodyFilter,
+        thump,
+        crunchNoise,
+        mouthFormant
+    } = NomNomChewParameters;
+
+    const chewEndTime = startTime + durations.chewSeconds;
+    const crunchStartOffsetSeconds = clampToMinimum(
+        durations.crunchBaseOffsetSeconds + randomOffset(randomGenerator, durations.crunchOffsetJitterSeconds),
+        0
+    );
+    const crunchStartTime = startTime + crunchStartOffsetSeconds;
+    const crunchEndTime = crunchStartTime + durations.crunchNoiseSeconds;
+
+    const tonePitchMultiplier = randomMultiplier(randomGenerator, tone.pitchVariationRatio);
+    const toneStartFrequencyHz = tone.baseFrequencyHz * tonePitchMultiplier;
+    const toneEndFrequencyHz = tone.targetFrequencyHz * tonePitchMultiplier;
+
+    const thumpFrequencyHz = thump.baseFrequencyHz * randomMultiplier(randomGenerator, thump.frequencyVariationRatio);
+
+    const crunchFilterFrequencyHz = clampToMinimum(
+        crunchNoise.filterFrequencyHz + randomOffset(randomGenerator, crunchNoise.filterFrequencyJitterHz),
+        crunchNoise.minimumFilterFrequencyHz
+    );
+    const crunchFilterQ = clampToMinimum(
+        crunchNoise.filterQ + randomOffset(randomGenerator, crunchNoise.filterQJitter),
+        crunchNoise.minimumFilterQ
+    );
+
+    const mouthReleaseEndTime = crunchEndTime + durations.formantReleaseSeconds;
+
+    const mouthResonanceFilter = context.createBiquadFilter();
+    mouthResonanceFilter.type = mouthFormant.filterType;
+    mouthResonanceFilter.frequency.setValueAtTime(mouthFormant.startFrequencyHz, startTime);
+    mouthResonanceFilter.Q.setValueAtTime(mouthFormant.qFactor, startTime);
+    linearTo(context, mouthResonanceFilter.frequency, mouthFormant.endFrequencyHz, mouthReleaseEndTime);
+    mouthResonanceFilter.connect(context.destination);
+
+    const toneOscillator = context.createOscillator();
+    toneOscillator.type = tone.waveform;
+    toneOscillator.frequency.setValueAtTime(toneStartFrequencyHz, startTime);
+    linearTo(context, toneOscillator.frequency, toneEndFrequencyHz, chewEndTime);
+
+    const bodyFilterNode = context.createBiquadFilter();
+    bodyFilterNode.type = bodyFilter.type;
+    bodyFilterNode.frequency.setValueAtTime(bodyFilter.frequencyHz, startTime);
+    bodyFilterNode.Q.setValueAtTime(bodyFilter.qFactor, startTime);
+
+    const bodyGainNode = context.createGain();
+    bodyGainNode.gain.setValueAtTime(mix.silentGainLevel, startTime);
+    expTo(context, bodyGainNode.gain, tone.gainPeakLevel, startTime + durations.toneAttackSeconds);
+    expTo(context, bodyGainNode.gain, mix.silentGainLevel, chewEndTime);
+
+    toneOscillator.connect(bodyFilterNode).connect(bodyGainNode).connect(mouthResonanceFilter);
+    toneOscillator.start(startTime);
+    toneOscillator.stop(chewEndTime);
+
+    const thumpOscillator = context.createOscillator();
+    thumpOscillator.type = thump.waveform;
+    thumpOscillator.frequency.setValueAtTime(thumpFrequencyHz, startTime);
+
+    const thumpGainNode = context.createGain();
+    thumpGainNode.gain.setValueAtTime(mix.silentGainLevel, startTime);
+    expTo(context, thumpGainNode.gain, thump.gainPeakLevel, startTime + durations.thumpAttackSeconds);
+    expTo(context, thumpGainNode.gain, mix.silentGainLevel, startTime + durations.thumpDurationSeconds);
+
+    thumpOscillator.connect(thumpGainNode).connect(mouthResonanceFilter);
+    thumpOscillator.start(startTime);
+    thumpOscillator.stop(startTime + durations.thumpDurationSeconds);
+
+    const noiseBuffer = context.createBuffer(
+        1,
+        Math.floor(context.sampleRate * durations.crunchNoiseSeconds),
+        context.sampleRate
+    );
+    const noiseChannel = noiseBuffer.getChannelData(0);
+    for (let sampleIndex = 0; sampleIndex < noiseChannel.length; sampleIndex += 1) {
+        noiseChannel[sampleIndex] = (Math.random() * 2 - 1) * crunchNoise.amplitudeScale;
+    }
+    const noiseSource = context.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+
+    const crunchFilterNode = context.createBiquadFilter();
+    crunchFilterNode.type = crunchNoise.filterType;
+    crunchFilterNode.frequency.setValueAtTime(crunchFilterFrequencyHz, crunchStartTime);
+    crunchFilterNode.Q.setValueAtTime(crunchFilterQ, crunchStartTime);
+
+    const noiseGainNode = context.createGain();
+    noiseGainNode.gain.setValueAtTime(mix.silentGainLevel, crunchStartTime);
+    expTo(context, noiseGainNode.gain, crunchNoise.gainPeakLevel, crunchStartTime + durations.crunchGainAttackSeconds);
+    expTo(context, noiseGainNode.gain, mix.silentGainLevel, crunchEndTime);
+
+    noiseSource.connect(crunchFilterNode).connect(noiseGainNode).connect(mouthResonanceFilter);
+    noiseSource.start(crunchStartTime);
+    noiseSource.stop(crunchEndTime);
+}
+
+export function playNomNom(durationMs = 1200, randomGenerator = Math.random) {
     const context = ensureAudioContext();
     const t0 = context.currentTime;
 
@@ -223,15 +353,15 @@ export function playNomNom(durationMs = 1200) {
     const gap = 0.28;
     let when = t0;
 
-    scheduleChew(context, when);
-    scheduleChew(context, when + 0.05);
+    scheduleChew(context, when, randomGenerator);
+    scheduleChew(context, when + 0.05, randomGenerator);
 
     when += gap;
-    scheduleChew(context, when);
+    scheduleChew(context, when, randomGenerator);
 
     when += gap;
     if (when - t0 + 0.25 <= total) {
-        scheduleChew(context, when);
+        scheduleChew(context, when, randomGenerator);
     }
 }
 

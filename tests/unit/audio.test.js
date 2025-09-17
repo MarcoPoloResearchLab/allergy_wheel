@@ -51,6 +51,14 @@ function createMockGainNode(connections) {
   return gainNode;
 }
 
+function createMockBiquadFilter(connections) {
+  const biquadFilter = createConnectableNode(connections);
+  biquadFilter.frequency = createMockAudioParam(0);
+  biquadFilter.Q = createMockAudioParam(1);
+  biquadFilter.type = "";
+  return biquadFilter;
+}
+
 function createMockWaveShaper(connections) {
   const waveShaper = createConnectableNode(connections);
   waveShaper.curve = null;
@@ -58,18 +66,47 @@ function createMockWaveShaper(connections) {
   return waveShaper;
 }
 
+function createMockBufferSource(connections) {
+  const bufferSource = createConnectableNode(connections);
+  bufferSource.buffer = null;
+  bufferSource.start = jest.fn();
+  bufferSource.stop = jest.fn();
+  return bufferSource;
+}
+
+function createMockAudioBuffer(length, sampleRate) {
+  const channels = new Map();
+  return {
+    length,
+    sampleRate,
+    getChannelData: jest.fn((channelIndex) => {
+      if (!channels.has(channelIndex)) {
+        channels.set(channelIndex, new Float32Array(length));
+      }
+      return channels.get(channelIndex);
+    })
+  };
+}
+
 function createMockAudioContext() {
   const connections = [];
   const createdOscillators = [];
   const createdGains = [];
+  const createdBiquadFilters = [];
   const createdWaveShapers = [];
+  const createdBufferSources = [];
+  const createdBuffers = [];
   const context = {
     currentTime: 0,
     destination: { nodeName: "destination" },
     connections,
     createdOscillators,
     createdGains,
+    createdBiquadFilters,
     createdWaveShapers,
+    createdBufferSources,
+    createdBuffers,
+    sampleRate: 44100,
     resume: jest.fn(),
     createOscillator: jest.fn(() => {
       const oscillator = createMockOscillator(connections);
@@ -81,10 +118,25 @@ function createMockAudioContext() {
       createdGains.push(gainNode);
       return gainNode;
     }),
+    createBiquadFilter: jest.fn(() => {
+      const biquadFilter = createMockBiquadFilter(connections);
+      createdBiquadFilters.push(biquadFilter);
+      return biquadFilter;
+    }),
     createWaveShaper: jest.fn(() => {
       const waveShaper = createMockWaveShaper(connections);
       createdWaveShapers.push(waveShaper);
       return waveShaper;
+    }),
+    createBufferSource: jest.fn(() => {
+      const bufferSource = createMockBufferSource(connections);
+      createdBufferSources.push(bufferSource);
+      return bufferSource;
+    }),
+    createBuffer: jest.fn((channelCount, length, sampleRate) => {
+      const buffer = createMockAudioBuffer(length, sampleRate);
+      createdBuffers.push(buffer);
+      return buffer;
     })
   };
   return context;
@@ -188,5 +240,94 @@ describe("playSiren", () => {
     expect(mockContext.createdWaveShapers[0].curve).toBeInstanceOf(Float32Array);
 
     expect(description).toBeDefined();
+  });
+});
+
+const TriangleWaveformType = "triangle";
+
+const NomNomRandomizationTestCases = Object.freeze([
+  Object.freeze({
+    description: "applies variation across successive chews",
+    durationMs: 600,
+    randomSequence: [
+      0.1, 0.2, 0.25, 0.35, 0.2,
+      0.9, 0.8, 0.75, 0.65, 0.8,
+      0.5, 0.5, 0.5, 0.5, 0.5
+    ]
+  })
+]);
+
+describe("playNomNom", () => {
+  let playNomNom;
+  let mockContext;
+
+  beforeEach(async () => {
+    jest.resetModules();
+    mockContext = createMockAudioContext();
+    window.AudioContext = jest.fn(() => mockContext);
+    window.webkitAudioContext = undefined;
+    ({ playNomNom } = await import("../../audio.js"));
+  });
+
+  afterEach(() => {
+    window.AudioContext = originalAudioContext;
+    window.webkitAudioContext = originalWebkitAudioContext;
+  });
+
+  it.each(NomNomRandomizationTestCases)("playNomNom $description", ({ durationMs, randomSequence }) => {
+    const remainingRandomValues = [...randomSequence];
+    const deterministicRandom = jest.fn(() => {
+      if (remainingRandomValues.length === 0) {
+        return randomSequence[randomSequence.length - 1] ?? 0.5;
+      }
+      return remainingRandomValues.shift();
+    });
+
+    playNomNom(durationMs, deterministicRandom);
+
+    const toneOscillators = mockContext.createdOscillators.filter(
+      (oscillator) => oscillator.type === TriangleWaveformType
+    );
+    expect(toneOscillators.length).toBeGreaterThanOrEqual(2);
+
+    const toneStartFrequencies = toneOscillators.slice(0, 2).map((oscillator) => {
+      const firstSetEvent = oscillator.frequency.history.find((event) => event.type === "set");
+      return firstSetEvent?.value;
+    });
+
+    expect(toneStartFrequencies[0]).toBeDefined();
+    expect(toneStartFrequencies[1]).toBeDefined();
+    expect(toneStartFrequencies[0]).not.toBe(toneStartFrequencies[1]);
+
+    const biquadFiltersPerChew = 3;
+    const crunchFilterOffset = 2;
+    const crunchFilters = [];
+    for (let index = 0; index < mockContext.createdBiquadFilters.length; index += biquadFiltersPerChew) {
+      const crunchFilter = mockContext.createdBiquadFilters[index + crunchFilterOffset];
+      if (crunchFilter) {
+        crunchFilters.push(crunchFilter);
+      }
+    }
+    expect(crunchFilters.length).toBeGreaterThanOrEqual(2);
+
+    const crunchFrequencies = crunchFilters.slice(0, 2).map((filter) => {
+      const firstSetEvent = filter.frequency.history.find((event) => event.type === "set");
+      return firstSetEvent?.value;
+    });
+
+    expect(crunchFrequencies[0]).toBeDefined();
+    expect(crunchFrequencies[1]).toBeDefined();
+    expect(crunchFrequencies[0]).not.toBe(crunchFrequencies[1]);
+
+    expect(mockContext.createdBufferSources.length).toBeGreaterThanOrEqual(2);
+    const crunchStartTimes = mockContext.createdBufferSources.slice(0, 2).map((source) => {
+      const [[startTime]] = source.start.mock.calls;
+      return startTime;
+    });
+
+    expect(crunchStartTimes[0]).toBeDefined();
+    expect(crunchStartTimes[1]).toBeDefined();
+    expect(crunchStartTimes[0]).not.toBe(crunchStartTimes[1]);
+    expect(deterministicRandom).toHaveBeenCalled();
   });
 });
