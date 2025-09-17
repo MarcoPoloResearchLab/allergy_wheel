@@ -353,12 +353,21 @@
             display: flex; align-items: center; gap: 10px;
             padding: 12px 14px; border-radius: 999px;
             background: #fff7c8; border: 2px solid #000; box-shadow: 2px 2px 0 #000;
+            cursor: pointer;
+
+            transition: transform 160ms ease, box-shadow 160ms ease;
 
             /* NEW: kid-friendly font for allergen names */
             font-family: "Fredoka One", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
             font-weight: 900;
             letter-spacing: .2px;
             font-size: clamp(16px, 1.6vw, 20px);
+        }
+        .chip:hover,
+        .chip:focus-visible {
+            transform: translateY(-1px);
+            box-shadow: 3px 3px 0 #000;
+            outline: none;
         }
         .chip input { width: 20px; height: 20px }
         .chip .emoji-large { margin-left: auto; }
