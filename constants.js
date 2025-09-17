@@ -118,7 +118,24 @@ export const ScreenElementId = Object.freeze({
 });
 
 export const MenuElementId = Object.freeze({
-    TABLE_BODY: "menu-table-body"
+    TABLE_BODY: "menu-table-body",
+    INGREDIENT_FILTER_TOGGLE: "menu-ingredient-filter-toggle",
+    INGREDIENT_FILTER_PANEL: "menu-ingredient-filter-panel",
+    INGREDIENT_FILTER_LIST: "menu-ingredient-filter-list",
+    INGREDIENT_FILTER_CLEAR: "menu-ingredient-filter-clear",
+    CUISINE_FILTER_TOGGLE: "menu-cuisine-filter-toggle",
+    CUISINE_FILTER_PANEL: "menu-cuisine-filter-panel",
+    CUISINE_FILTER_LIST: "menu-cuisine-filter-list",
+    CUISINE_FILTER_CLEAR: "menu-cuisine-filter-clear"
+});
+
+export const MenuFilterText = Object.freeze({
+    FILTER_LABEL: "Filter",
+    INGREDIENT_FILTER_ARIA_LABEL: "Filter ingredients",
+    CUISINE_FILTER_ARIA_LABEL: "Filter cuisines",
+    CLEAR_INGREDIENT_LABEL: "Clear ingredient filters",
+    CLEAR_CUISINE_LABEL: "Clear cuisine filters",
+    SELECT_ALL_LABEL: "Show all"
 });
 
 export const DocumentElementId = Object.freeze({

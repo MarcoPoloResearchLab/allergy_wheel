@@ -8,6 +8,7 @@ import { AllergenCard } from "./firstCard.js";
 import { ResultCard } from "./lastCard.js";
 import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "./hearts.js";
 import { MenuView } from "./menu.js";
+import { MenuFilterController } from "./menuFilters.js";
 import { NavigationController, resolveInitialNavState } from "./navigation.js";
 import {
     primeAudioOnFirstGesture as primeAudioOnFirstGestureEffect,
@@ -75,6 +76,15 @@ const menuPresenter = new MenuView({
     documentReference: document,
     menuTableBodyElement: document.getElementById(MenuElementId.TABLE_BODY)
 });
+
+const menuFilterController = new MenuFilterController({
+    documentReference: document,
+    menuPresenter,
+    controlElementIdMap: MenuElementId,
+    attributeNameMap: AttributeName
+});
+
+menuFilterController.initialize();
 
 const firstCardPresenter = new AllergenCard({
     listContainerElement: document.getElementById(FirstCardElementId.LIST_CONTAINER),

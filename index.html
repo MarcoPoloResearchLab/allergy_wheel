@@ -625,6 +625,163 @@
             letter-spacing: 0.6px;
         }
 
+        .menu-header-cell {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .menu-header-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            font: inherit;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            color: inherit;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: color 150ms ease;
+        }
+
+        .menu-header-toggle::after {
+            content: "▾";
+            font-size: 0.8em;
+            transform: rotate(0deg);
+            transition: transform 160ms ease;
+        }
+
+        .menu-header-toggle[aria-expanded="true"]::after {
+            transform: rotate(180deg);
+        }
+
+        .menu-header-toggle:hover {
+            color: var(--primary);
+        }
+
+        .menu-header-toggle:focus-visible {
+            outline: 3px solid #000;
+            outline-offset: 3px;
+            border-radius: 8px;
+        }
+
+        .menu-filter-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 240px;
+            max-width: 320px;
+            background: #fff;
+            border: 3px solid #000;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            z-index: 5;
+        }
+
+        .menu-filter-panel[hidden] { display: none; }
+
+        .menu-filter-panel.is-open { display: flex; }
+
+        .menu-filter-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .menu-filter-title {
+            margin: 0;
+            font-weight: 800;
+            font-size: clamp(13px, 1.4vw, 16px);
+        }
+
+        .menu-filter-clear {
+            border: 0;
+            background: transparent;
+            font-weight: 700;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 999px;
+            transition: background 150ms ease, transform 150ms ease;
+        }
+
+        .menu-filter-clear[aria-disabled="true"],
+        .menu-filter-clear:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .menu-filter-clear:not([aria-disabled="true"]):hover,
+        .menu-filter-clear:not([aria-disabled="true"]):focus-visible {
+            background: rgba(255, 77, 109, 0.12);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .menu-filter-list {
+            display: grid;
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .menu-filter-option {
+            display: grid;
+            grid-template-columns: 22px 1fr;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid #000;
+            border-radius: 14px;
+            padding: 8px 14px;
+            background: #fffaf1;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 #000;
+            transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+        }
+
+        .menu-filter-option:hover,
+        .menu-filter-option:focus-visible {
+            transform: translateY(-1px);
+            box-shadow: 3px 3px 0 #000;
+            background: #ffe7ee;
+            outline: none;
+        }
+
+        .menu-filter-option__icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            min-width: 18px;
+            color: var(--primary);
+        }
+
+        .menu-filter-option__label {
+            text-align: left;
+        }
+
+        .menu-filter-option:not(.is-selected) .menu-filter-option__icon { color: transparent; }
+
+        .menu-row--empty .menu-cell--empty {
+            text-align: center;
+            font-weight: 700;
+            color: var(--muted);
+            padding: 32px 16px;
+        }
+
         .menu-table tbody tr:nth-child(odd) { background: #fff; }
         .menu-table tbody tr:nth-child(even) { background: #fff5f9; }
 
@@ -676,6 +833,15 @@
             .menu-table-wrapper { border-radius: 18px; }
             .menu-table thead { position: sticky; top: 0; z-index: 1; }
             .menu-table tbody td { display: block; }
+            .menu-header-cell { align-items: flex-start; }
+            .menu-header-toggle { width: 100%; justify-content: space-between; }
+            .menu-filter-panel {
+                position: relative;
+                right: auto;
+                top: auto;
+                width: 100%;
+                margin-top: 8px;
+            }
         }
 
         /* Reveal overlay only on wheel screen */
@@ -844,8 +1010,74 @@
                 <thead>
                     <tr>
                         <th scope="col">Dish</th>
-                        <th scope="col">Ingredients</th>
-                        <th scope="col">Cuisine</th>
+                        <th scope="col">
+                            <div class="menu-header-cell">
+                                <button
+                                    aria-controls="menu-ingredient-filter-panel"
+                                    aria-expanded="false"
+                                    aria-haspopup="true"
+                                    class="menu-header-toggle"
+                                    id="menu-ingredient-filter-toggle"
+                                    type="button"
+                                >
+                                    Ingredients
+                                </button>
+                                <div
+                                    aria-label="Filter ingredients"
+                                    class="menu-filter-panel"
+                                    hidden
+                                    id="menu-ingredient-filter-panel"
+                                    role="group"
+                                >
+                                    <div class="menu-filter-header">
+                                        <p class="menu-filter-title">Filter by ingredient</p>
+                                        <button
+                                            aria-disabled="true"
+                                            class="menu-filter-clear"
+                                            id="menu-ingredient-filter-clear"
+                                            type="button"
+                                        >
+                                            Clear
+                                        </button>
+                                    </div>
+                                    <div class="menu-filter-list" id="menu-ingredient-filter-list"></div>
+                                </div>
+                            </div>
+                        </th>
+                        <th scope="col">
+                            <div class="menu-header-cell">
+                                <button
+                                    aria-controls="menu-cuisine-filter-panel"
+                                    aria-expanded="false"
+                                    aria-haspopup="true"
+                                    class="menu-header-toggle"
+                                    id="menu-cuisine-filter-toggle"
+                                    type="button"
+                                >
+                                    Cuisine
+                                </button>
+                                <div
+                                    aria-label="Filter cuisines"
+                                    class="menu-filter-panel"
+                                    hidden
+                                    id="menu-cuisine-filter-panel"
+                                    role="group"
+                                >
+                                    <div class="menu-filter-header">
+                                        <p class="menu-filter-title">Filter by cuisine</p>
+                                        <button
+                                            aria-disabled="true"
+                                            class="menu-filter-clear"
+                                            id="menu-cuisine-filter-clear"
+                                            type="button"
+                                        >
+                                            Clear
+                                        </button>
+                                    </div>
+                                    <div class="menu-filter-list" id="menu-cuisine-filter-list"></div>
+                                </div>
+                            </div>
+                        </th>
                         <th scope="col">Story</th>
                     </tr>
                 </thead>
