@@ -359,9 +359,19 @@
             font-weight: 900;
             letter-spacing: .2px;
             font-size: clamp(16px, 1.6vw, 20px);
+            cursor: pointer;
+            transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
         }
         .chip input { width: 20px; height: 20px }
         .chip .emoji-large { margin-left: auto; }
+
+        .chip:hover,
+        .chip:focus-visible {
+            background: #fff1a1;
+            box-shadow: 3px 3px 0 #000;
+            transform: translateY(-1px);
+            outline: none;
+        }
 
         /* Exclusive screens */
         #screen-allergy, #screen-wheel { display: none }
