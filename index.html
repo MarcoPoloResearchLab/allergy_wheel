@@ -31,7 +31,24 @@
             --success: #2ecc71;
             --card: #fff;
             --muted: #666;
-            --shadow: 0 12px 30px rgba(0, 0, 0, .15)
+            --shadow: 0 12px 30px rgba(0, 0, 0, .15);
+            --chip-bg: #fff3c2;
+            --chip-hover-bg: #ffe799;
+            --chip-selected-bg: #ffe08a;
+            --chip-border: #000;
+            --chip-shadow: 3px 3px 0 #000;
+            --chip-hover-shadow: 4px 4px 0 #000;
+            --chip-text: #2a1f00;
+            --chip-focus-ring: #000;
+            --chip-radio-size: 26px;
+            --chip-radio-dot-size: 12px;
+            --chip-radio-shadow: 2px 2px 0 #000;
+            --chip-radio-color: var(--primary);
+            --start-button-bg: linear-gradient(135deg, #ff8fb3 0%, #ff6f9f 100%);
+            --start-button-hover-bg: linear-gradient(135deg, #ff96b8 0%, #ff77a6 100%);
+            --start-button-disabled-bg: linear-gradient(135deg, #ffd6e5 0%, #ffc0d5 100%);
+            --start-button-shadow: 4px 6px 0 #000;
+            --start-button-hover-shadow: 5px 7px 0 #000
         }
 
         html, body { height: 100% }
@@ -327,26 +344,41 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: clamp(20px, 3.6vw, 28px) clamp(32px, 5.8vw, 64px);
-            font-size: clamp(22px, 3.4vw, 30px);
+            padding: clamp(20px, 3.2vw, 28px) clamp(32px, 5vw, 56px);
+            font-size: clamp(22px, 3vw, 28px);
             font-weight: 900;
             inline-size: 100%;
-            min-height: clamp(68px, 12vw, 96px);
+            max-inline-size: 280px;
+            min-height: clamp(72px, 12vw, 100px);
+            background: var(--start-button-bg);
+            color: var(--ink);
+            border: 4px solid #000;
+            box-shadow: var(--start-button-shadow);
+            transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+        }
+
+        .btn.start-button:hover,
+        .btn.start-button:focus-visible {
+            background: var(--start-button-hover-bg);
+            box-shadow: var(--start-button-hover-shadow);
+            transform: translateY(-2px);
+            outline: none;
         }
 
         .start-button[data-blocked="true"] {
             cursor: pointer;
-            background: linear-gradient(145deg, #ffd6e1 0%, #ffb6c9 100%);
+            background: var(--start-button-disabled-bg);
             color: rgba(255, 255, 255, 0.85);
-            box-shadow: 0 10px 22px rgba(0, 0, 0, .1);
-            opacity: 0.75;
+            box-shadow: var(--start-button-shadow);
+            opacity: 0.82;
             transform: none;
         }
 
         .start-button[data-blocked="true"]:hover,
         .start-button[data-blocked="true"]:focus-visible {
+            background: var(--start-button-disabled-bg);
+            box-shadow: var(--start-button-shadow);
             transform: none;
-            box-shadow: 0 10px 22px rgba(0, 0, 0, .1);
         }
 
         /* Unified center action button */
@@ -354,57 +386,119 @@
         .btn.action.is-start { background: var(--success); }
         .btn.action.is-stop { background: var(--danger); }
 
-        .grid { display: grid; gap: 12px }
+        .grid { display: grid; gap: clamp(12px, 2vw, 20px) }
 
         .allergen-grid {
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            grid-auto-rows: minmax(70px, auto);
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-auto-rows: minmax(84px, auto);
             align-content: start;
+            justify-items: stretch;
+            grid-auto-flow: row dense;
             padding-block: clamp(8px, 2vw, 16px);
         }
 
-        .allergen-grid .chip {
-            inline-size: 100%;
+        .allergen-grid .start-button {
+            grid-column: -1;
+            align-self: end;
+            justify-self: end;
+            margin: 0;
         }
 
-        .allergen-grid .start-button {
-            grid-column: -2 / -1;
-            align-self: end;
-            justify-self: stretch;
-            margin-block-start: clamp(8px, 2vw, 16px);
+        @media (max-width: 640px) {
+            .allergen-grid .start-button {
+                justify-self: stretch;
+            }
+            .btn.start-button {
+                max-inline-size: none;
+            }
         }
 
         .chip {
-            display: flex; align-items: center; gap: 10px;
-            padding: 12px 14px; border-radius: 999px;
-            background: #fff7c8; border: 2px solid #000; box-shadow: 2px 2px 0 #000;
-            cursor: pointer;
-
-            transition: transform 160ms ease, box-shadow 160ms ease;
-
-            /* NEW: kid-friendly font for allergen names */
+            display: flex;
+            align-items: center;
+            gap: clamp(12px, 2vw, 16px);
+            padding: clamp(16px, 2.8vw, 22px) clamp(18px, 3.2vw, 26px);
+            border-radius: 999px;
+            background: var(--chip-bg);
+            border: 3px solid var(--chip-border);
+            box-shadow: var(--chip-shadow);
+            color: var(--chip-text);
             font-family: "Fredoka One", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
             font-weight: 900;
             letter-spacing: .2px;
             font-size: clamp(16px, 1.6vw, 20px);
             cursor: pointer;
             transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+            inline-size: 100%;
+            min-height: clamp(72px, 12vw, 92px);
+            line-height: 1;
         }
-        .chip:hover,
-        .chip:focus-visible {
-            transform: translateY(-1px);
-            box-shadow: 3px 3px 0 #000;
-            outline: none;
-        }
-        .chip input { width: 20px; height: 20px }
-        .chip .emoji-large { margin-left: auto; }
 
-        .chip:hover,
+        .chip .emoji-large {
+            margin-left: auto;
+            line-height: 1;
+        }
+
+        .chip:is(:hover, :focus-within) {
+            background: var(--chip-hover-bg);
+            box-shadow: var(--chip-hover-shadow);
+            transform: translateY(-2px);
+        }
+
         .chip:focus-visible {
-            background: #fff1a1;
-            box-shadow: 3px 3px 0 #000;
-            transform: translateY(-1px);
             outline: none;
+        }
+
+        .chip:focus-within {
+            outline: 3px solid var(--chip-focus-ring);
+            outline-offset: 2px;
+        }
+
+        .chip--selected {
+            background: var(--chip-selected-bg);
+            box-shadow: var(--chip-hover-shadow);
+            transform: translateY(-2px);
+        }
+
+        .chip__radio {
+            appearance: none;
+            inline-size: var(--chip-radio-size);
+            block-size: var(--chip-radio-size);
+            border-radius: 50%;
+            border: 3px solid var(--chip-border);
+            background: #fff;
+            box-shadow: var(--chip-radio-shadow);
+            display: grid;
+            place-items: center;
+            transition: transform 140ms ease, box-shadow 140ms ease;
+            flex-shrink: 0;
+        }
+
+        .chip__radio::after {
+            content: "";
+            inline-size: var(--chip-radio-dot-size);
+            block-size: var(--chip-radio-dot-size);
+            border-radius: 50%;
+            background: var(--chip-radio-color);
+            transform: scale(0);
+            transition: transform 140ms ease;
+        }
+
+        .chip__radio:checked::after {
+            transform: scale(1);
+        }
+
+        .chip__radio:focus-visible {
+            outline: 3px solid var(--chip-focus-ring);
+            outline-offset: 2px;
+        }
+
+        .chip__radio:active {
+            transform: scale(0.95);
+        }
+
+        .chip--selected .chip__radio {
+            box-shadow: var(--chip-radio-shadow), inset 0 0 0 3px #fff;
         }
 
         /* Exclusive screens */
