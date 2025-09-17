@@ -1,10 +1,19 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { AllergenCard } from "../../firstCard.js";
-import { BrowserEventName, ControlElementId, FirstCardElementId } from "../../constants.js";
+import {
+  AttributeBooleanValue,
+  AttributeName,
+  BrowserEventName,
+  ControlElementId,
+  FirstCardElementId,
+} from "../../constants.js";
 
 const CssClassName = Object.freeze({
   CHIP: "chip",
   CHIP_SELECTED: "chip--selected",
+  CHIP_LABEL: "chip__label",
+  CHIP_EMOJI: "chip__emoji",
+  CHIP_RADIO: "chip__radio",
 });
 
 const HtmlTagName = Object.freeze({
@@ -20,6 +29,13 @@ const SampleAllergens = Object.freeze([
 const SelectionScenarios = SampleAllergens.map((allergen, index) => ({
   description: `selecting ${allergen.label}`,
   selectedIndex: index,
+}));
+
+const StructureScenarios = SampleAllergens.map((allergen, index) => ({
+  description: `renders accessible structure for ${allergen.label}`,
+  chipIndex: index,
+  expectedLabel: allergen.label,
+  expectedEmoji: allergen.emoji,
 }));
 
 const ResetScenarioTable = [{ description: "clearing selection state" }];
@@ -49,6 +65,27 @@ describe("AllergenCard selection styling", () => {
     });
 
     cardPresenter.renderAllergens(SampleAllergens);
+  });
+
+  it.each(StructureScenarios)("%s", ({ chipIndex, expectedLabel, expectedEmoji }) => {
+    const chipElements = Array.from(
+      listContainerElement.getElementsByClassName(CssClassName.CHIP),
+    );
+    const chipElement = chipElements[chipIndex];
+
+    const labelElement = chipElement.getElementsByClassName(CssClassName.CHIP_LABEL)[0];
+    expect(labelElement.textContent).toBe(expectedLabel);
+
+    const radioElement = chipElement.getElementsByClassName(CssClassName.CHIP_RADIO)[0];
+    expect(radioElement.getAttribute(AttributeName.ARIA_LABEL)).toBe(expectedLabel);
+
+    const emojiElements = chipElement.getElementsByClassName(CssClassName.CHIP_EMOJI);
+    expect(emojiElements).toHaveLength(1);
+    const emojiElement = emojiElements[0];
+    expect(emojiElement.textContent).toBe(expectedEmoji);
+    expect(emojiElement.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(
+      AttributeBooleanValue.TRUE,
+    );
   });
 
   it.each(SelectionScenarios)("applies selection class when %s", ({ selectedIndex }) => {

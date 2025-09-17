@@ -1,10 +1,12 @@
 /* global document */
-import { BrowserEventName, ControlElementId } from "./constants.js";
+import { AttributeBooleanValue, AttributeName, BrowserEventName, ControlElementId } from "./constants.js";
 
 const ElementClassName = Object.freeze({
     CHIP: "chip",
     CHIP_SELECTED: "chip--selected",
     CHIP_RADIO: "chip__radio",
+    CHIP_LABEL: "chip__label",
+    CHIP_EMOJI: "chip__emoji",
     BADGE: "badge",
     EMOJI_LARGE: "emoji-large"
 });
@@ -21,8 +23,7 @@ const ElementTagName = Object.freeze({
 });
 
 const TextContent = Object.freeze({
-    EMPTY: "",
-    SPACE_PREFIX: " "
+    EMPTY: ""
 });
 
 const ValueType = Object.freeze({
@@ -84,7 +85,7 @@ export class AllergenCard {
             radioElement.name = RadioInputConfiguration.NAME;
             radioElement.value = allergenToken;
             radioElement.className = ElementClassName.CHIP_RADIO;
-
+            radioElement.setAttribute(AttributeName.ARIA_LABEL, allergenLabel);
             radioElement.addEventListener(BrowserEventName.CHANGE, () => {
                 this.#setSelectedChip(labelElement);
                 this.#handleAllergenSelection({
@@ -94,14 +95,17 @@ export class AllergenCard {
                 });
             });
 
-            const textNode = document.createTextNode(`${TextContent.SPACE_PREFIX}${allergenLabel}`);
+            const labelSpan = document.createElement(ElementTagName.SPAN);
+            labelSpan.className = ElementClassName.CHIP_LABEL;
+            labelSpan.textContent = allergenLabel;
 
             const emojiSpan = document.createElement(ElementTagName.SPAN);
-            emojiSpan.className = ElementClassName.EMOJI_LARGE;
+            emojiSpan.classList.add(ElementClassName.EMOJI_LARGE, ElementClassName.CHIP_EMOJI);
             emojiSpan.textContent = allergenEmoji;
+            emojiSpan.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
 
             labelElement.appendChild(radioElement);
-            labelElement.appendChild(textNode);
+            labelElement.appendChild(labelSpan);
             labelElement.appendChild(emojiSpan);
 
             if (shouldInsertBeforeStartButton) {
@@ -145,6 +149,7 @@ export class AllergenCard {
                 const emojiSpan = document.createElement(ElementTagName.SPAN);
                 emojiSpan.className = ElementClassName.EMOJI_LARGE;
                 emojiSpan.textContent = emojiText;
+                emojiSpan.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
                 badgeElement.appendChild(emojiSpan);
             }
 
