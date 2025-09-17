@@ -7,6 +7,8 @@ import { NormalizationEngine, loadJson, pickRandomUnique } from "./utils.js";
 import { AllergenCard } from "./firstCard.js";
 import { ResultCard } from "./lastCard.js";
 import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "./hearts.js";
+import { MenuView } from "./menu.js";
+import { NavigationController, resolveInitialNavState } from "./navigation.js";
 import {
     primeAudioOnFirstGesture as primeAudioOnFirstGestureEffect,
     playTick as playTickEffect,
@@ -24,7 +26,9 @@ import {
     ResultCardElementId,
     AvatarId,
     AvatarAssetPath,
-    AvatarClassName
+    AvatarClassName,
+    ScreenName,
+    MenuElementId
 } from "./constants.js";
 
 const stateManager = new StateManager();
@@ -67,6 +71,11 @@ const setDocumentStartButtonBlockedState = (shouldBlockStartButton) => {
     }
 };
 
+const menuPresenter = new MenuView({
+    documentReference: document,
+    menuTableBodyElement: document.getElementById(MenuElementId.TABLE_BODY)
+});
+
 const firstCardPresenter = new AllergenCard({
     listContainerElement: document.getElementById(FirstCardElementId.LIST_CONTAINER),
     badgeContainerElement: document.getElementById(FirstCardElementId.BADGE_CONTAINER),
@@ -89,6 +98,13 @@ const firstCardPresenter = new AllergenCard({
             emoji: allergenDescriptor.emoji || ""
         };
         firstCardPresenter.updateBadges([badgeEntry]);
+
+        if (menuPresenter && typeof menuPresenter.updateSelectedAllergen === "function") {
+            menuPresenter.updateSelectedAllergen({
+                token: allergenDescriptor.token,
+                label: selectedLabel
+            });
+        }
     }
 });
 
@@ -188,8 +204,21 @@ const audioPresenter = {
     }
 };
 
+let navigationController = null;
+
+const applyNavigationState = (screenName) => {
+    if (navigationController && typeof navigationController.updateActiveScreen === "function") {
+        navigationController.updateActiveScreen(screenName);
+    }
+};
+
+const navAwareShowScreen = (screenName) => {
+    showScreen(screenName);
+    applyNavigationState(screenName);
+};
+
 const uiPresenter = {
-    showScreen,
+    showScreen: navAwareShowScreen,
     setWheelControlToStop,
     setWheelControlToStartGame
 };
@@ -212,13 +241,36 @@ const gameController = new GameController({
     revealCardPresenter,
     heartsPresenter,
     audioPresenter,
+    menuPresenter,
     uiPresenter,
     dataLoader,
     createNormalizationEngine,
     pickRandomUnique
 });
 
+navigationController = new NavigationController({
+    documentReference: document,
+    controlElementIdMap: ControlElementId,
+    attributeNameMap: AttributeName,
+    onScreenChange: (targetScreenName) => {
+        const resolvedTarget = targetScreenName === ScreenName.MENU
+            ? ScreenName.MENU
+            : ScreenName.ALLERGY;
+        navAwareShowScreen(resolvedTarget);
+    }
+});
+
+navigationController.initialize();
+navAwareShowScreen(resolveInitialNavState());
+
 stateManager.initialize();
+
+if (typeof menuPresenter.updateSelectedAllergen === "function") {
+    menuPresenter.updateSelectedAllergen({
+        token: stateManager.getSelectedAllergenToken(),
+        label: stateManager.getSelectedAllergenLabel()
+    });
+}
 
 listenerBinder.wireAvatarSelector({
     onAvatarChange: (avatarIdentifier) => {

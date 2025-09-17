@@ -77,8 +77,10 @@
         }
 
         header h1 { margin: 0; font-size: clamp(18px, 2.2vw, 28px) }
-        .header-left { display: flex; align-items: center; gap: 14px; }
+        .header-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
         .header-right { display: flex; align-items: center; gap: 12px; }
+        .header-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .header-nav .ghost { min-width: 80px; text-align: center; }
 
         .avatar-menu-wrapper { position: relative; }
 
@@ -576,9 +578,105 @@
         }
 
         /* Exclusive screens */
-        #screen-allergy, #screen-wheel { display: none }
+        #screen-allergy, #screen-wheel, #screen-menu { display: none }
         body[data-screen="allergy"] #screen-allergy { display: grid }
         body[data-screen="wheel"] #screen-wheel { display: grid }
+        body[data-screen="menu"] #screen-menu { display: block }
+
+        #screen-menu {
+            padding: clamp(18px, 4vw, 46px);
+        }
+
+        .menu-card {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--card);
+            border-radius: 28px;
+            border: 4px solid #000;
+            box-shadow: var(--shadow);
+            padding: clamp(18px, 3.6vw, 40px);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .menu-card__header { display: flex; flex-direction: column; gap: 8px; }
+
+        .menu-table-wrapper {
+            border-radius: 22px;
+            border: 3px solid #000;
+            overflow: hidden;
+        }
+
+        .menu-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #fffaf1;
+        }
+
+        .menu-table thead th {
+            background: #ffdfe9;
+            padding: 16px;
+            font-size: clamp(13px, 1.6vw, 18px);
+            text-align: left;
+            border-bottom: 3px solid #000;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .menu-table tbody tr:nth-child(odd) { background: #fff; }
+        .menu-table tbody tr:nth-child(even) { background: #fff5f9; }
+
+        .menu-table tbody td {
+            padding: clamp(14px, 2.4vw, 22px);
+            border-bottom: 2px solid #ffd6e3;
+            vertical-align: top;
+        }
+
+        .menu-table tbody tr:last-child td { border-bottom: none; }
+
+        .menu-dish-heading {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 900;
+            font-size: clamp(18px, 2.4vw, 26px);
+        }
+
+        .menu-dish-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-ingredients { margin-top: 0; }
+        .menu-ingredients .ingredient { margin: 4px 6px 4px 0; }
+
+        .menu-cuisine-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            background: #ffe08a;
+            border: 2px solid #000;
+            border-radius: 14px;
+            padding: 8px 12px;
+        }
+
+        .menu-narrative {
+            margin: 0;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 720px) {
+            #screen-menu { padding: 18px; }
+            .menu-card { padding: 18px; }
+            .menu-table-wrapper { border-radius: 18px; }
+            .menu-table thead { position: sticky; top: 0; z-index: 1; }
+            .menu-table tbody td { display: block; }
+        }
 
         /* Reveal overlay only on wheel screen */
         #reveal {
@@ -665,6 +763,24 @@
             </div>
         </div>
         <h1>Allergy Wheel</h1>
+        <div aria-label="Select a view" class="header-nav" role="group">
+            <button
+                aria-pressed="true"
+                class="ghost"
+                id="nav-game"
+                type="button"
+            >
+                Game
+            </button>
+            <button
+                aria-pressed="false"
+                class="ghost"
+                id="nav-menu"
+                type="button"
+            >
+                Menu
+            </button>
+        </div>
     </div>
     <div class="header-right">
         <div aria-live="polite" class="hearts" data-count="0" id="hearts-bar" aria-label="0 hearts" title="0 hearts">
@@ -715,6 +831,29 @@
     </div>
     <div class="status">Allergens: <span id="sel-badges"></span></div>
 </main>
+
+<!-- Menu -->
+<section aria-hidden="true" aria-labelledby="menu-title" id="screen-menu">
+    <div class="menu-card">
+        <div class="menu-card__header">
+            <h2 class="title" id="menu-title">Global Allergy-Friendly Menu</h2>
+            <p class="muted">Browse every dish from the wheel with its colorful story.</p>
+        </div>
+        <div class="menu-table-wrapper">
+            <table aria-describedby="menu-title" class="menu-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Dish</th>
+                        <th scope="col">Ingredients</th>
+                        <th scope="col">Cuisine</th>
+                        <th scope="col">Story</th>
+                    </tr>
+                </thead>
+                <tbody id="menu-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
 <!-- Reveal -->
 <section aria-hidden="true" aria-labelledby="dish-title" aria-modal="true" id="reveal" role="dialog">
