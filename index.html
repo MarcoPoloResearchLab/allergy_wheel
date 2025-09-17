@@ -602,6 +602,80 @@
 
         .menu-card__header { display: flex; flex-direction: column; gap: 8px; }
 
+        .menu-card__filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .menu-filter {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .menu-filter__toggle {
+            appearance: none;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 999px;
+            box-shadow: 2px 2px 0 #000;
+            color: inherit;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font: inherit;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            line-height: 1;
+            padding: 10px 16px;
+            text-transform: uppercase;
+            transition: transform 160ms ease, box-shadow 160ms ease;
+        }
+
+        .menu-filter__toggle:hover,
+        .menu-filter__toggle:focus-visible {
+            box-shadow: 3px 3px 0 #000;
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .menu-filter__toggle:focus-visible {
+            outline: 3px solid var(--chip-focus-ring);
+            outline-offset: 2px;
+        }
+
+        .menu-filter__toggle[aria-expanded="true"] .menu-filter__chevron {
+            transform: rotate(-180deg);
+        }
+
+        .menu-filter__label-text {
+            white-space: nowrap;
+        }
+
+        .menu-filter__chevron {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85em;
+            transition: transform 160ms ease;
+        }
+
+        .menu-filter__panel {
+            border-radius: 16px;
+            border: 2px solid #000;
+            box-shadow: var(--shadow);
+            padding: 12px;
+            background: #fff;
+        }
+
+        .menu-filter__panel[hidden] {
+            display: none;
+        }
+
         .menu-table-wrapper {
             border-radius: 22px;
             border: 3px solid #000;
@@ -834,13 +908,55 @@
 
 <!-- Menu -->
 <section aria-hidden="true" aria-labelledby="menu-title" id="screen-menu">
-    <div class="menu-card">
-        <div class="menu-card__header">
-            <h2 class="title" id="menu-title">Global Allergy-Friendly Menu</h2>
-            <p class="muted">Browse every dish from the wheel with its colorful story.</p>
-        </div>
-        <div class="menu-table-wrapper">
-            <table aria-describedby="menu-title" class="menu-table">
+        <div class="menu-card">
+            <div class="menu-card__header">
+                <h2 class="title" id="menu-title">Global Allergy-Friendly Menu</h2>
+                <p class="muted">Browse every dish from the wheel with its colorful story.</p>
+                <div aria-label="Menu filters" class="menu-card__filters" role="toolbar">
+                    <div class="menu-filter">
+                        <button
+                            aria-controls="menu-ingredient-filter-panel"
+                            aria-expanded="false"
+                            aria-haspopup="true"
+                            class="menu-filter__toggle menu-header-label"
+                            id="menu-ingredient-filter-toggle"
+                            type="button"
+                        >
+                            <span class="menu-filter__label-text">Ingredients</span>
+                            <span aria-hidden="true" class="menu-filter__chevron">▾</span>
+                        </button>
+                        <div
+                            aria-label="Filter dishes by ingredient"
+                            class="menu-filter__panel"
+                            hidden
+                            id="menu-ingredient-filter-panel"
+                            role="region"
+                        ></div>
+                    </div>
+                    <div class="menu-filter">
+                        <button
+                            aria-controls="menu-cuisine-filter-panel"
+                            aria-expanded="false"
+                            aria-haspopup="true"
+                            class="menu-filter__toggle menu-header-label"
+                            id="menu-cuisine-filter-toggle"
+                            type="button"
+                        >
+                            <span class="menu-filter__label-text">Cuisine</span>
+                            <span aria-hidden="true" class="menu-filter__chevron">▾</span>
+                        </button>
+                        <div
+                            aria-label="Filter dishes by cuisine"
+                            class="menu-filter__panel"
+                            hidden
+                            id="menu-cuisine-filter-panel"
+                            role="region"
+                        ></div>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-table-wrapper">
+                <table aria-describedby="menu-title" class="menu-table">
                 <thead>
                     <tr>
                         <th scope="col">Dish</th>
