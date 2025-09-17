@@ -51,6 +51,12 @@ export const AvatarAssetPath = Object.freeze({
     TRICERATOPS: AvatarAssetPathTriceratops
 });
 
+const AudioAssetPathNomNom = "assets/audio/nom_nom.mp3";
+
+export const AudioAssetPath = Object.freeze({
+    NOM_NOM: AudioAssetPathNomNom
+});
+
 export const ControlElementId = Object.freeze({
     START_BUTTON: "start",
     STOP_BUTTON: "stop",
