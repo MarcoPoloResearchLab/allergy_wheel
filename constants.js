@@ -51,7 +51,8 @@ export const ControlElementId = Object.freeze({
     GAME_OVER_SECTION: "gameover",
     RESTART_BUTTON: "restart",
     AVATAR_TOGGLE: "avatar-toggle",
-    AVATAR_MENU: "avatar-menu"
+    AVATAR_MENU: "avatar-menu",
+    ALLERGY_TITLE: "allergy-title"
 });
 
 const AvatarOptionClassName = "avatar-option";
@@ -65,6 +66,12 @@ export const AvatarClassName = Object.freeze({
 
 export const AvatarMenuClassName = Object.freeze({
     OPEN: AvatarMenuOpenClassName
+});
+
+const TitleAttentionClassName = "title--attention";
+
+export const TitleClassName = Object.freeze({
+    ATTENTION: TitleAttentionClassName
 });
 
 export const FirstCardElementId = Object.freeze({
@@ -111,7 +118,8 @@ export const BrowserEventName = Object.freeze({
     DOM_CONTENT_LOADED: "DOMContentLoaded",
     CLICK: "click",
     KEY_DOWN: "keydown",
-    CHANGE: "change"
+    CHANGE: "change",
+    ANIMATION_END: "animationend"
 });
 
 export const KeyboardKey = Object.freeze({
