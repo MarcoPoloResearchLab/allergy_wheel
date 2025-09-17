@@ -26,6 +26,8 @@ const TestDescription = Object.freeze({
   RENDER_IMAGE_PATH: "renders <image> element for avatar resource paths when allergen is present",
   RENDER_IMAGE_PATH_TYRANNOSAURUS:
     "renders <image> element for the tyrannosaurus rex avatar resource when allergen is present",
+  RENDER_IMAGE_PATH_TRICERATOPS:
+    "renders <image> element for the triceratops avatar resource when allergen is present",
   UPDATE_INVALID_FALLBACK: "falls back to default avatar when provided identifier is invalid",
   UPDATE_PATH_IMMEDIATE_RENDER: "renders avatar image immediately when avatar selection changes",
   UPDATE_PATH_TYRANNOSAURUS:
@@ -136,6 +138,16 @@ const RevealCardAvatarRenderingCases = [
     selectedAvatarId: AvatarId.TYRANNOSAURUS_REX,
     avatarResourceType: AvatarResourceType.PATH,
     expectedMarkup: AvatarAssetPath.TYRANNOSAURUS_REX
+  },
+  {
+    description: TestDescription.RENDER_IMAGE_PATH_TRICERATOPS,
+    avatarMapEntries: [
+      [AvatarId.SUNNY_GIRL, AvatarMarkup.SUNNY],
+      [AvatarId.TRICERATOPS, AvatarAssetPath.TRICERATOPS]
+    ],
+    selectedAvatarId: AvatarId.TRICERATOPS,
+    avatarResourceType: AvatarResourceType.PATH,
+    expectedMarkup: AvatarAssetPath.TRICERATOPS
   }
 ];
 
