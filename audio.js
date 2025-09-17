@@ -1,27 +1,32 @@
-// audio.js — fully synthesized sounds (no external files)
+import { AudioAssetPath } from "./constants.js";
+
+// audio.js — web audio effects and buffered playback resources
 
 let sharedAudioContext;
+let cachedSirenBufferPromise;
 
-const SirenToneConfiguration = Object.freeze([
-    Object.freeze({ baseFrequencyHz: 650, sweepDepthHz: 70 }),
-    Object.freeze({ baseFrequencyHz: 920, sweepDepthHz: 60 })
-]);
+const AudioAssetLoadErrorMessage = "Unable to load audio asset";
+const AudioAssetDecodeErrorMessage = "Unable to decode audio asset";
+const RandomValueMaximum = 0.999999;
 
-const SirenTimingConfiguration = Object.freeze({
-    attackSeconds: 0.08,
-    releaseSeconds: 0.18,
-    crossfadeIntervalSeconds: 0.55,
-    fadeSeconds: 0.18,
-    sweepPeriodSeconds: 2.0
-});
+const AudioBufferCache = new Map();
+const AudioBufferPromiseCache = new Map();
 
 const SirenGainLevel = Object.freeze({
     minimal: 0.0001,
     active: 0.85
 });
 
-const SirenOscillatorWaveform = "sine";
-const WaveShaperOversampleSetting = "2x";
+const SirenEnvelopeTiming = Object.freeze({
+    attackSeconds: 0.08,
+    releaseSeconds: 0.18
+});
+
+const SirenLoopToleranceSeconds = 0.001;
+
+const SirenAssetLoadErrorMessage = "Unable to load siren audio asset.";
+const SirenAudioDecodingErrorMessage = "Unable to decode siren audio asset.";
+const AudioAssetFetchUnsupportedMessage = "Audio asset loading requires fetch support.";
 
 function ensureAudioContext() {
     if (!sharedAudioContext) {
@@ -46,44 +51,103 @@ function unlockAudioNow() {
     } catch {}
 }
 
+async function fetchAudioAssetData(assetPath) {
+    const response = await fetch(assetPath);
+    if (!response.ok) {
+        throw new Error(`${AudioAssetLoadErrorMessage}: ${response.status}`);
+    }
+    return response.arrayBuffer();
+}
+
+async function decodeAudioDataAsync(context, audioData) {
+    const decodeResult = context.decodeAudioData(audioData);
+    if (decodeResult instanceof Promise) {
+        return decodeResult;
+    }
+    return new Promise((resolve, reject) => {
+        context.decodeAudioData(
+            audioData,
+            (buffer) => {
+                resolve(buffer);
+            },
+            (error) => {
+                reject(error || new Error(AudioAssetDecodeErrorMessage));
+            }
+        );
+    });
+}
+
+async function loadAudioBuffer(context, assetPath) {
+    if (AudioBufferCache.has(assetPath)) {
+        return AudioBufferCache.get(assetPath);
+    }
+    if (AudioBufferPromiseCache.has(assetPath)) {
+        return AudioBufferPromiseCache.get(assetPath);
+    }
+    const bufferPromise = fetchAudioAssetData(assetPath)
+        .then((arrayBuffer) => decodeAudioDataAsync(context, arrayBuffer))
+        .then((buffer) => {
+            AudioBufferCache.set(assetPath, buffer);
+            AudioBufferPromiseCache.delete(assetPath);
+            return buffer;
+        })
+        .catch((error) => {
+            AudioBufferPromiseCache.delete(assetPath);
+            throw error;
+        });
+    AudioBufferPromiseCache.set(assetPath, bufferPromise);
+    return bufferPromise;
+}
+
+export async function preloadNomNom() {
+    const context = ensureAudioContext();
+    await loadAudioBuffer(context, AudioAssetPath.NOM_NOM);
+}
+
 /* ---------- small helper envelopes ---------- */
 function expTo(ctx, param, value, t, min = 0.0001) {
     const safe = Math.max(Math.abs(value), min);
     param.exponentialRampToValueAtTime(safe, t);
 }
 
-function linearTo(ctx, param, value, t) {
-    param.linearRampToValueAtTime(value, t);
-}
-
-function createMildDistortionCurve(resolution = 256, intensity = 0.42) {
-    const curve = new Float32Array(resolution);
-    for (let index = 0; index < resolution; index++) {
-        const normalizedPosition = (index / (resolution - 1)) * 2 - 1;
-        curve[index] = Math.tanh(intensity * normalizedPosition);
+async function fetchSirenArrayBuffer() {
+    if (typeof fetch !== "function") {
+        throw new Error(AudioAssetFetchUnsupportedMessage);
     }
-    return curve;
+    const response = await fetch(AudioAssetPath.SIREN);
+    if (!response?.ok) {
+        throw new Error(SirenAssetLoadErrorMessage);
+    }
+    return response.arrayBuffer();
 }
 
-function scheduleToneAlternation(context, toneGainNodes, startTime, scheduleEndTime) {
-    const { crossfadeIntervalSeconds, fadeSeconds } = SirenTimingConfiguration;
-    const { minimal, active } = SirenGainLevel;
-    for (let segmentIndex = 0, segmentStart = startTime; segmentStart < scheduleEndTime; segmentIndex += 1, segmentStart += crossfadeIntervalSeconds) {
-        const toneIndex = segmentIndex % toneGainNodes.length;
-        const toneGainNode = toneGainNodes[toneIndex];
-        const gainParam = toneGainNode.gain;
+async function decodeSirenArrayBuffer(context, arrayBuffer) {
+    if (!context?.decodeAudioData) {
+        throw new Error(SirenAudioDecodingErrorMessage);
+    }
+    if (context.decodeAudioData.length >= 2) {
+        return new Promise((resolve, reject) => {
+            context.decodeAudioData(arrayBuffer, resolve, reject);
+        });
+    }
+    const decoded = context.decodeAudioData(arrayBuffer);
+    return decoded instanceof Promise ? decoded : Promise.resolve(decoded);
+}
 
-        const fadeInStart = segmentStart;
-        const fadeInEnd = Math.min(segmentStart + fadeSeconds, scheduleEndTime);
-        gainParam.setValueAtTime(minimal, fadeInStart);
-        linearTo(context, gainParam, active, fadeInEnd);
-
-        const fadeOutStart = Math.min(segmentStart + crossfadeIntervalSeconds, scheduleEndTime);
-        if (fadeOutStart > fadeInEnd) {
-            gainParam.setValueAtTime(active, fadeOutStart);
+async function loadSirenBuffer(context) {
+    if (!cachedSirenBufferPromise) {
+        cachedSirenBufferPromise = (async () => {
+            const arrayBuffer = await fetchSirenArrayBuffer();
+            return decodeSirenArrayBuffer(context, arrayBuffer);
+        })();
+        try {
+            await cachedSirenBufferPromise;
+        } catch (error) {
+            cachedSirenBufferPromise = null;
+            throw error;
         }
-        linearTo(context, gainParam, minimal, fadeOutStart + fadeSeconds);
     }
+    return cachedSirenBufferPromise;
 }
 
 /* ---------- simple tick ---------- */
@@ -104,265 +168,157 @@ export function playTick() {
 /* ---------- siren ---------- */
 export async function playSiren(durationMs = 1800) {
     const context = ensureAudioContext();
+    const sirenBuffer = await loadSirenBuffer(context);
+
     const now = context.currentTime;
     const requestedDurationSeconds = Math.max(durationMs, 0) / 1000;
-    const scheduleEndTime = now + requestedDurationSeconds;
+    const bufferDurationSeconds = Math.max(sirenBuffer?.duration ?? 0, 0);
 
     const masterGainNode = context.createGain();
     masterGainNode.gain.setValueAtTime(SirenGainLevel.minimal, now);
+    masterGainNode.connect(context.destination);
 
-    const colorationNode = context.createWaveShaper();
-    colorationNode.curve = createMildDistortionCurve();
-    colorationNode.oversample = WaveShaperOversampleSetting;
+    expTo(context, masterGainNode.gain, SirenGainLevel.active, now + SirenEnvelopeTiming.attackSeconds);
 
-    masterGainNode.connect(colorationNode).connect(context.destination);
-    expTo(context, masterGainNode.gain, 0.9, now + SirenTimingConfiguration.attackSeconds);
+    const bufferSourceNode = context.createBufferSource();
+    bufferSourceNode.buffer = sirenBuffer;
+    const shouldLoopBuffer = requestedDurationSeconds - bufferDurationSeconds > SirenLoopToleranceSeconds;
+    bufferSourceNode.loop = shouldLoopBuffer;
+    bufferSourceNode.connect(masterGainNode);
+    bufferSourceNode.start(now);
 
-    const toneGainNodes = [];
-    const toneControllers = [];
+    await new Promise(resolve => setTimeout(resolve, durationMs));
 
-    for (const toneConfig of SirenToneConfiguration) {
-        const toneGainNode = context.createGain();
-        toneGainNode.gain.setValueAtTime(SirenGainLevel.minimal, now);
-
-        const toneOscillator = context.createOscillator();
-        toneOscillator.type = SirenOscillatorWaveform;
-        toneOscillator.frequency.setValueAtTime(toneConfig.baseFrequencyHz, now);
-
-        const modulationOscillator = context.createOscillator();
-        modulationOscillator.type = SirenOscillatorWaveform;
-        modulationOscillator.frequency.setValueAtTime(1 / SirenTimingConfiguration.sweepPeriodSeconds, now);
-
-        const modulationGainNode = context.createGain();
-        modulationGainNode.gain.setValueAtTime(toneConfig.sweepDepthHz, now);
-
-        modulationOscillator.connect(modulationGainNode).connect(toneOscillator.frequency);
-
-        toneOscillator.connect(toneGainNode).connect(masterGainNode);
-        toneOscillator.start(now);
-        modulationOscillator.start(now);
-
-        toneGainNodes.push(toneGainNode);
-        toneControllers.push({ toneOscillator, modulationOscillator });
-    }
-
-    scheduleToneAlternation(context, toneGainNodes, now, scheduleEndTime);
-
-    await new Promise(r => setTimeout(r, durationMs));
-
-    const releaseStartTime = Math.max(scheduleEndTime, context.currentTime);
-    const releaseEndTime = releaseStartTime + SirenTimingConfiguration.releaseSeconds;
+    const releaseStartTime = Math.max(now + requestedDurationSeconds, context.currentTime);
+    const releaseEndTime = releaseStartTime + SirenEnvelopeTiming.releaseSeconds;
+    const currentGainLevel = Math.max(masterGainNode.gain.value ?? SirenGainLevel.active, SirenGainLevel.minimal);
+    masterGainNode.gain.cancelScheduledValues?.(releaseStartTime);
+    masterGainNode.gain.setValueAtTime(currentGainLevel, releaseStartTime);
     expTo(context, masterGainNode.gain, SirenGainLevel.minimal, releaseEndTime);
-    toneGainNodes.forEach(toneGainNode => {
-        const gainParam = toneGainNode.gain;
-        gainParam.cancelScheduledValues?.(releaseStartTime);
-        gainParam.setValueAtTime(SirenGainLevel.minimal, releaseStartTime);
-        linearTo(context, gainParam, SirenGainLevel.minimal, releaseEndTime);
-    });
 
-    for (const controller of toneControllers) {
-        controller.toneOscillator.stop(releaseEndTime);
-        controller.modulationOscillator.stop(releaseEndTime);
-    }
+    bufferSourceNode.stop(releaseEndTime);
 }
 
-/* ---------- synthesized "nom-nom" chew ---------- */
-/**
- * Tunable parameters for the synthesized chewing effect. Values are grouped by
- * their role so that designers can experiment with the feel of each bite
- * without diving into the implementation details.
- */
-const NomNomChewParameters = Object.freeze({
-    mix: Object.freeze({
-        silentGainLevel: 0.0001
-    }),
-    durations: Object.freeze({
-        chewSeconds: 0.22,
-        toneAttackSeconds: 0.015,
-        crunchNoiseSeconds: 0.08,
-        crunchBaseOffsetSeconds: 0.02,
-        crunchOffsetJitterSeconds: 0.012,
-        crunchGainAttackSeconds: 0.01,
-        thumpDurationSeconds: 0.12,
-        thumpAttackSeconds: 0.008,
-        formantReleaseSeconds: 0.18
-    }),
-    tone: Object.freeze({
-        waveform: "triangle",
-        baseFrequencyHz: 240,
-        targetFrequencyHz: 180,
-        gainPeakLevel: 0.60,
-        pitchVariationRatio: 0.10
-    }),
-    bodyFilter: Object.freeze({
-        type: "bandpass",
-        frequencyHz: 950,
-        qFactor: 1.2
-    }),
-    thump: Object.freeze({
-        waveform: "sine",
-        baseFrequencyHz: 68,
-        gainPeakLevel: 0.28,
-        frequencyVariationRatio: 0.08
-    }),
-    crunchNoise: Object.freeze({
-        amplitudeScale: 0.7,
-        filterType: "bandpass",
-        filterFrequencyHz: 1700,
-        filterFrequencyJitterHz: 220,
-        filterQ: 2.0,
-        filterQJitter: 0.6,
-        gainPeakLevel: 0.35,
-        minimumFilterFrequencyHz: 80,
-        minimumFilterQ: 0.4
-    }),
-    mouthFormant: Object.freeze({
-        filterType: "lowpass",
-        startFrequencyHz: 2200,
-        endFrequencyHz: 1100,
-        qFactor: 2.6
-    })
+/* ---------- buffered "nom-nom" chew ---------- */
+const NomNomPlaybackConfiguration = Object.freeze({
+    quickRepeatDelaySeconds: 0.05,
+    chewGapSeconds: 0.28,
+    trailingAllowanceSeconds: 0.25,
+    minimumDurationSeconds: 0.35,
+    startOffsetSafetyMarginSeconds: 0.02,
+    playbackGainLevel: 0.9,
+    fallbackBufferDurationSeconds: 1.5
 });
 
-function clampToMinimum(value, minimum) {
-    return Math.max(value, minimum);
-}
+const NomNomMultiBiteMaximumSampleDurationSeconds = NomNomPlaybackConfiguration.chewGapSeconds;
 
-function randomMultiplier(randomGenerator, variationRatio) {
-    if (variationRatio <= 0) {
-        return 1;
-    }
-    const deviation = (randomGenerator() * 2 - 1) * variationRatio;
-    return 1 + deviation;
-}
-
-function randomOffset(randomGenerator, spread) {
-    if (spread <= 0) {
+function clampRandomValue(randomValue) {
+    if (!Number.isFinite(randomValue)) {
         return 0;
     }
-    return (randomGenerator() * 2 - 1) * spread;
-}
-
-function scheduleChew(context, startTime, randomGenerator = Math.random) {
-    const {
-        mix,
-        durations,
-        tone,
-        bodyFilter,
-        thump,
-        crunchNoise,
-        mouthFormant
-    } = NomNomChewParameters;
-
-    const chewEndTime = startTime + durations.chewSeconds;
-    const crunchStartOffsetSeconds = clampToMinimum(
-        durations.crunchBaseOffsetSeconds + randomOffset(randomGenerator, durations.crunchOffsetJitterSeconds),
-        0
-    );
-    const crunchStartTime = startTime + crunchStartOffsetSeconds;
-    const crunchEndTime = crunchStartTime + durations.crunchNoiseSeconds;
-
-    const tonePitchMultiplier = randomMultiplier(randomGenerator, tone.pitchVariationRatio);
-    const toneStartFrequencyHz = tone.baseFrequencyHz * tonePitchMultiplier;
-    const toneEndFrequencyHz = tone.targetFrequencyHz * tonePitchMultiplier;
-
-    const thumpFrequencyHz = thump.baseFrequencyHz * randomMultiplier(randomGenerator, thump.frequencyVariationRatio);
-
-    const crunchFilterFrequencyHz = clampToMinimum(
-        crunchNoise.filterFrequencyHz + randomOffset(randomGenerator, crunchNoise.filterFrequencyJitterHz),
-        crunchNoise.minimumFilterFrequencyHz
-    );
-    const crunchFilterQ = clampToMinimum(
-        crunchNoise.filterQ + randomOffset(randomGenerator, crunchNoise.filterQJitter),
-        crunchNoise.minimumFilterQ
-    );
-
-    const mouthReleaseEndTime = crunchEndTime + durations.formantReleaseSeconds;
-
-    const mouthResonanceFilter = context.createBiquadFilter();
-    mouthResonanceFilter.type = mouthFormant.filterType;
-    mouthResonanceFilter.frequency.setValueAtTime(mouthFormant.startFrequencyHz, startTime);
-    mouthResonanceFilter.Q.setValueAtTime(mouthFormant.qFactor, startTime);
-    linearTo(context, mouthResonanceFilter.frequency, mouthFormant.endFrequencyHz, mouthReleaseEndTime);
-    mouthResonanceFilter.connect(context.destination);
-
-    const toneOscillator = context.createOscillator();
-    toneOscillator.type = tone.waveform;
-    toneOscillator.frequency.setValueAtTime(toneStartFrequencyHz, startTime);
-    linearTo(context, toneOscillator.frequency, toneEndFrequencyHz, chewEndTime);
-
-    const bodyFilterNode = context.createBiquadFilter();
-    bodyFilterNode.type = bodyFilter.type;
-    bodyFilterNode.frequency.setValueAtTime(bodyFilter.frequencyHz, startTime);
-    bodyFilterNode.Q.setValueAtTime(bodyFilter.qFactor, startTime);
-
-    const bodyGainNode = context.createGain();
-    bodyGainNode.gain.setValueAtTime(mix.silentGainLevel, startTime);
-    expTo(context, bodyGainNode.gain, tone.gainPeakLevel, startTime + durations.toneAttackSeconds);
-    expTo(context, bodyGainNode.gain, mix.silentGainLevel, chewEndTime);
-
-    toneOscillator.connect(bodyFilterNode).connect(bodyGainNode).connect(mouthResonanceFilter);
-    toneOscillator.start(startTime);
-    toneOscillator.stop(chewEndTime);
-
-    const thumpOscillator = context.createOscillator();
-    thumpOscillator.type = thump.waveform;
-    thumpOscillator.frequency.setValueAtTime(thumpFrequencyHz, startTime);
-
-    const thumpGainNode = context.createGain();
-    thumpGainNode.gain.setValueAtTime(mix.silentGainLevel, startTime);
-    expTo(context, thumpGainNode.gain, thump.gainPeakLevel, startTime + durations.thumpAttackSeconds);
-    expTo(context, thumpGainNode.gain, mix.silentGainLevel, startTime + durations.thumpDurationSeconds);
-
-    thumpOscillator.connect(thumpGainNode).connect(mouthResonanceFilter);
-    thumpOscillator.start(startTime);
-    thumpOscillator.stop(startTime + durations.thumpDurationSeconds);
-
-    const noiseBuffer = context.createBuffer(
-        1,
-        Math.floor(context.sampleRate * durations.crunchNoiseSeconds),
-        context.sampleRate
-    );
-    const noiseChannel = noiseBuffer.getChannelData(0);
-    for (let sampleIndex = 0; sampleIndex < noiseChannel.length; sampleIndex += 1) {
-        noiseChannel[sampleIndex] = (Math.random() * 2 - 1) * crunchNoise.amplitudeScale;
+    if (randomValue < 0) {
+        return 0;
     }
-    const noiseSource = context.createBufferSource();
-    noiseSource.buffer = noiseBuffer;
-
-    const crunchFilterNode = context.createBiquadFilter();
-    crunchFilterNode.type = crunchNoise.filterType;
-    crunchFilterNode.frequency.setValueAtTime(crunchFilterFrequencyHz, crunchStartTime);
-    crunchFilterNode.Q.setValueAtTime(crunchFilterQ, crunchStartTime);
-
-    const noiseGainNode = context.createGain();
-    noiseGainNode.gain.setValueAtTime(mix.silentGainLevel, crunchStartTime);
-    expTo(context, noiseGainNode.gain, crunchNoise.gainPeakLevel, crunchStartTime + durations.crunchGainAttackSeconds);
-    expTo(context, noiseGainNode.gain, mix.silentGainLevel, crunchEndTime);
-
-    noiseSource.connect(crunchFilterNode).connect(noiseGainNode).connect(mouthResonanceFilter);
-    noiseSource.start(crunchStartTime);
-    noiseSource.stop(crunchEndTime);
+    if (randomValue > RandomValueMaximum) {
+        return RandomValueMaximum;
+    }
+    return randomValue;
 }
 
-export function playNomNom(durationMs = 1200, randomGenerator = Math.random) {
+function determineBufferStartOffsetSeconds(buffer, randomGenerator) {
+    const { startOffsetSafetyMarginSeconds, fallbackBufferDurationSeconds } = NomNomPlaybackConfiguration;
+    const bufferDurationSeconds =
+        typeof buffer?.duration === "number" && buffer.duration > 0
+            ? buffer.duration
+            : fallbackBufferDurationSeconds;
+    const playableDurationSeconds = Math.max(bufferDurationSeconds - startOffsetSafetyMarginSeconds, 0);
+    if (playableDurationSeconds === 0) {
+        return 0;
+    }
+    const normalizedRandomValue = clampRandomValue(randomGenerator());
+    return normalizedRandomValue * playableDurationSeconds;
+}
+
+function scheduleNomNomPlaybackAt(
+    context,
+    buffer,
+    playbackStartTime,
+    offsetSeconds,
+    optionalStopTimeSeconds = null
+) {
+    const bufferSourceNode = context.createBufferSource();
+    const playbackGainNode = context.createGain();
+    bufferSourceNode.buffer = buffer;
+    playbackGainNode.gain.setValueAtTime(
+        NomNomPlaybackConfiguration.playbackGainLevel,
+        playbackStartTime
+    );
+    bufferSourceNode.connect(playbackGainNode).connect(context.destination);
+    bufferSourceNode.start(playbackStartTime, offsetSeconds);
+    if (
+        typeof optionalStopTimeSeconds === "number" &&
+        Number.isFinite(optionalStopTimeSeconds)
+    ) {
+        const clampedStopTimeSeconds = Math.max(optionalStopTimeSeconds, playbackStartTime);
+        bufferSourceNode.stop(clampedStopTimeSeconds);
+    }
+}
+
+async function getNomNomBuffer(context) {
+    return loadAudioBuffer(context, AudioAssetPath.NOM_NOM);
+}
+
+export async function playNomNom(durationMs = 1200, randomGenerator = Math.random) {
     const context = ensureAudioContext();
-    const t0 = context.currentTime;
+    const audioBuffer = await getNomNomBuffer(context);
 
-    const total = Math.max(350, durationMs) / 1000;
-    const gap = 0.28;
-    let when = t0;
+    const {
+        quickRepeatDelaySeconds,
+        chewGapSeconds,
+        trailingAllowanceSeconds,
+        minimumDurationSeconds
+    } = NomNomPlaybackConfiguration;
 
-    scheduleChew(context, when, randomGenerator);
-    scheduleChew(context, when + 0.05, randomGenerator);
+    const startTimeSeconds = context.currentTime;
+    const requestedDurationSeconds = Math.max(minimumDurationSeconds, Math.max(0, durationMs) / 1000);
+    const knownBufferDurationSeconds =
+        typeof audioBuffer?.duration === "number" && audioBuffer.duration > 0
+            ? audioBuffer.duration
+            : null;
+    const shouldScheduleMultipleBites =
+        knownBufferDurationSeconds === null ||
+        knownBufferDurationSeconds <= NomNomMultiBiteMaximumSampleDurationSeconds;
 
-    when += gap;
-    scheduleChew(context, when, randomGenerator);
-
-    when += gap;
-    if (when - t0 + 0.25 <= total) {
-        scheduleChew(context, when, randomGenerator);
+    if (!shouldScheduleMultipleBites) {
+        const stopTimeSeconds =
+            typeof knownBufferDurationSeconds === "number"
+                ? startTimeSeconds + knownBufferDurationSeconds
+                : null;
+        scheduleNomNomPlaybackAt(
+            context,
+            audioBuffer,
+            startTimeSeconds,
+            0,
+            stopTimeSeconds
+        );
+        return;
     }
+
+    const playbackStartTimes = [
+        startTimeSeconds,
+        startTimeSeconds + quickRepeatDelaySeconds,
+        startTimeSeconds + chewGapSeconds
+    ];
+
+    const finalBiteStartTime = startTimeSeconds + chewGapSeconds * 2;
+    if (finalBiteStartTime - startTimeSeconds + trailingAllowanceSeconds <= requestedDurationSeconds) {
+        playbackStartTimes.push(finalBiteStartTime);
+    }
+
+    playbackStartTimes.forEach((playbackStartTime) => {
+        const bufferOffsetSeconds = determineBufferStartOffsetSeconds(audioBuffer, randomGenerator);
+        scheduleNomNomPlaybackAt(context, audioBuffer, playbackStartTime, bufferOffsetSeconds);
+    });
 }
 
 /* ---------- triumphant win melody ---------- */
@@ -418,6 +374,7 @@ export function playWin() {
 export function primeAudioOnFirstGesture() {
     const onceHandler = () => {
         unlockAudioNow();
+        preloadNomNom().catch(() => {});
         ["pointerdown", "touchstart", "click", "keydown"].forEach((type) =>
             window.removeEventListener(type, onceHandler, true)
         );
