@@ -27,6 +27,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
 
         const allergyTitleElement = documentReference.getElementById(controlElementId.ALLERGY_TITLE);
         const attentionAnimationClassName = TitleClassName.ATTENTION;
+        const blockedStateAttributeName = attributeName.DATA_BLOCKED;
 
         if (allergyTitleElement && attentionAnimationClassName) {
             const handleTitleAnimationEnd = () => {
@@ -46,6 +47,13 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
                     void allergyTitleElement.offsetWidth;
                     allergyTitleElement.classList.add(attentionAnimationClassName);
                 }
+                return;
+            }
+
+            const isStartButtonBlocked = blockedStateAttributeName
+                ? startButton.getAttribute(blockedStateAttributeName) === AttributeBooleanValue.TRUE
+                : false;
+            if (isStartButtonBlocked) {
                 return;
             }
 

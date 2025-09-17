@@ -12,6 +12,7 @@ import { showScreen, setWheelControlToStop, setWheelControlToStartGame } from ".
 import {
     ControlElementId,
     AttributeName,
+    AttributeBooleanValue,
     BrowserEventName,
     FirstCardElementId,
     ResultCardElementId,
@@ -54,7 +55,14 @@ const firstCardPresenter = new AllergenCard({
 
         const startButtonElement = document.getElementById(ControlElementId.START_BUTTON);
         if (startButtonElement) {
-            startButtonElement.disabled = false;
+            const blockedAttributeName = AttributeName.DATA_BLOCKED;
+            if (blockedAttributeName) {
+                startButtonElement.setAttribute(blockedAttributeName, AttributeBooleanValue.FALSE);
+            }
+            const ariaDisabledAttributeName = AttributeName.ARIA_DISABLED;
+            if (ariaDisabledAttributeName) {
+                startButtonElement.setAttribute(ariaDisabledAttributeName, AttributeBooleanValue.FALSE);
+            }
         }
 
         const badgeEntry = {

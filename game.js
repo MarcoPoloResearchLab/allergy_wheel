@@ -379,12 +379,32 @@ export class GameController {
 
         this.#firstCardPresenter.renderAllergens(allergensCatalog);
 
-        const startButton = this.#documentReference.getElementById(this.#controlElementIdMap.START_BUTTON);
-        if (startButton) {
-            startButton.disabled = true;
-        }
+        this.#setStartButtonBlockedState(true);
         if (typeof this.#firstCardPresenter.updateBadges === "function") {
             this.#firstCardPresenter.updateBadges([]);
+        }
+    }
+
+    #setStartButtonBlockedState(shouldBlockStartButton) {
+        const startButtonElement = this.#documentReference.getElementById(this.#controlElementIdMap.START_BUTTON);
+        if (!startButtonElement) {
+            return;
+        }
+
+        const blockedAttributeName = this.#attributeNameMap.DATA_BLOCKED;
+        if (blockedAttributeName) {
+            startButtonElement.setAttribute(
+                blockedAttributeName,
+                shouldBlockStartButton ? AttributeBooleanValue.TRUE : AttributeBooleanValue.FALSE
+            );
+        }
+
+        const ariaDisabledAttributeName = this.#attributeNameMap.ARIA_DISABLED;
+        if (ariaDisabledAttributeName) {
+            startButtonElement.setAttribute(
+                ariaDisabledAttributeName,
+                shouldBlockStartButton ? AttributeBooleanValue.TRUE : AttributeBooleanValue.FALSE
+            );
         }
     }
 
@@ -721,10 +741,7 @@ export class GameController {
         if (this.#stateManager.resetWheelCandidates) {
             this.#stateManager.resetWheelCandidates();
         }
-        const startButton = this.#documentReference.getElementById(this.#controlElementIdMap.START_BUTTON);
-        if (startButton) {
-            startButton.disabled = true;
-        }
+        this.#setStartButtonBlockedState(true);
         if (typeof this.#firstCardPresenter.updateBadges === "function") {
             this.#firstCardPresenter.updateBadges([]);
         }
