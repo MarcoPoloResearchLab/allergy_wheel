@@ -54,6 +54,7 @@ export const ControlElementId = Object.freeze({
     START_BUTTON: "start",
     STOP_BUTTON: "stop",
     FULLSCREEN_BUTTON: "fs",
+    MUTE_BUTTON: "mute",
     SPIN_AGAIN_BUTTON: "again",
     REVEAL_SECTION: "reveal",
     GAME_OVER_SECTION: "gameover",
@@ -112,6 +113,7 @@ export const HeartsElementId = Object.freeze({
 export const AttributeName = Object.freeze({
     ARIA_HIDDEN: "aria-hidden",
     ARIA_LABEL: "aria-label",
+    ARIA_PRESSED: "aria-pressed",
     ARIA_EXPANDED: "aria-expanded",
     ARIA_DISABLED: "aria-disabled",
     DATA_SCREEN: "data-screen",
@@ -140,5 +142,12 @@ export const KeyboardKey = Object.freeze({
 export const ButtonText = Object.freeze({
     START: "Start",
     STOP: "STOP",
-    RESTART: "Restart"
+    RESTART: "Restart",
+    MUTE: "Mute",
+    SOUND_ON: "Sound On"
+});
+
+export const AudioControlLabel = Object.freeze({
+    MUTE_AUDIO: "Mute audio",
+    UNMUTE_AUDIO: "Unmute audio"
 });

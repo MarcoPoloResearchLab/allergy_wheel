@@ -169,6 +169,12 @@
             cursor: pointer
         }
 
+        .ghost[aria-pressed="true"] {
+            background: var(--primary);
+            color: var(--ink);
+            box-shadow: 3px 3px 0 #000;
+        }
+
         /* Hearts bar */
         .hearts {
             position: relative; /* required for delta bubble positioning */
@@ -643,6 +649,7 @@
     <div class="header-right">
         <div aria-live="polite" class="hearts" id="hearts-bar" title="Hearts"></div>
         <button class="ghost" id="fs">Full Screen</button>
+        <button type="button" class="ghost" id="mute" aria-pressed="false" aria-label="Mute audio">Mute</button>
     </div>
 </header>
 

@@ -438,6 +438,7 @@ export class GameController {
             wireStartButton,
             wireStopButton,
             wireFullscreenButton,
+            wireMuteButton,
             wireSpinAgainButton,
             wireRevealBackdropDismissal,
             wireRestartButton
@@ -472,6 +473,16 @@ export class GameController {
         }
         if (typeof wireFullscreenButton === "function") {
             wireFullscreenButton();
+        }
+        if (typeof wireMuteButton === "function") {
+            wireMuteButton({
+                onMuteChange: (isMuted) => {
+                    if (typeof this.#audioPresenter.handleMuteToggle === "function") {
+                        this.#audioPresenter.handleMuteToggle(isMuted);
+                    }
+                    return isMuted;
+                }
+            });
         }
         if (typeof wireSpinAgainButton === "function") {
             wireSpinAgainButton({

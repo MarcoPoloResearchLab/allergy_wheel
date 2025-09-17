@@ -7,7 +7,13 @@ import { NormalizationEngine, loadJson, pickRandomUnique } from "./utils.js";
 import { AllergenCard } from "./firstCard.js";
 import { ResultCard } from "./lastCard.js";
 import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "./hearts.js";
-import { primeAudioOnFirstGesture, playTick, playSiren, playNomNom, playWin } from "./audio.js";
+import {
+    primeAudioOnFirstGesture as primeAudioOnFirstGestureEffect,
+    playTick as playTickEffect,
+    playSiren as playSirenEffect,
+    playNomNom as playNomNomEffect,
+    playWin as playWinEffect
+} from "./audio.js";
 import { showScreen, setWheelControlToStop, setWheelControlToStartGame } from "./ui.js";
 import {
     ControlElementId,
@@ -141,12 +147,45 @@ const heartsPresenter = {
     animateHeartLossAtHeartsBar
 };
 
+let cachedAudioMutedState = stateManager.isAudioMuted();
+
+const shouldPlayAudio = () => {
+    const isMuted = stateManager.isAudioMuted();
+    cachedAudioMutedState = isMuted;
+    return isMuted === false;
+};
+
 const audioPresenter = {
-    primeAudioOnFirstGesture,
-    playTick,
-    playSiren,
-    playNomNom,
-    playWin
+    primeAudioOnFirstGesture: () => {
+        primeAudioOnFirstGestureEffect();
+    },
+    playTick: (...args) => {
+        if (!shouldPlayAudio()) {
+            return;
+        }
+        playTickEffect(...args);
+    },
+    playSiren: (...args) => {
+        if (!shouldPlayAudio()) {
+            return;
+        }
+        playSirenEffect(...args);
+    },
+    playNomNom: (...args) => {
+        if (!shouldPlayAudio()) {
+            return;
+        }
+        playNomNomEffect(...args);
+    },
+    playWin: (...args) => {
+        if (!shouldPlayAudio()) {
+            return;
+        }
+        playWinEffect(...args);
+    },
+    handleMuteToggle: (isMuted) => {
+        cachedAudioMutedState = Boolean(isMuted);
+    }
 };
 
 const uiPresenter = {

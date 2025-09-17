@@ -44,7 +44,10 @@ const StateTestDescription = Object.freeze({
   AVATAR_TRICERATOPS_SELECTION: "stores the triceratops avatar identifier when selected",
   AVATAR_INVALID_UNKNOWN: "falls back to the default avatar when given an unknown identifier",
   AVATAR_INVALID_NON_STRING: "falls back to the default avatar when given a non-string identifier",
-  AVATAR_RESET_ON_INITIALIZE: "reinitialize restores the default avatar"
+  AVATAR_RESET_ON_INITIALIZE: "reinitialize restores the default avatar",
+  AUDIO_INITIAL_STATE: "initializes the audio mute flag to false",
+  AUDIO_TOGGLE: "toggleAudioMuted flips the stored mute flag",
+  AUDIO_RESET_ON_INITIALIZE: "initialize resets the audio mute flag"
 });
 
 const InvalidModeValue = Object.freeze({ VALUE: "invalid mode" });
@@ -270,5 +273,31 @@ describe("StateManager stop button mode", () => {
     expect(stateManager.getStopButtonMode()).toBe(MODE_START);
     stateManager.setStopButtonMode(InvalidModeValue.VALUE);
     expect(stateManager.getStopButtonMode()).toBe(MODE_STOP);
+  });
+});
+
+describe("StateManager audio mute state", () => {
+  test(StateTestDescription.AUDIO_INITIAL_STATE, () => {
+    const stateManager = new StateManager();
+    expect(stateManager.isAudioMuted()).toBe(false);
+  });
+
+  test(StateTestDescription.AUDIO_TOGGLE, () => {
+    const stateManager = new StateManager();
+    expect(stateManager.isAudioMuted()).toBe(false);
+    expect(stateManager.setAudioMuted(true)).toBe(true);
+    expect(stateManager.isAudioMuted()).toBe(true);
+    expect(stateManager.toggleAudioMuted()).toBe(false);
+    expect(stateManager.isAudioMuted()).toBe(false);
+    expect(stateManager.toggleAudioMuted()).toBe(true);
+    expect(stateManager.isAudioMuted()).toBe(true);
+  });
+
+  test(StateTestDescription.AUDIO_RESET_ON_INITIALIZE, () => {
+    const stateManager = new StateManager();
+    stateManager.setAudioMuted(true);
+    expect(stateManager.isAudioMuted()).toBe(true);
+    stateManager.initialize();
+    expect(stateManager.isAudioMuted()).toBe(false);
   });
 });
