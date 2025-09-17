@@ -1,13 +1,44 @@
 /* global document */
-import { AttributeName, AttributeBooleanValue, HeartsElementId } from "./constants.js";
+import {
+    AttributeName,
+    AttributeBooleanValue,
+    BrowserEventName,
+    HeartsElementId
+} from "./constants.js";
 
 const ElementTagName = Object.freeze({
     SPAN: "span"
 });
 
 const HeartClassName = Object.freeze({
-    HEART: "heart",
-    HEART_GAIN: "heart gain"
+    HEART: "heart"
+});
+
+const HeartAnimationClassName = Object.freeze({
+    ENTER: "heart-enter",
+    EXIT: "heart-exit"
+});
+
+const HeartsBarClassName = Object.freeze({
+    PULSE: "pulse",
+    SHAKE: "shake"
+});
+
+const HeartDeltaClassName = Object.freeze({
+    BASE: "heart-delta"
+});
+
+const HeartDeltaText = Object.freeze({
+    GAIN: "+1",
+    LOSS: "-1"
+});
+
+const AnimationDurationMilliseconds = Object.freeze({
+    HEART_ENTER: 300,
+    HEART_EXIT: 260,
+    HEART_BAR_FEEDBACK: 350,
+    HEART_DELTA: 800,
+    SAFETY_BUFFER: 120
 });
 
 const HeartsBarChildClassName = Object.freeze({
@@ -86,32 +117,181 @@ function updateHeartCountElement(heartCountElement, heartCountText) {
 function appendHeartElements(heartIconsContainerElement, totalHearts) {
     heartIconsContainerElement.innerHTML = TextContent.EMPTY;
     for (let heartIndex = 0; heartIndex < totalHearts; heartIndex += 1) {
-        const heartElement = document.createElement(ElementTagName.SPAN);
-        heartElement.className = HeartClassName.HEART;
-        heartElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
-        heartElement.textContent = HeartSymbol;
+        const heartElement = createHeartElement();
         heartIconsContainerElement.appendChild(heartElement);
     }
 }
 
 function appendGainHearts(heartIconsContainerElement, heartsToAdd) {
     for (let heartGainIndex = 0; heartGainIndex < heartsToAdd; heartGainIndex += 1) {
-        const heartElement = document.createElement(ElementTagName.SPAN);
-        heartElement.className = HeartClassName.HEART_GAIN;
-        heartElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
-        heartElement.textContent = HeartSymbol;
+        const heartElement = createHeartElement({ shouldAnimateEnter: true });
         heartIconsContainerElement.appendChild(heartElement);
     }
 }
 
 function removeHeartElements(heartIconsContainerElement, heartsToRemove) {
-    for (let removalIndex = 0; removalIndex < heartsToRemove; removalIndex += 1) {
-        const heartElement = heartIconsContainerElement.querySelector(HeartSelector.HEART);
+    if (!heartIconsContainerElement || heartsToRemove <= 0) {
+        return;
+    }
+
+    const existingHeartElements = Array.from(
+        heartIconsContainerElement.querySelectorAll(HeartSelector.HEART)
+    );
+
+    const removableHeartElements = existingHeartElements.filter(
+        (heartElement) => !heartElement.classList.contains(HeartAnimationClassName.EXIT)
+    );
+
+    const heartsMarkedForRemoval = removableHeartElements.slice(-heartsToRemove);
+
+    heartsMarkedForRemoval.forEach((heartElement) => {
         if (!heartElement) {
             return;
         }
-        heartIconsContainerElement.removeChild(heartElement);
+
+        heartElement.classList.remove(HeartAnimationClassName.ENTER);
+        heartElement.classList.add(HeartAnimationClassName.EXIT);
+
+        const cleanup = () => {
+            heartElement.removeEventListener(BrowserEventName.ANIMATION_END, handleAnimationEnd);
+            if (heartElement.parentNode === heartIconsContainerElement) {
+                heartIconsContainerElement.removeChild(heartElement);
+            }
+        };
+
+        const fallbackTimeoutId = setTimeout(
+            cleanup,
+            AnimationDurationMilliseconds.HEART_EXIT + AnimationDurationMilliseconds.SAFETY_BUFFER
+        );
+
+        function handleAnimationEnd(event) {
+            if (event.target !== heartElement) {
+                return;
+            }
+            clearTimeout(fallbackTimeoutId);
+            cleanup();
+        }
+
+        heartElement.addEventListener(BrowserEventName.ANIMATION_END, handleAnimationEnd);
+    });
+}
+
+function createHeartElement({ shouldAnimateEnter = false } = {}) {
+    const heartElement = document.createElement(ElementTagName.SPAN);
+    heartElement.className = HeartClassName.HEART;
+    heartElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+    heartElement.textContent = HeartSymbol;
+
+    if (!shouldAnimateEnter) {
+        return heartElement;
     }
+
+    heartElement.classList.add(HeartAnimationClassName.ENTER);
+
+    const cleanup = () => {
+        heartElement.removeEventListener(BrowserEventName.ANIMATION_END, handleAnimationEnd);
+        heartElement.classList.remove(HeartAnimationClassName.ENTER);
+    };
+
+    const fallbackTimeoutId = setTimeout(
+        cleanup,
+        AnimationDurationMilliseconds.HEART_ENTER + AnimationDurationMilliseconds.SAFETY_BUFFER
+    );
+
+    function handleAnimationEnd(event) {
+        if (event.target !== heartElement) {
+            return;
+        }
+        clearTimeout(fallbackTimeoutId);
+        cleanup();
+    }
+
+    heartElement.addEventListener(BrowserEventName.ANIMATION_END, handleAnimationEnd);
+
+    return heartElement;
+}
+
+function removeExistingHeartDeltaElements(heartsBarElement) {
+    if (!heartsBarElement) {
+        return;
+    }
+
+    const existingDeltaElements = heartsBarElement.getElementsByClassName(HeartDeltaClassName.BASE);
+    const deltaElements = Array.from(existingDeltaElements);
+    deltaElements.forEach((deltaElement) => {
+        if (deltaElement && typeof deltaElement.remove === "function") {
+            deltaElement.remove();
+        }
+    });
+}
+
+function spawnHeartDelta(heartsBarElement, deltaText) {
+    if (!heartsBarElement || !deltaText) {
+        return;
+    }
+
+    removeExistingHeartDeltaElements(heartsBarElement);
+
+    const deltaElement = document.createElement(ElementTagName.SPAN);
+    deltaElement.className = HeartDeltaClassName.BASE;
+    deltaElement.textContent = deltaText;
+    heartsBarElement.appendChild(deltaElement);
+
+    const cleanup = () => {
+        deltaElement.removeEventListener(BrowserEventName.ANIMATION_END, handleAnimationEnd);
+        if (deltaElement.parentNode === heartsBarElement) {
+            heartsBarElement.removeChild(deltaElement);
+        }
+    };
+
+    const fallbackTimeoutId = setTimeout(
+        cleanup,
+        AnimationDurationMilliseconds.HEART_DELTA + AnimationDurationMilliseconds.SAFETY_BUFFER
+    );
+
+    function handleAnimationEnd(event) {
+        if (event.target !== deltaElement) {
+            return;
+        }
+        clearTimeout(fallbackTimeoutId);
+        cleanup();
+    }
+
+    deltaElement.addEventListener(BrowserEventName.ANIMATION_END, handleAnimationEnd);
+}
+
+function triggerHeartsBarFeedback(heartsBarElement, feedbackClassName) {
+    if (!heartsBarElement || !feedbackClassName) {
+        return;
+    }
+
+    if (heartsBarElement.classList.contains(feedbackClassName)) {
+        heartsBarElement.classList.remove(feedbackClassName);
+        // Force a reflow so that re-adding the class retriggers the animation.
+        void heartsBarElement.offsetWidth; // eslint-disable-line no-unused-expressions
+    }
+
+    heartsBarElement.classList.add(feedbackClassName);
+
+    const cleanup = () => {
+        heartsBarElement.removeEventListener(BrowserEventName.ANIMATION_END, handleAnimationEnd);
+        heartsBarElement.classList.remove(feedbackClassName);
+    };
+
+    const fallbackTimeoutId = setTimeout(
+        cleanup,
+        AnimationDurationMilliseconds.HEART_BAR_FEEDBACK + AnimationDurationMilliseconds.SAFETY_BUFFER
+    );
+
+    function handleAnimationEnd(event) {
+        if (event.target !== heartsBarElement) {
+            return;
+        }
+        clearTimeout(fallbackTimeoutId);
+        cleanup();
+    }
+
+    heartsBarElement.addEventListener(BrowserEventName.ANIMATION_END, handleAnimationEnd);
 }
 
 export function renderHearts(count, options = {}) {
@@ -150,9 +330,21 @@ export function renderHearts(count, options = {}) {
 }
 
 export function animateHeartGainFromReveal() {
-    /* handled in CSS or implemented elsewhere */
+    const heartsBarElement = document.getElementById(HeartsElementId.HEARTS_BAR);
+    if (!heartsBarElement) {
+        return;
+    }
+
+    triggerHeartsBarFeedback(heartsBarElement, HeartsBarClassName.PULSE);
+    spawnHeartDelta(heartsBarElement, HeartDeltaText.GAIN);
 }
 
 export function animateHeartLossAtHeartsBar() {
-    /* handled in CSS or implemented elsewhere */
+    const heartsBarElement = document.getElementById(HeartsElementId.HEARTS_BAR);
+    if (!heartsBarElement) {
+        return;
+    }
+
+    triggerHeartsBarFeedback(heartsBarElement, HeartsBarClassName.SHAKE);
+    spawnHeartDelta(heartsBarElement, HeartDeltaText.LOSS);
 }
