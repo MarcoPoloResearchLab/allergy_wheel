@@ -4,6 +4,17 @@ The SVG illustrations stored in `assets/avatars/` were custom-created for this p
 experience under the same license that governs the rest of the repository. Please reach out to the maintainers before reusing the
 artwork in other projects if the repository license does not cover your intended use.
 
+## Available avatars
+
+The game currently includes the following six selectable avatars:
+
+- Sunny Girl
+- Curious Girl
+- Adventurous Boy
+- Creative Boy
+- T-Rex
+- Triceratops
+
 ## Contributing new avatars
 
 - Submit only artwork that you created yourself or that you have explicit permission to redistribute with attribution details.
