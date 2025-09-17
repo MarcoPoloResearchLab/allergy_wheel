@@ -190,6 +190,26 @@
             box-shadow: 2px 2px 0 #000;
         }
 
+        .heart-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2ch;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            color: var(--primary);
+            background: rgba(255, 77, 109, 0.16);
+            box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+        }
+
+        .heart-icons {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
         .heart {
             display: inline-block;
             transform-origin: center;
@@ -647,7 +667,10 @@
         <h1>Allergy Wheel</h1>
     </div>
     <div class="header-right">
-        <div aria-live="polite" class="hearts" id="hearts-bar" title="Hearts"></div>
+        <div aria-live="polite" class="hearts" data-count="0" id="hearts-bar" aria-label="0 hearts" title="0 hearts">
+            <span class="heart-count">0</span>
+            <span aria-hidden="true" class="heart-icons"></span>
+        </div>
         <button class="ghost" id="fs">Full Screen</button>
         <button type="button" class="ghost" id="mute" aria-pressed="false" aria-label="Mute audio">Mute</button>
     </div>
