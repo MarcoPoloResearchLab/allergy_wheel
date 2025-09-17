@@ -324,11 +324,14 @@
         .btn.danger { background: var(--danger); color: #fff; box-shadow: 4px 6px 0 #000; border: 4px solid #000 }
 
         .btn.start-button {
-            padding: clamp(18px, 3.4vw, 26px) clamp(32px, 5.4vw, 58px);
-            font-size: clamp(20px, 3vw, 28px);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(20px, 3.6vw, 28px) clamp(32px, 5.8vw, 64px);
+            font-size: clamp(22px, 3.4vw, 30px);
             font-weight: 900;
-            inline-size: min(100%, clamp(220px, 40vw, 320px));
-            min-height: clamp(60px, 12vw, 88px);
+            inline-size: 100%;
+            min-height: clamp(68px, 12vw, 96px);
         }
 
         .start-button[data-blocked="true"] {
@@ -352,7 +355,24 @@
         .btn.action.is-stop { background: var(--danger); }
 
         .grid { display: grid; gap: 12px }
-        .grid.cols-2 { grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)) }
+
+        .allergen-grid {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-auto-rows: minmax(70px, auto);
+            align-content: start;
+            padding-block: clamp(8px, 2vw, 16px);
+        }
+
+        .allergen-grid .chip {
+            inline-size: 100%;
+        }
+
+        .allergen-grid .start-button {
+            grid-column: -2 / -1;
+            align-self: end;
+            justify-self: stretch;
+            margin-block-start: clamp(8px, 2vw, 16px);
+        }
 
         .chip {
             display: flex; align-items: center; gap: 10px;
@@ -482,14 +502,23 @@
         <div class="card__body">
             <h2 class="title" id="allergy-title">Pick your allergens</h2>
             <p class="muted">Choose anything that might cause trouble. You can change this later.</p>
-            <div class="grid cols-2" id="allergy-list"></div>
+            <div class="grid allergen-grid" id="allergy-list">
+                <button
+                    aria-disabled="true"
+                    class="btn primary start-button"
+                    data-blocked="true"
+                    id="start"
+                    type="button"
+                >
+                    Spin the Wheel
+                </button>
+            </div>
         </div>
         <div class="actions card__actions">
             <div class="card-actions__status">
                 <p class="muted" id="loading">Loading data…</p>
                 <p class="muted" hidden id="load-error">Could not load data. Check JSON paths.</p>
             </div>
-            <button aria-disabled="true" class="btn primary start-button" data-blocked="true" id="start">Spin the Wheel</button>
         </div>
     </div>
 </main>

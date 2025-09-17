@@ -1,5 +1,5 @@
 /* global document */
-import { BrowserEventName } from "./constants.js";
+import { BrowserEventName, ControlElementId } from "./constants.js";
 
 const ElementClassName = Object.freeze({
     CHIP: "chip",
@@ -48,8 +48,22 @@ export class AllergenCard {
             return;
         }
 
-        this.#listContainerElement.innerHTML = TextContent.EMPTY;
+        const startButtonElement = ControlElementId.START_BUTTON
+            ? document.getElementById(ControlElementId.START_BUTTON)
+            : null;
+
+        const existingChipElements = this.#listContainerElement
+            .querySelectorAll(`.${ElementClassName.CHIP}`);
+
+        for (const chipElement of existingChipElements) {
+            chipElement.remove();
+        }
+
         const safeAllergens = Array.isArray(allergenList) ? allergenList : [];
+
+        const shouldInsertBeforeStartButton = Boolean(
+            startButtonElement && this.#listContainerElement.contains(startButtonElement)
+        );
 
         for (const allergenRecord of safeAllergens) {
             if (!allergenRecord || !allergenRecord.token) {
@@ -86,7 +100,11 @@ export class AllergenCard {
             labelElement.appendChild(textNode);
             labelElement.appendChild(emojiSpan);
 
-            this.#listContainerElement.appendChild(labelElement);
+            if (shouldInsertBeforeStartButton) {
+                this.#listContainerElement.insertBefore(labelElement, startButtonElement);
+            } else {
+                this.#listContainerElement.appendChild(labelElement);
+            }
         }
     }
 
