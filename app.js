@@ -38,6 +38,29 @@ const board = new Board({
     normalizationEngine: new NormalizationEngine([])
 });
 
+const setDocumentStartButtonBlockedState = (shouldBlockStartButton) => {
+    const startButtonElement = document.getElementById(ControlElementId.START_BUTTON);
+    if (!startButtonElement) {
+        return;
+    }
+
+    const blockedAttributeName = AttributeName.DATA_BLOCKED;
+    if (blockedAttributeName) {
+        startButtonElement.setAttribute(
+            blockedAttributeName,
+            shouldBlockStartButton ? AttributeBooleanValue.TRUE : AttributeBooleanValue.FALSE
+        );
+    }
+
+    const ariaDisabledAttributeName = AttributeName.ARIA_DISABLED;
+    if (ariaDisabledAttributeName) {
+        startButtonElement.setAttribute(
+            ariaDisabledAttributeName,
+            shouldBlockStartButton ? AttributeBooleanValue.TRUE : AttributeBooleanValue.FALSE
+        );
+    }
+};
+
 const firstCardPresenter = new AllergenCard({
     listContainerElement: document.getElementById(FirstCardElementId.LIST_CONTAINER),
     badgeContainerElement: document.getElementById(FirstCardElementId.BADGE_CONTAINER),
@@ -53,17 +76,7 @@ const firstCardPresenter = new AllergenCard({
             label: selectedLabel
         });
 
-        const startButtonElement = document.getElementById(ControlElementId.START_BUTTON);
-        if (startButtonElement) {
-            const blockedAttributeName = AttributeName.DATA_BLOCKED;
-            if (blockedAttributeName) {
-                startButtonElement.setAttribute(blockedAttributeName, AttributeBooleanValue.FALSE);
-            }
-            const ariaDisabledAttributeName = AttributeName.ARIA_DISABLED;
-            if (ariaDisabledAttributeName) {
-                startButtonElement.setAttribute(ariaDisabledAttributeName, AttributeBooleanValue.FALSE);
-            }
-        }
+        setDocumentStartButtonBlockedState(false);
 
         const badgeEntry = {
             label: selectedLabel,
