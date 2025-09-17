@@ -389,7 +389,7 @@
         .grid { display: grid; gap: clamp(12px, 2vw, 20px) }
 
         .allergen-grid {
-            grid-template-columns: repeat(auto-fit, minmax(188px, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             align-content: start;
             justify-items: stretch;
             grid-auto-flow: row dense;
@@ -397,7 +397,7 @@
         }
 
         .allergen-grid .start-button {
-            grid-column: -1;
+            grid-column: 3 / 4;
             align-self: end;
             justify-self: end;
             margin: 0;
