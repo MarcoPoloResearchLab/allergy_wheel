@@ -210,6 +210,8 @@ const NomNomPlaybackConfiguration = Object.freeze({
     fallbackBufferDurationSeconds: 1.5
 });
 
+const NomNomMultiBiteMaximumSampleDurationSeconds = NomNomPlaybackConfiguration.chewGapSeconds;
+
 function clampRandomValue(randomValue) {
     if (!Number.isFinite(randomValue)) {
         return 0;
@@ -266,6 +268,20 @@ export async function playNomNom(durationMs = 1200, randomGenerator = Math.rando
 
     const startTimeSeconds = context.currentTime;
     const requestedDurationSeconds = Math.max(minimumDurationSeconds, Math.max(0, durationMs) / 1000);
+    const knownBufferDurationSeconds =
+        typeof audioBuffer?.duration === "number" && audioBuffer.duration > 0
+            ? audioBuffer.duration
+            : null;
+    const shouldScheduleMultipleBites =
+        knownBufferDurationSeconds === null ||
+        knownBufferDurationSeconds <= NomNomMultiBiteMaximumSampleDurationSeconds;
+
+    if (!shouldScheduleMultipleBites) {
+        const bufferOffsetSeconds = determineBufferStartOffsetSeconds(audioBuffer, randomGenerator);
+        scheduleNomNomPlaybackAt(context, audioBuffer, startTimeSeconds, bufferOffsetSeconds);
+        return;
+    }
+
     const playbackStartTimes = [
         startTimeSeconds,
         startTimeSeconds + quickRepeatDelaySeconds,

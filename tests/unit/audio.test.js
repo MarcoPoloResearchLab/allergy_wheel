@@ -307,27 +307,37 @@ describe("playSiren", () => {
 
 const NomNomQuickRepeatDelaySeconds = 0.05;
 const NomNomChewGapSeconds = 0.28;
-const NomNomFourthBiteAllowanceSeconds = 0.25;
 const NomNomStartOffsetSafetyMarginSeconds = 0.02;
 const NomNomExpectedGainLevel = 0.9;
 const NomNomRandomValueMaximum = 0.999999;
+const NomNomShortSampleDurationSeconds = 0.18;
+const NomNomLongSampleDurationSeconds = 1.6;
 const NomNomPlaybackTestCases = Object.freeze([
   Object.freeze({
-    description: "uses buffered chewing audio with randomized offsets",
+    description: "uses buffered chewing audio with randomized offsets for short samples",
     durationMs: 600,
-    randomSequence: [
-      0.1, 0.2, 0.25, 0.35, 0.2,
-      0.9, 0.8, 0.75, 0.65, 0.8,
-      0.5, 0.5, 0.5, 0.5, 0.5
+    randomSequence: [0.1, 0.2, 0.25],
+    bufferDurationSeconds: NomNomShortSampleDurationSeconds,
+    expectedStartTimes: [0, NomNomQuickRepeatDelaySeconds, NomNomChewGapSeconds]
+  }),
+  Object.freeze({
+    description: "schedules the optional fourth bite when duration allows for short samples",
+    durationMs: 1200,
+    randomSequence: [0.3, 0.45, 0.6, 0.7],
+    bufferDurationSeconds: NomNomShortSampleDurationSeconds,
+    expectedStartTimes: [
+      0,
+      NomNomQuickRepeatDelaySeconds,
+      NomNomChewGapSeconds,
+      NomNomChewGapSeconds * 2
     ]
   }),
   Object.freeze({
-    description: "schedules the optional fourth bite when duration allows",
+    description: "plays longer chewing audio once with a randomized offset",
     durationMs: 1200,
-    randomSequence: [
-      0.3, 0.45, 0.6, 0.7, 0.8,
-      0.2, 0.2, 0.2, 0.2, 0.2
-    ]
+    randomSequence: [0.5],
+    bufferDurationSeconds: NomNomLongSampleDurationSeconds,
+    expectedStartTimes: [0]
   })
 ]);
 
@@ -346,9 +356,9 @@ describe("playNomNom", () => {
     jest.resetModules();
     mockContext = createMockAudioContext();
     decodedNomNomBuffer = createMockAudioBuffer(
-      Math.floor(mockContext.sampleRate * 1.6),
+      Math.floor(mockContext.sampleRate * NomNomLongSampleDurationSeconds),
       mockContext.sampleRate,
-      1.6
+      NomNomLongSampleDurationSeconds
     );
     mockContext.decodeAudioData = jest.fn(() => Promise.resolve(decodedNomNomBuffer));
     window.AudioContext = jest.fn(() => mockContext);
@@ -368,60 +378,66 @@ describe("playNomNom", () => {
     global.fetch = originalFetch;
   });
 
-  it.each(NomNomPlaybackTestCases)("playNomNom $description", async ({ durationMs, randomSequence }) => {
-    const remainingRandomValues = [...randomSequence];
-    const deterministicRandom = jest.fn(() => {
-      if (remainingRandomValues.length === 0) {
-        return randomSequence[randomSequence.length - 1] ?? 0.5;
-      }
-      return remainingRandomValues.shift();
-    });
+  it.each(NomNomPlaybackTestCases)(
+    "playNomNom $description",
+    async ({ durationMs, randomSequence, bufferDurationSeconds, expectedStartTimes }) => {
+      const remainingRandomValues = [...randomSequence];
+      const deterministicRandom = jest.fn(() => {
+        if (remainingRandomValues.length === 0) {
+          return randomSequence[randomSequence.length - 1] ?? 0.5;
+        }
+        return remainingRandomValues.shift();
+      });
 
-    await playNomNom(durationMs, deterministicRandom);
+      const adjustedSampleLength = Math.max(
+        1,
+        Math.floor(mockContext.sampleRate * bufferDurationSeconds)
+      );
+      decodedNomNomBuffer.duration = bufferDurationSeconds;
+      decodedNomNomBuffer.length = adjustedSampleLength;
 
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-    expect(global.fetch).toHaveBeenCalledWith(AudioAssetPath.NOM_NOM);
-    expect(fetchResponse.arrayBuffer).toHaveBeenCalledTimes(1);
-    expect(mockContext.decodeAudioData).toHaveBeenCalledTimes(1);
+      await playNomNom(durationMs, deterministicRandom);
 
-    const expectedStartTimes = [0, NomNomQuickRepeatDelaySeconds, NomNomChewGapSeconds];
-    const totalDurationSeconds = Math.max(0.35, Math.max(0, durationMs) / 1000);
-    const finalStartTime = NomNomChewGapSeconds * 2;
-    if (finalStartTime + NomNomFourthBiteAllowanceSeconds <= totalDurationSeconds) {
-      expectedStartTimes.push(finalStartTime);
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(AudioAssetPath.NOM_NOM);
+      expect(fetchResponse.arrayBuffer).toHaveBeenCalledTimes(1);
+      expect(mockContext.decodeAudioData).toHaveBeenCalledTimes(1);
+
+      expect(mockContext.createdBufferSources).toHaveLength(expectedStartTimes.length);
+      expect(mockContext.createdGains).toHaveLength(expectedStartTimes.length);
+
+      const playableDurationSeconds = Math.max(
+        0,
+        decodedNomNomBuffer.duration - NomNomStartOffsetSafetyMarginSeconds
+      );
+
+      mockContext.createdBufferSources.forEach((source, index) => {
+        const [[startTime, offsetSeconds]] = source.start.mock.calls;
+        expect(startTime).toBeCloseTo(expectedStartTimes[index], 5);
+        expect(offsetSeconds).toBeGreaterThanOrEqual(0);
+        expect(offsetSeconds).toBeLessThan(decodedNomNomBuffer.duration);
+
+        if (playableDurationSeconds > 0) {
+          const expectedRandomValue = Math.max(
+            0,
+            Math.min(
+              randomSequence[index] ?? randomSequence[randomSequence.length - 1] ?? 0.5,
+              NomNomRandomValueMaximum
+            )
+          );
+          expect(offsetSeconds / playableDurationSeconds).toBeCloseTo(expectedRandomValue, 5);
+        }
+      });
+
+      expect(deterministicRandom).toHaveBeenCalledTimes(expectedStartTimes.length);
+
+      mockContext.createdGains.forEach((gainNode, index) => {
+        const [[gainValue, gainTime]] = gainNode.gain.setValueAtTime.mock.calls;
+        expect(gainValue).toBeCloseTo(NomNomExpectedGainLevel, 5);
+        expect(gainTime).toBeCloseTo(expectedStartTimes[index], 5);
+      });
     }
-
-    expect(mockContext.createdBufferSources).toHaveLength(expectedStartTimes.length);
-    expect(mockContext.createdGains).toHaveLength(expectedStartTimes.length);
-
-    const playableDurationSeconds = decodedNomNomBuffer.duration - NomNomStartOffsetSafetyMarginSeconds;
-
-    mockContext.createdBufferSources.forEach((source, index) => {
-      const [[startTime, offsetSeconds]] = source.start.mock.calls;
-      expect(startTime).toBeCloseTo(expectedStartTimes[index], 5);
-      expect(offsetSeconds).toBeGreaterThanOrEqual(0);
-      expect(offsetSeconds).toBeLessThan(decodedNomNomBuffer.duration);
-
-      if (playableDurationSeconds > 0) {
-        const expectedRandomValue = Math.max(
-          0,
-          Math.min(
-            randomSequence[index] ?? randomSequence[randomSequence.length - 1] ?? 0.5,
-            NomNomRandomValueMaximum
-          )
-        );
-        expect(offsetSeconds / playableDurationSeconds).toBeCloseTo(expectedRandomValue, 5);
-      }
-    });
-
-    expect(deterministicRandom).toHaveBeenCalledTimes(expectedStartTimes.length);
-
-    mockContext.createdGains.forEach((gainNode, index) => {
-      const [[gainValue, gainTime]] = gainNode.gain.setValueAtTime.mock.calls;
-      expect(gainValue).toBeCloseTo(NomNomExpectedGainLevel, 5);
-      expect(gainTime).toBeCloseTo(expectedStartTimes[index], 5);
-    });
-  });
+  );
 
   it.each(NomNomCachingTestCases)("playNomNom $description", async ({ description }) => {
     await preloadNomNom();
