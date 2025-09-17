@@ -11,3 +11,8 @@ artwork in other projects if the repository license does not cover your intended
 - Include a note in your pull request describing the source of the artwork and the licensing terms.
 - Update any relevant constants, tests, and documentation so the new avatar appears in the selector UI and remains fully covered
   by automated checks.
+
+## Attribution
+
+- The 2024 T-Rex and Triceratops dinosaur avatars were created specifically for the Allergy Wheel project and are available
+  under the same repository license. No external artwork or additional attribution is required.
