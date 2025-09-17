@@ -389,7 +389,7 @@
         .grid { display: grid; gap: clamp(12px, 2vw, 20px) }
 
         .allergen-grid {
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(188px, 1fr));
             align-content: start;
             justify-items: stretch;
             grid-auto-flow: row dense;
@@ -405,11 +405,17 @@
 
         @media (max-width: 960px) {
             .allergen-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(184px, 1fr));
             }
 
             .allergen-grid .start-button {
                 grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .allergen-grid {
+                grid-template-columns: repeat(auto-fit, minmax(156px, 1fr));
             }
         }
 
