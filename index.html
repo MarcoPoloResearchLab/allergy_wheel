@@ -32,23 +32,23 @@
             --card: #fff;
             --muted: #666;
             --shadow: 0 12px 30px rgba(0, 0, 0, .15);
-            --chip-bg: #fff7c8;
-            --chip-hover-bg: #fff1a1;
-            --chip-selected-bg: #ffe485;
+            --chip-bg: #fff3c2;
+            --chip-hover-bg: #ffe799;
+            --chip-selected-bg: #ffe08a;
             --chip-border: #000;
-            --chip-shadow: 2px 2px 0 #000;
-            --chip-hover-shadow: 3px 3px 0 #000;
-            --chip-text: #2b1b05;
+            --chip-shadow: 3px 3px 0 #000;
+            --chip-hover-shadow: 4px 4px 0 #000;
+            --chip-text: #2a1f00;
             --chip-focus-ring: #000;
-            --chip-radio-size: 20px;
-            --chip-radio-dot-size: 10px;
+            --chip-radio-size: 26px;
+            --chip-radio-dot-size: 12px;
             --chip-radio-shadow: 2px 2px 0 #000;
-            --chip-radio-color: #000;
-            --start-button-bg: linear-gradient(135deg, #ffe066 0%, #ffc857 100%);
-            --start-button-hover-bg: linear-gradient(135deg, #ffec85 0%, #ffd45a 100%);
-            --start-button-disabled-bg: linear-gradient(135deg, #f2e8c2 0%, #e5d6a3 100%);
-            --start-button-text: #2b1b05;
-            --start-button-disabled-text: rgba(43, 27, 5, 0.7);
+            --chip-radio-color: var(--primary);
+            --start-button-bg: linear-gradient(135deg, #ff8fb3 0%, #ff6f9f 100%);
+            --start-button-hover-bg: linear-gradient(135deg, #ff96b8 0%, #ff77a6 100%);
+            --start-button-disabled-bg: linear-gradient(135deg, #ffd6e5 0%, #ffc0d5 100%);
+            --start-button-text: var(--ink);
+            --start-button-disabled-text: rgba(255, 255, 255, 0.85);
             --start-button-shadow: 4px 6px 0 #000;
             --start-button-hover-shadow: 5px 7px 0 #000;
         }
@@ -277,26 +277,6 @@
             gap: clamp(18px, 3vw, 28px);
         }
 
-        .card--allergen {
-            --chip-bg: #fff3c2;
-            --chip-hover-bg: #ffe799;
-            --chip-selected-bg: #ffe08a;
-            --chip-border: #000;
-            --chip-shadow: 3px 3px 0 #000;
-            --chip-hover-shadow: 4px 4px 0 #000;
-            --chip-text: #2a1f00;
-            --chip-focus-ring: #000;
-            --chip-radio-size: 26px;
-            --chip-radio-dot-size: 12px;
-            --chip-radio-shadow: 2px 2px 0 #000;
-            --chip-radio-color: var(--primary);
-            --start-button-bg: linear-gradient(135deg, #ff8fb3 0%, #ff6f9f 100%);
-            --start-button-hover-bg: linear-gradient(135deg, #ff96b8 0%, #ff77a6 100%);
-            --start-button-disabled-bg: linear-gradient(135deg, #ffd6e5 0%, #ffc0d5 100%);
-            --start-button-text: var(--ink);
-            --start-button-disabled-text: rgba(255, 255, 255, 0.85);
-        }
-
         .card::before {
             content: "";
             position: absolute;
@@ -411,7 +391,7 @@
 
         .grid { display: grid; gap: clamp(12px, 2vw, 20px) }
 
-        .allergen-grid {
+        .card--allergen .allergen-grid {
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             grid-auto-rows: minmax(84px, auto);
             align-content: start;
@@ -420,7 +400,7 @@
             padding-block: clamp(8px, 2vw, 16px);
         }
 
-        .allergen-grid .start-button {
+        .card--allergen .allergen-grid .start-button {
             grid-column: -1;
             align-self: end;
             justify-self: end;
@@ -428,7 +408,7 @@
         }
 
         @media (max-width: 640px) {
-            .allergen-grid .start-button {
+            .card--allergen .allergen-grid .start-button {
                 justify-self: stretch;
             }
 
@@ -437,7 +417,7 @@
             }
         }
 
-        .chip {
+        .card--allergen .chip {
             display: flex;
             align-items: center;
             gap: clamp(12px, 2vw, 16px);
@@ -458,38 +438,38 @@
             line-height: 1;
         }
 
-        .chip__label {
+        .card--allergen .chip__label {
             flex: 1 1 auto;
             line-height: 1.15;
         }
 
-        .chip__emoji {
+        .card--allergen .chip__emoji {
             margin-inline-start: auto;
             line-height: 1;
         }
 
-        .chip:is(:hover, :focus-within) {
+        .card--allergen .chip:is(:hover, :focus-within) {
             background: var(--chip-hover-bg);
             box-shadow: var(--chip-hover-shadow);
             transform: translateY(-2px);
         }
 
-        .chip:focus-visible {
+        .card--allergen .chip:focus-visible {
             outline: none;
         }
 
-        .chip:focus-within {
+        .card--allergen .chip:focus-within {
             outline: 3px solid var(--chip-focus-ring);
             outline-offset: 2px;
         }
 
-        .chip--selected {
+        .card--allergen .chip--selected {
             background: var(--chip-selected-bg);
             box-shadow: var(--chip-hover-shadow);
             transform: translateY(-2px);
         }
 
-        .chip__radio {
+        .card--allergen .chip__radio {
             appearance: none;
             inline-size: var(--chip-radio-size);
             block-size: var(--chip-radio-size);
@@ -503,7 +483,7 @@
             flex-shrink: 0;
         }
 
-        .chip__radio::after {
+        .card--allergen .chip__radio::after {
             content: "";
             inline-size: var(--chip-radio-dot-size);
             block-size: var(--chip-radio-dot-size);
@@ -513,20 +493,20 @@
             transition: transform 140ms ease;
         }
 
-        .chip__radio:checked::after {
+        .card--allergen .chip__radio:checked::after {
             transform: scale(1);
         }
 
-        .chip__radio:focus-visible {
+        .card--allergen .chip__radio:focus-visible {
             outline: 3px solid var(--chip-focus-ring);
             outline-offset: 2px;
         }
 
-        .chip__radio:active {
+        .card--allergen .chip__radio:active {
             transform: scale(0.95);
         }
 
-        .chip--selected .chip__radio {
+        .card--allergen .chip--selected .chip__radio {
             box-shadow: var(--chip-radio-shadow), inset 0 0 0 3px #fff;
         }
 
