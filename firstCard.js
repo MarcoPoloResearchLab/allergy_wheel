@@ -3,6 +3,8 @@ import { BrowserEventName, ControlElementId } from "./constants.js";
 
 const ElementClassName = Object.freeze({
     CHIP: "chip",
+    CHIP_SELECTED: "chip--selected",
+    CHIP_RADIO: "chip__radio",
     BADGE: "badge",
     EMOJI_LARGE: "emoji-large"
 });
@@ -81,8 +83,10 @@ export class AllergenCard {
             radioElement.type = RadioInputConfiguration.TYPE;
             radioElement.name = RadioInputConfiguration.NAME;
             radioElement.value = allergenToken;
+            radioElement.className = ElementClassName.CHIP_RADIO;
 
             radioElement.addEventListener(BrowserEventName.CHANGE, () => {
+                this.#setSelectedChip(labelElement);
                 this.#handleAllergenSelection({
                     token: allergenToken,
                     label: allergenLabel,
@@ -115,7 +119,14 @@ export class AllergenCard {
 
         this.#badgeContainerElement.textContent = TextContent.EMPTY;
 
-        for (const allergenEntry of allergenEntries || []) {
+        const normalizedEntries = Array.isArray(allergenEntries) ? allergenEntries : [];
+
+        if (normalizedEntries.length === 0) {
+            this.#clearChipSelection();
+            return;
+        }
+
+        for (const allergenEntry of normalizedEntries) {
             const labelText = typeof allergenEntry === ValueType.STRING
                 ? allergenEntry
                 : (allergenEntry && allergenEntry.label) || TextContent.EMPTY;
@@ -138,6 +149,40 @@ export class AllergenCard {
             }
 
             this.#badgeContainerElement.appendChild(badgeElement);
+        }
+    }
+
+    #setSelectedChip(selectedChipElement) {
+        if (!this.#listContainerElement || !selectedChipElement) {
+            return;
+        }
+
+        const chipElements = this.#listContainerElement
+            .querySelectorAll(`.${ElementClassName.CHIP}`);
+
+        for (const chipElement of chipElements) {
+            const shouldMarkSelected = chipElement === selectedChipElement;
+            chipElement.classList.toggle(ElementClassName.CHIP_SELECTED, shouldMarkSelected);
+        }
+    }
+
+    #clearChipSelection() {
+        if (!this.#listContainerElement) {
+            return;
+        }
+
+        const chipElements = this.#listContainerElement
+            .querySelectorAll(`.${ElementClassName.CHIP}`);
+
+        for (const chipElement of chipElements) {
+            chipElement.classList.remove(ElementClassName.CHIP_SELECTED);
+            const inputElements = chipElement.getElementsByTagName(ElementTagName.INPUT);
+            if (inputElements && inputElements.length > 0) {
+                const radioInputElement = inputElements[0];
+                if (radioInputElement && radioInputElement.type === RadioInputConfiguration.TYPE) {
+                    radioInputElement.checked = false;
+                }
+            }
         }
     }
 
