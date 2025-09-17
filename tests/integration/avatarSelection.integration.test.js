@@ -50,22 +50,69 @@ const DishDescriptor = Object.freeze({
   HAZARDOUS_INGREDIENT: "peanut"
 });
 
-const AvatarResourceEntries = Object.freeze([
-  [AvatarId.SUNNY_GIRL, AvatarAssetPath.SUNNY_GIRL],
-  [AvatarId.CURIOUS_GIRL, AvatarAssetPath.CURIOUS_GIRL],
-  [AvatarId.ADVENTUROUS_BOY, AvatarAssetPath.ADVENTUROUS_BOY],
-  [AvatarId.CREATIVE_BOY, AvatarAssetPath.CREATIVE_BOY]
-]);
-
 const AvatarSelectionTestDescription = Object.freeze({
   CREATIVE: "selecting the creative boy avatar renders it on the result card",
-  CURIOUS: "selecting the curious girl avatar renders it on the result card"
+  CURIOUS: "selecting the curious girl avatar renders it on the result card",
+  TYRANNOSAURUS: "selecting the tyrannosaurus rex avatar renders it on the result card",
+  TRICERATOPS: "selecting the triceratops avatar renders it on the result card"
 });
 
-const AvatarSelectionTestCases = [
-  { description: AvatarSelectionTestDescription.CREATIVE, chosenAvatarId: AvatarId.CREATIVE_BOY },
-  { description: AvatarSelectionTestDescription.CURIOUS, chosenAvatarId: AvatarId.CURIOUS_GIRL }
-];
+const DinosaurAvatarDescriptors = Object.freeze([
+  Object.freeze({
+    avatarIdentifier: AvatarId.TYRANNOSAURUS_REX,
+    avatarResourcePath: AvatarAssetPath.TYRANNOSAURUS_REX,
+    selectionDescription: AvatarSelectionTestDescription.TYRANNOSAURUS
+  }),
+  Object.freeze({
+    avatarIdentifier: AvatarId.TRICERATOPS,
+    avatarResourcePath: AvatarAssetPath.TRICERATOPS,
+    selectionDescription: AvatarSelectionTestDescription.TRICERATOPS
+  })
+]);
+
+const AvatarResourceEntries = (() => {
+  const baseEntries = [
+    Object.freeze([AvatarId.SUNNY_GIRL, AvatarAssetPath.SUNNY_GIRL]),
+    Object.freeze([AvatarId.CURIOUS_GIRL, AvatarAssetPath.CURIOUS_GIRL]),
+    Object.freeze([AvatarId.ADVENTUROUS_BOY, AvatarAssetPath.ADVENTUROUS_BOY]),
+    Object.freeze([AvatarId.CREATIVE_BOY, AvatarAssetPath.CREATIVE_BOY])
+  ];
+
+  for (const dinosaurAvatarDescriptor of DinosaurAvatarDescriptors) {
+    baseEntries.push(
+      Object.freeze([
+        dinosaurAvatarDescriptor.avatarIdentifier,
+        dinosaurAvatarDescriptor.avatarResourcePath
+      ])
+    );
+  }
+
+  return Object.freeze(baseEntries);
+})();
+
+const AvatarSelectionTestCases = (() => {
+  const baseTestCases = [
+    Object.freeze({
+      description: AvatarSelectionTestDescription.CREATIVE,
+      chosenAvatarId: AvatarId.CREATIVE_BOY
+    }),
+    Object.freeze({
+      description: AvatarSelectionTestDescription.CURIOUS,
+      chosenAvatarId: AvatarId.CURIOUS_GIRL
+    })
+  ];
+
+  for (const dinosaurAvatarDescriptor of DinosaurAvatarDescriptors) {
+    baseTestCases.push(
+      Object.freeze({
+        description: dinosaurAvatarDescriptor.selectionDescription,
+        chosenAvatarId: dinosaurAvatarDescriptor.avatarIdentifier
+      })
+    );
+  }
+
+  return Object.freeze(baseTestCases);
+})();
 
 afterEach(() => {
   document.body.innerHTML = EmptyStringValue;

@@ -13,6 +13,8 @@ const AvatarIdentifierSunnyGirl = "avatar-sunny-girl";
 const AvatarIdentifierCuriousGirl = "avatar-curious-girl";
 const AvatarIdentifierAdventurousBoy = "avatar-adventurous-boy";
 const AvatarIdentifierCreativeBoy = "avatar-creative-boy";
+const AvatarIdentifierTyrannosaurusRex = "avatar-tyrannosaurus-rex";
+const AvatarIdentifierTriceratops = "avatar-triceratops";
 
 export const MODE_STOP = WheelControlModeStringStop;
 export const MODE_START = WheelControlModeStringStart;
@@ -27,19 +29,25 @@ export const AvatarId = Object.freeze({
     SUNNY_GIRL: AvatarIdentifierSunnyGirl,
     CURIOUS_GIRL: AvatarIdentifierCuriousGirl,
     ADVENTUROUS_BOY: AvatarIdentifierAdventurousBoy,
-    CREATIVE_BOY: AvatarIdentifierCreativeBoy
+    CREATIVE_BOY: AvatarIdentifierCreativeBoy,
+    TYRANNOSAURUS_REX: AvatarIdentifierTyrannosaurusRex,
+    TRICERATOPS: AvatarIdentifierTriceratops
 });
 
 const AvatarAssetPathSunnyGirl = "assets/avatars/sunny-girl.svg";
 const AvatarAssetPathCuriousGirl = "assets/avatars/curious-girl.svg";
 const AvatarAssetPathAdventurousBoy = "assets/avatars/adventurous-boy.svg";
 const AvatarAssetPathCreativeBoy = "assets/avatars/creative-boy.svg";
+const AvatarAssetPathTyrannosaurusRex = "assets/avatars/t-rex.svg";
+const AvatarAssetPathTriceratops = "assets/avatars/triceratops.svg";
 
 export const AvatarAssetPath = Object.freeze({
     SUNNY_GIRL: AvatarAssetPathSunnyGirl,
     CURIOUS_GIRL: AvatarAssetPathCuriousGirl,
     ADVENTUROUS_BOY: AvatarAssetPathAdventurousBoy,
-    CREATIVE_BOY: AvatarAssetPathCreativeBoy
+    CREATIVE_BOY: AvatarAssetPathCreativeBoy,
+    TYRANNOSAURUS_REX: AvatarAssetPathTyrannosaurusRex,
+    TRICERATOPS: AvatarAssetPathTriceratops
 });
 
 export const ControlElementId = Object.freeze({

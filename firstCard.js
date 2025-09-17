@@ -86,7 +86,6 @@ export class AllergenCard {
             radioElement.value = allergenToken;
             radioElement.className = ElementClassName.CHIP_RADIO;
             radioElement.setAttribute(AttributeName.ARIA_LABEL, allergenLabel);
-
             radioElement.addEventListener(BrowserEventName.CHANGE, () => {
                 this.#setSelectedChip(labelElement);
                 this.#handleAllergenSelection({

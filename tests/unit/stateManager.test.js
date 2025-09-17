@@ -40,6 +40,8 @@ const StateTestDescription = Object.freeze({
   STOP_BUTTON_SWITCH: "switches between start and stop modes",
   AVATAR_DEFAULT: "provides the default avatar when initialized",
   AVATAR_VALID_SELECTION: "stores a provided valid avatar identifier",
+  AVATAR_TYRANNOSAURUS_SELECTION: "stores the tyrannosaurus rex avatar identifier when selected",
+  AVATAR_TRICERATOPS_SELECTION: "stores the triceratops avatar identifier when selected",
   AVATAR_INVALID_UNKNOWN: "falls back to the default avatar when given an unknown identifier",
   AVATAR_INVALID_NON_STRING: "falls back to the default avatar when given a non-string identifier",
   AVATAR_RESET_ON_INITIALIZE: "reinitialize restores the default avatar"
@@ -147,6 +149,18 @@ const AvatarSelectionCases = [
     description: StateTestDescription.AVATAR_VALID_SELECTION,
     avatarIdentifier: AvatarId.CURIOUS_GIRL,
     expectedStoredIdentifier: AvatarId.CURIOUS_GIRL,
+    expectedHasSelection: true
+  },
+  {
+    description: StateTestDescription.AVATAR_TYRANNOSAURUS_SELECTION,
+    avatarIdentifier: AvatarId.TYRANNOSAURUS_REX,
+    expectedStoredIdentifier: AvatarId.TYRANNOSAURUS_REX,
+    expectedHasSelection: true
+  },
+  {
+    description: StateTestDescription.AVATAR_TRICERATOPS_SELECTION,
+    avatarIdentifier: AvatarId.TRICERATOPS,
+    expectedStoredIdentifier: AvatarId.TRICERATOPS,
     expectedHasSelection: true
   },
   {
