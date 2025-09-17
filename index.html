@@ -31,7 +31,23 @@
             --success: #2ecc71;
             --card: #fff;
             --muted: #666;
-            --shadow: 0 12px 30px rgba(0, 0, 0, .15)
+            --shadow: 0 12px 30px rgba(0, 0, 0, .15);
+            --chip-bg: linear-gradient(135deg, #fff8d6 0%, #ffeaa1 100%);
+            --chip-hover-bg: linear-gradient(135deg, #fff3bf 0%, #ffe08a 100%);
+            --chip-selected-bg: linear-gradient(135deg, #ffea9c 0%, #ffd866 100%);
+            --chip-shadow: 2px 3px 0 #000;
+            --chip-hover-shadow: 3px 4px 0 #000;
+            --chip-radio-bg: #fffdf5;
+            --chip-radio-border: #2b1b05;
+            --chip-radio-dot: var(--primary);
+            --chip-text: #2b1b05;
+            --start-button-bg: linear-gradient(135deg, #ffe066 0%, #ffc857 100%);
+            --start-button-hover-bg: linear-gradient(135deg, #ffec85 0%, #ffd45a 100%);
+            --start-button-disabled-bg: linear-gradient(135deg, #f2e8c2 0%, #e5d6a3 100%);
+            --start-button-text: #2b1b05;
+            --start-button-disabled-text: rgba(43, 27, 5, 0.7);
+            --start-button-shadow: 4px 6px 0 #000;
+            --start-button-hover-shadow: 5px 7px 0 #000
         }
 
         html, body { height: 100% }
@@ -327,26 +343,44 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: clamp(20px, 3.6vw, 28px) clamp(32px, 5.8vw, 64px);
-            font-size: clamp(22px, 3.4vw, 30px);
+            padding: clamp(20px, 3vw, 28px) clamp(32px, 5.2vw, 60px);
+            font-size: clamp(22px, 3vw, 30px);
             font-weight: 900;
             inline-size: 100%;
-            min-height: clamp(68px, 12vw, 96px);
+            max-inline-size: clamp(260px, 42vw, 520px);
+            min-height: clamp(72px, 12vw, 100px);
+            line-height: 1.2;
+            text-align: center;
+            background: var(--start-button-bg);
+            color: var(--start-button-text);
+            border: 4px solid #000;
+            box-shadow: var(--start-button-shadow);
+            transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+        }
+
+        .btn.start-button:hover,
+        .btn.start-button:focus-visible {
+            background: var(--start-button-hover-bg);
+            box-shadow: var(--start-button-hover-shadow);
+            transform: translateY(-2px);
+            outline: none;
+            color: var(--start-button-text);
         }
 
         .start-button[data-blocked="true"] {
             cursor: pointer;
-            background: linear-gradient(145deg, #ffd6e1 0%, #ffb6c9 100%);
-            color: rgba(255, 255, 255, 0.85);
-            box-shadow: 0 10px 22px rgba(0, 0, 0, .1);
-            opacity: 0.75;
+            background: var(--start-button-disabled-bg);
+            color: var(--start-button-disabled-text);
+            box-shadow: var(--start-button-shadow);
+            opacity: 0.82;
             transform: none;
         }
 
         .start-button[data-blocked="true"]:hover,
         .start-button[data-blocked="true"]:focus-visible {
+            background: var(--start-button-disabled-bg);
+            box-shadow: var(--start-button-shadow);
             transform: none;
-            box-shadow: 0 10px 22px rgba(0, 0, 0, .1);
         }
 
         /* Unified center action button */
@@ -363,48 +397,118 @@
             padding-block: clamp(8px, 2vw, 16px);
         }
 
-        .allergen-grid .chip {
-            inline-size: 100%;
-        }
+        .allergen-grid .chip { inline-size: 100%; }
 
         .allergen-grid .start-button {
-            grid-column: -2 / -1;
+            grid-column: -3 / -1;
             align-self: end;
             justify-self: stretch;
-            margin-block-start: clamp(8px, 2vw, 16px);
+            margin: 0;
+        }
+
+        @media (max-width: 960px) {
+            .allergen-grid .start-button {
+                grid-column: -2 / -1;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .allergen-grid .start-button {
+                grid-column: 1 / -1;
+            }
+            .btn.start-button {
+                max-inline-size: none;
+            }
         }
 
         .chip {
-            display: flex; align-items: center; gap: 10px;
-            padding: 12px 14px; border-radius: 999px;
-            background: #fff7c8; border: 2px solid #000; box-shadow: 2px 2px 0 #000;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            border-radius: 999px;
+            background: var(--chip-bg);
+            border: 3px solid #000;
+            box-shadow: var(--chip-shadow);
             cursor: pointer;
-
-            transition: transform 160ms ease, box-shadow 160ms ease;
-
-            /* NEW: kid-friendly font for allergen names */
             font-family: "Fredoka One", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
             font-weight: 900;
-            letter-spacing: .2px;
-            font-size: clamp(16px, 1.6vw, 20px);
-            cursor: pointer;
-            transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+            letter-spacing: .1px;
+            font-size: clamp(16px, 1.55vw, 20px);
+            color: var(--chip-text);
+            transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
         }
-        .chip:hover,
-        .chip:focus-visible {
-            transform: translateY(-1px);
-            box-shadow: 3px 3px 0 #000;
-            outline: none;
-        }
-        .chip input { width: 20px; height: 20px }
-        .chip .emoji-large { margin-left: auto; }
 
-        .chip:hover,
-        .chip:focus-visible {
-            background: #fff1a1;
-            box-shadow: 3px 3px 0 #000;
-            transform: translateY(-1px);
+        .chip__label {
+            display: block;
+            line-height: 1.15;
+        }
+
+        .chip__emoji {
+            justify-self: end;
+        }
+
+        .chip__radio {
+            appearance: none;
+            -webkit-appearance: none;
+            inline-size: 26px;
+            block-size: 26px;
+            border-radius: 50%;
+            border: 3px solid var(--chip-radio-border);
+            background: var(--chip-radio-bg);
+            box-shadow: inset 0 0 0 4px var(--chip-radio-bg);
+            display: grid;
+            place-items: center;
+            transition: box-shadow 160ms ease, border-color 160ms ease;
+            cursor: pointer;
+        }
+
+        .chip__radio::after {
+            content: "";
+            inline-size: 12px;
+            block-size: 12px;
+            border-radius: 50%;
+            background: var(--chip-radio-dot);
+            transform: scale(0);
+            transition: transform 160ms ease;
+        }
+
+        .chip__radio:checked {
+            box-shadow: inset 0 0 0 4px var(--chip-radio-dot);
+        }
+
+        .chip__radio:checked::after {
+            transform: scale(1);
+        }
+
+        .chip__radio:focus-visible {
             outline: none;
+            box-shadow: inset 0 0 0 4px var(--chip-radio-dot), 0 0 0 3px rgba(0, 0, 0, 0.35);
+        }
+
+        .chip:hover {
+            background: var(--chip-hover-bg);
+            box-shadow: var(--chip-hover-shadow);
+            transform: translateY(-1px);
+        }
+
+        .chip--selected {
+            background: var(--chip-selected-bg);
+            box-shadow: var(--chip-hover-shadow);
+            transform: translateY(-1px);
+        }
+
+        .chip--selected .chip__radio {
+            box-shadow: inset 0 0 0 4px var(--chip-radio-dot);
+        }
+
+        @supports selector(:has(*)) {
+            .chip:has(.chip__radio:focus-visible) {
+                background: var(--chip-hover-bg);
+                box-shadow: var(--chip-hover-shadow);
+                transform: translateY(-1px);
+            }
         }
 
         /* Exclusive screens */

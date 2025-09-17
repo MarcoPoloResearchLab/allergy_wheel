@@ -1,8 +1,12 @@
 /* global document */
-import { BrowserEventName, ControlElementId } from "./constants.js";
+import { AttributeBooleanValue, AttributeName, BrowserEventName, ControlElementId } from "./constants.js";
 
 const ElementClassName = Object.freeze({
     CHIP: "chip",
+    CHIP_SELECTED: "chip--selected",
+    CHIP_RADIO: "chip__radio",
+    CHIP_LABEL: "chip__label",
+    CHIP_EMOJI: "chip__emoji",
     BADGE: "badge",
     EMOJI_LARGE: "emoji-large"
 });
@@ -19,8 +23,7 @@ const ElementTagName = Object.freeze({
 });
 
 const TextContent = Object.freeze({
-    EMPTY: "",
-    SPACE_PREFIX: " "
+    EMPTY: ""
 });
 
 const ValueType = Object.freeze({
@@ -81,8 +84,11 @@ export class AllergenCard {
             radioElement.type = RadioInputConfiguration.TYPE;
             radioElement.name = RadioInputConfiguration.NAME;
             radioElement.value = allergenToken;
+            radioElement.className = ElementClassName.CHIP_RADIO;
+            radioElement.setAttribute(AttributeName.ARIA_LABEL, allergenLabel);
 
             radioElement.addEventListener(BrowserEventName.CHANGE, () => {
+                this.#setSelectedChip(labelElement);
                 this.#handleAllergenSelection({
                     token: allergenToken,
                     label: allergenLabel,
@@ -90,14 +96,17 @@ export class AllergenCard {
                 });
             });
 
-            const textNode = document.createTextNode(`${TextContent.SPACE_PREFIX}${allergenLabel}`);
+            const labelSpan = document.createElement(ElementTagName.SPAN);
+            labelSpan.className = ElementClassName.CHIP_LABEL;
+            labelSpan.textContent = allergenLabel;
 
             const emojiSpan = document.createElement(ElementTagName.SPAN);
-            emojiSpan.className = ElementClassName.EMOJI_LARGE;
+            emojiSpan.classList.add(ElementClassName.EMOJI_LARGE, ElementClassName.CHIP_EMOJI);
             emojiSpan.textContent = allergenEmoji;
+            emojiSpan.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
 
             labelElement.appendChild(radioElement);
-            labelElement.appendChild(textNode);
+            labelElement.appendChild(labelSpan);
             labelElement.appendChild(emojiSpan);
 
             if (shouldInsertBeforeStartButton) {
@@ -115,7 +124,14 @@ export class AllergenCard {
 
         this.#badgeContainerElement.textContent = TextContent.EMPTY;
 
-        for (const allergenEntry of allergenEntries || []) {
+        const normalizedEntries = Array.isArray(allergenEntries) ? allergenEntries : [];
+
+        if (normalizedEntries.length === 0) {
+            this.#clearChipSelection();
+            return;
+        }
+
+        for (const allergenEntry of normalizedEntries) {
             const labelText = typeof allergenEntry === ValueType.STRING
                 ? allergenEntry
                 : (allergenEntry && allergenEntry.label) || TextContent.EMPTY;
@@ -134,10 +150,45 @@ export class AllergenCard {
                 const emojiSpan = document.createElement(ElementTagName.SPAN);
                 emojiSpan.className = ElementClassName.EMOJI_LARGE;
                 emojiSpan.textContent = emojiText;
+                emojiSpan.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
                 badgeElement.appendChild(emojiSpan);
             }
 
             this.#badgeContainerElement.appendChild(badgeElement);
+        }
+    }
+
+    #setSelectedChip(selectedChipElement) {
+        if (!this.#listContainerElement || !selectedChipElement) {
+            return;
+        }
+
+        const chipElements = this.#listContainerElement
+            .querySelectorAll(`.${ElementClassName.CHIP}`);
+
+        for (const chipElement of chipElements) {
+            const shouldMarkSelected = chipElement === selectedChipElement;
+            chipElement.classList.toggle(ElementClassName.CHIP_SELECTED, shouldMarkSelected);
+        }
+    }
+
+    #clearChipSelection() {
+        if (!this.#listContainerElement) {
+            return;
+        }
+
+        const chipElements = this.#listContainerElement
+            .querySelectorAll(`.${ElementClassName.CHIP}`);
+
+        for (const chipElement of chipElements) {
+            chipElement.classList.remove(ElementClassName.CHIP_SELECTED);
+            const inputElements = chipElement.getElementsByTagName(ElementTagName.INPUT);
+            if (inputElements && inputElements.length > 0) {
+                const radioInputElement = inputElements[0];
+                if (radioInputElement && radioInputElement.type === RadioInputConfiguration.TYPE) {
+                    radioInputElement.checked = false;
+                }
+            }
         }
     }
 
