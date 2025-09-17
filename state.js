@@ -32,6 +32,8 @@ class StateManager {
 
     #selectedAvatarId = AvatarId.DEFAULT;
 
+    #audioMuted = false;
+
     constructor({
         initialHeartsCount = DEFAULT_INITIAL_HEARTS_COUNT,
         initialStopButtonMode = WheelControlMode.STOP
@@ -58,6 +60,7 @@ class StateManager {
         this.#wheelCandidateLabels = [];
         this.#board = null;
         this.#selectedAvatarId = AvatarId.DEFAULT;
+        this.#audioMuted = false;
     }
 
     setBoard(boardInstance) {
@@ -140,6 +143,20 @@ class StateManager {
 
     getStopButtonMode() {
         return this.#stopButtonMode;
+    }
+
+    setAudioMuted(shouldMuteAudio) {
+        this.#audioMuted = Boolean(shouldMuteAudio);
+        return this.#audioMuted;
+    }
+
+    toggleAudioMuted() {
+        this.#audioMuted = !this.#audioMuted;
+        return this.#audioMuted;
+    }
+
+    isAudioMuted() {
+        return this.#audioMuted;
     }
 
     /**

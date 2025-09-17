@@ -103,17 +103,22 @@ function createWheelStub() {
 
 function createListenerBinderStub() {
   const binder = {
-    startHandler: null
+    startHandler: null,
+    muteHandler: null
   };
   binder.wireStartButton = jest.fn(({ onStartRequested }) => {
     binder.startHandler = typeof onStartRequested === "function" ? onStartRequested : null;
   });
   binder.wireStopButton = jest.fn();
   binder.wireFullscreenButton = jest.fn();
+  binder.wireMuteButton = jest.fn(({ onMuteChange }) => {
+    binder.muteHandler = typeof onMuteChange === "function" ? onMuteChange : null;
+  });
   binder.wireSpinAgainButton = jest.fn();
   binder.wireRevealBackdropDismissal = jest.fn();
   binder.wireRestartButton = jest.fn();
   binder.getStartHandler = () => binder.startHandler;
+  binder.getMuteHandler = () => binder.muteHandler;
   return binder;
 }
 
@@ -141,14 +146,55 @@ function createHeartsPresenterStub() {
   };
 }
 
-function createAudioPresenterStub() {
-  return {
+function createAudioPresenterStub({ stateManager } = {}) {
+  const effect = {
     playTick: jest.fn(),
     playNomNom: jest.fn(),
     playSiren: jest.fn(),
-    playWin: jest.fn(),
-    primeAudioOnFirstGesture: jest.fn()
+    playWin: jest.fn()
   };
+
+  const shouldPlayAudio = () => {
+    if (!stateManager || typeof stateManager.isAudioMuted !== "function") {
+      return true;
+    }
+    return stateManager.isAudioMuted() === false;
+  };
+
+  const audioPresenter = {
+    playTick: jest.fn((...args) => {
+      if (!shouldPlayAudio()) {
+        return;
+      }
+      effect.playTick(...args);
+    }),
+    playNomNom: jest.fn((...args) => {
+      if (!shouldPlayAudio()) {
+        return;
+      }
+      effect.playNomNom(...args);
+    }),
+    playSiren: jest.fn((...args) => {
+      if (!shouldPlayAudio()) {
+        return;
+      }
+      effect.playSiren(...args);
+    }),
+    playWin: jest.fn((...args) => {
+      if (!shouldPlayAudio()) {
+        return;
+      }
+      effect.playWin(...args);
+    }),
+    primeAudioOnFirstGesture: jest.fn(),
+    handleMuteToggle: jest.fn((isMuted) => {
+      audioPresenter.lastMuteState = isMuted;
+    }),
+    lastMuteState: null,
+    effect
+  };
+
+  return audioPresenter;
 }
 
 function createUiPresenterStub() {
@@ -215,6 +261,7 @@ function createDomSkeleton() {
     <button id="${ControlElementId.START_BUTTON}"></button>
     <button id="${ControlElementId.STOP_BUTTON}"></button>
     <button id="${ControlElementId.FULLSCREEN_BUTTON}"></button>
+    <button id="${ControlElementId.MUTE_BUTTON}" aria-pressed="false"></button>
     <button id="${ControlElementId.SPIN_AGAIN_BUTTON}"></button>
     <section id="${ControlElementId.REVEAL_SECTION}"></section>
     <section id="${ControlElementId.GAME_OVER_SECTION}"></section>
@@ -246,6 +293,8 @@ const GameOutcomeScenarios = [
     expectedAudio: { playSiren: 0, playNomNom: 1, playWin: 1 }
   }
 ];
+
+const AudioMuteScenarioDescription = "does not trigger audio playback when audio is muted";
 
 const WheelDistributionScenarios = [
   {
@@ -298,7 +347,7 @@ describe("GameController integration", () => {
         winningCardInfo: resolvedWinningCardInfo
       });
       const heartsPresenter = createHeartsPresenterStub();
-      const audioPresenter = createAudioPresenterStub();
+      const audioPresenter = createAudioPresenterStub({ stateManager });
       const uiPresenter = createUiPresenterStub();
       const normalizationFactory = createNormalizationFactoryStub();
       const randomPicker = createPickRandomUniqueStub();
@@ -351,9 +400,9 @@ describe("GameController integration", () => {
       expect(latestRenderCall[0]).toBe(expectedHeartsAfterSpin);
       expect(revealCardPresenter.showGameOver).toHaveBeenCalledTimes(expectGameOver ? 1 : 0);
       expect(revealCardPresenter.showWinningCard).toHaveBeenCalledTimes(expectWin ? 1 : 0);
-      expect(audioPresenter.playSiren).toHaveBeenCalledTimes(expectedAudio.playSiren);
-      expect(audioPresenter.playNomNom).toHaveBeenCalledTimes(expectedAudio.playNomNom);
-      expect(audioPresenter.playWin).toHaveBeenCalledTimes(expectedAudio.playWin);
+      expect(audioPresenter.effect.playSiren).toHaveBeenCalledTimes(expectedAudio.playSiren);
+      expect(audioPresenter.effect.playNomNom).toHaveBeenCalledTimes(expectedAudio.playNomNom);
+      expect(audioPresenter.effect.playWin).toHaveBeenCalledTimes(expectedAudio.playWin);
       expect(uiPresenter.setWheelControlToStartGame).toHaveBeenCalled();
       expect(uiPresenter.showScreen).toHaveBeenCalledWith(ScreenName.ALLERGY);
       if (expectWin && resolvedWinningCardInfo.restartButton) {
@@ -364,6 +413,77 @@ describe("GameController integration", () => {
       }
     }
   );
+
+  test(AudioMuteScenarioDescription, async () => {
+    createDomSkeleton();
+
+    const { wheelStub, registeredCallbacks } = createWheelStub();
+    const listenerBinder = createListenerBinderStub();
+    const board = createBoardStub({
+      [TestAllergen.TOKEN]: [DishRecord.HAZARD, DishRecord.SAFE]
+    });
+    const stateManager = new StateManager({ initialHeartsCount: 3 });
+    stateManager.setAudioMuted(true);
+    const firstCardPresenter = createFirstCardPresenterStub();
+    const revealCardPresenter = createRevealCardPresenterStub({
+      revealInfo: { hasTriggeringIngredient: true },
+      winningCardInfo: { restartButton: null, isDisplayed: false }
+    });
+    const heartsPresenter = createHeartsPresenterStub();
+    const audioPresenter = createAudioPresenterStub({ stateManager });
+    const uiPresenter = createUiPresenterStub();
+    const normalizationFactory = createNormalizationFactoryStub();
+    const randomPicker = createPickRandomUniqueStub();
+
+    const gameDataByPath = {
+      [DataPathString.ALLERGENS]: [{ token: TestAllergen.TOKEN, label: TestAllergen.LABEL }],
+      [DataPathString.DISHES]: [DishRecord.HAZARD, DishRecord.SAFE],
+      [DataPathString.NORMALIZATION]: [{ pattern: NormalizationRule.PATTERN, token: TestAllergen.TOKEN }],
+      [DataPathString.COUNTRIES]: [{ cuisine: CountryRecord.CUISINE, flag: CountryRecord.FLAG }],
+      [DataPathString.INGREDIENTS]: [{ name: IngredientRecord.NAME, emoji: IngredientRecord.EMOJI }]
+    };
+    const dataLoader = createDataLoaderStub(gameDataByPath);
+
+    const gameController = new GameController({
+      documentReference: document,
+      controlElementIdMap: ControlElementId,
+      attributeNameMap: AttributeName,
+      wheel: wheelStub,
+      listenerBinder,
+      board,
+      stateManager,
+      firstCardPresenter,
+      revealCardPresenter,
+      heartsPresenter,
+      audioPresenter,
+      uiPresenter,
+      dataLoader,
+      createNormalizationEngine: normalizationFactory,
+      pickRandomUnique: randomPicker
+    });
+
+    await gameController.bootstrap();
+
+    expect(listenerBinder.wireMuteButton).toHaveBeenCalled();
+    expect(typeof listenerBinder.getMuteHandler()).toBe("function");
+
+    stateManager.setSelectedAllergen({ token: TestAllergen.TOKEN, label: TestAllergen.LABEL });
+    stateManager.setWheelCandidates({
+      dishes: [DishRecord.HAZARD],
+      labels: [{ label: DishRecord.HAZARD.name, emoji: DishRecord.HAZARD.emoji }]
+    });
+
+    expect(typeof registeredCallbacks.onTick).toBe("function");
+    registeredCallbacks.onTick();
+
+    expect(typeof registeredCallbacks.onStop).toBe("function");
+    registeredCallbacks.onStop(0);
+
+    expect(audioPresenter.effect.playTick).not.toHaveBeenCalled();
+    expect(audioPresenter.effect.playSiren).not.toHaveBeenCalled();
+    expect(audioPresenter.effect.playNomNom).not.toHaveBeenCalled();
+    expect(audioPresenter.effect.playWin).not.toHaveBeenCalled();
+  });
 });
 
 describe("GameController wheel allergen distribution", () => {
@@ -384,7 +504,7 @@ describe("GameController wheel allergen distribution", () => {
         winningCardInfo: { restartButton: null, isDisplayed: false }
       });
       const heartsPresenter = createHeartsPresenterStub();
-      const audioPresenter = createAudioPresenterStub();
+      const audioPresenter = createAudioPresenterStub({ stateManager });
       const uiPresenter = createUiPresenterStub();
       const normalizationFactory = createNormalizationFactoryStub();
       const randomPicker = createPickRandomUniqueStub();

@@ -5,19 +5,27 @@ import {
     AttributeBooleanValue,
     AvatarClassName,
     AvatarMenuClassName,
-    TitleClassName
+    TitleClassName,
+    ButtonText,
+    AudioControlLabel
 } from "./constants.js";
 
 const ListenerErrorMessage = {
     MISSING_DEPENDENCIES: "createListenerBinder requires controlElementId, attributeName, and stateManager",
-    MISSING_STATE_MANAGER_METHODS: "createListenerBinder requires stateManager methods hasSelectedAllergen and getStopButtonMode"
+    MISSING_STATE_MANAGER_METHODS:
+        "createListenerBinder requires stateManager methods hasSelectedAllergen, getStopButtonMode, isAudioMuted, and toggleAudioMuted"
 };
 
 function createListenerBinder({ controlElementId, attributeName, documentReference = document, stateManager }) {
     if (!controlElementId || !attributeName || !stateManager) {
         throw new Error(ListenerErrorMessage.MISSING_DEPENDENCIES);
     }
-    if (typeof stateManager.hasSelectedAllergen !== "function" || typeof stateManager.getStopButtonMode !== "function") {
+    if (
+        typeof stateManager.hasSelectedAllergen !== "function"
+        || typeof stateManager.getStopButtonMode !== "function"
+        || typeof stateManager.isAudioMuted !== "function"
+        || typeof stateManager.toggleAudioMuted !== "function"
+    ) {
         throw new Error(ListenerErrorMessage.MISSING_STATE_MANAGER_METHODS);
     }
 
@@ -86,6 +94,41 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
             const rootElement = documentReference.documentElement;
             if (!documentReference.fullscreenElement) rootElement.requestFullscreen();
             else documentReference.exitFullscreen();
+        });
+    }
+
+    function wireMuteButton({ onMuteChange } = {}) {
+        const muteButton = documentReference.getElementById(controlElementId.MUTE_BUTTON);
+        if (!muteButton) {
+            return;
+        }
+
+        const ariaPressedAttributeName = attributeName.ARIA_PRESSED;
+        const ariaLabelAttributeName = attributeName.ARIA_LABEL;
+
+        const applyMuteStatePresentation = (isMuted) => {
+            const resolvedMuteState = Boolean(isMuted);
+            const pressedValue = resolvedMuteState ? AttributeBooleanValue.TRUE : AttributeBooleanValue.FALSE;
+            if (ariaPressedAttributeName) {
+                muteButton.setAttribute(ariaPressedAttributeName, pressedValue);
+            }
+            muteButton.textContent = resolvedMuteState ? ButtonText.SOUND_ON : ButtonText.MUTE;
+            if (ariaLabelAttributeName) {
+                muteButton.setAttribute(
+                    ariaLabelAttributeName,
+                    resolvedMuteState ? AudioControlLabel.UNMUTE_AUDIO : AudioControlLabel.MUTE_AUDIO
+                );
+            }
+        };
+
+        applyMuteStatePresentation(stateManager.isAudioMuted());
+
+        muteButton.addEventListener(BrowserEventName.CLICK, () => {
+            const updatedMuteState = stateManager.toggleAudioMuted();
+            applyMuteStatePresentation(updatedMuteState);
+            if (typeof onMuteChange === "function") {
+                onMuteChange(Boolean(updatedMuteState));
+            }
         });
     }
 
@@ -196,6 +239,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         wireStartButton,
         wireStopButton,
         wireFullscreenButton,
+        wireMuteButton,
         wireSpinAgainButton,
         wireRevealBackdropDismissal,
         wireRestartButton,
