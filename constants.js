@@ -51,11 +51,11 @@ export const AvatarAssetPath = Object.freeze({
     TRICERATOPS: AvatarAssetPathTriceratops
 });
 
-const AudioAssetPathNomNom = "assets/audio/nom_nom.mp3";
+const AudioAssetPathYamYam = "assets/audio/yam_yam.mp3";
 const AudioAssetPathSiren = "assets/audio/ambulance_siren.mp3";
 
 export const AudioAssetPath = Object.freeze({
-    NOM_NOM: AudioAssetPathNomNom,
+    NOM_NOM: AudioAssetPathYamYam,
     SIREN: AudioAssetPathSiren
 });
 
