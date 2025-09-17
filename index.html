@@ -626,40 +626,50 @@
         }
 
         .menu-header-cell {
+            position: relative;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             gap: 12px;
             flex-wrap: wrap;
         }
 
-        .menu-header-label {
-            font-weight: 800;
-            letter-spacing: 0.4px;
-        }
-
-        .menu-filter-control { position: relative; }
-
-        .menu-filter-button {
+        .menu-header-toggle {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: #fff;
-            border: 2px solid #000;
-            border-radius: 999px;
-            padding: 6px 14px;
-            font-weight: 700;
-            font-size: clamp(12px, 1.4vw, 16px);
+            gap: 8px;
+            background: transparent;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            font: inherit;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            color: inherit;
             cursor: pointer;
-            box-shadow: 2px 2px 0 #000;
-            transition: transform 150ms ease, box-shadow 150ms ease;
+            text-transform: uppercase;
+            transition: color 150ms ease;
         }
 
-        .menu-filter-button:hover,
-        .menu-filter-button:focus-visible {
-            transform: translateY(-1px);
-            box-shadow: 3px 3px 0 #000;
-            outline: none;
+        .menu-header-toggle::after {
+            content: "▾";
+            font-size: 0.8em;
+            transform: rotate(0deg);
+            transition: transform 160ms ease;
+        }
+
+        .menu-header-toggle[aria-expanded="true"]::after {
+            transform: rotate(180deg);
+        }
+
+        .menu-header-toggle:hover {
+            color: var(--primary);
+        }
+
+        .menu-header-toggle:focus-visible {
+            outline: 3px solid #000;
+            outline-offset: 3px;
+            border-radius: 8px;
         }
 
         .menu-filter-panel {
@@ -824,8 +834,7 @@
             .menu-table thead { position: sticky; top: 0; z-index: 1; }
             .menu-table tbody td { display: block; }
             .menu-header-cell { align-items: flex-start; }
-            .menu-filter-control { width: 100%; }
-            .menu-filter-button { width: 100%; justify-content: center; }
+            .menu-header-toggle { width: 100%; justify-content: space-between; }
             .menu-filter-panel {
                 position: relative;
                 right: auto;
@@ -1003,75 +1012,69 @@
                         <th scope="col">Dish</th>
                         <th scope="col">
                             <div class="menu-header-cell">
-                                <span class="menu-header-label">Ingredients</span>
-                                <div class="menu-filter-control">
-                                    <button
-                                        aria-controls="menu-ingredient-filter-panel"
-                                        aria-expanded="false"
-                                        aria-haspopup="true"
-                                        class="menu-filter-button"
-                                        id="menu-ingredient-filter-toggle"
-                                        type="button"
-                                    >
-                                        Filter
-                                    </button>
-                                    <div
-                                        aria-label="Filter ingredients"
-                                        class="menu-filter-panel"
-                                        hidden
-                                        id="menu-ingredient-filter-panel"
-                                        role="group"
-                                    >
-                                        <div class="menu-filter-header">
-                                            <p class="menu-filter-title">Filter by ingredient</p>
-                                            <button
-                                                aria-disabled="true"
-                                                class="menu-filter-clear"
-                                                id="menu-ingredient-filter-clear"
-                                                type="button"
-                                            >
-                                                Clear
-                                            </button>
-                                        </div>
-                                        <div class="menu-filter-list" id="menu-ingredient-filter-list"></div>
+                                <button
+                                    aria-controls="menu-ingredient-filter-panel"
+                                    aria-expanded="false"
+                                    aria-haspopup="true"
+                                    class="menu-header-toggle"
+                                    id="menu-ingredient-filter-toggle"
+                                    type="button"
+                                >
+                                    Ingredients
+                                </button>
+                                <div
+                                    aria-label="Filter ingredients"
+                                    class="menu-filter-panel"
+                                    hidden
+                                    id="menu-ingredient-filter-panel"
+                                    role="group"
+                                >
+                                    <div class="menu-filter-header">
+                                        <p class="menu-filter-title">Filter by ingredient</p>
+                                        <button
+                                            aria-disabled="true"
+                                            class="menu-filter-clear"
+                                            id="menu-ingredient-filter-clear"
+                                            type="button"
+                                        >
+                                            Clear
+                                        </button>
                                     </div>
+                                    <div class="menu-filter-list" id="menu-ingredient-filter-list"></div>
                                 </div>
                             </div>
                         </th>
                         <th scope="col">
                             <div class="menu-header-cell">
-                                <span class="menu-header-label">Cuisine</span>
-                                <div class="menu-filter-control">
-                                    <button
-                                        aria-controls="menu-cuisine-filter-panel"
-                                        aria-expanded="false"
-                                        aria-haspopup="true"
-                                        class="menu-filter-button"
-                                        id="menu-cuisine-filter-toggle"
-                                        type="button"
-                                    >
-                                        Filter
-                                    </button>
-                                    <div
-                                        aria-label="Filter cuisines"
-                                        class="menu-filter-panel"
-                                        hidden
-                                        id="menu-cuisine-filter-panel"
-                                        role="group"
-                                    >
-                                        <div class="menu-filter-header">
-                                            <p class="menu-filter-title">Filter by cuisine</p>
-                                            <button
-                                                aria-disabled="true"
-                                                class="menu-filter-clear"
-                                                id="menu-cuisine-filter-clear"
-                                                type="button"
-                                            >
-                                                Clear
-                                            </button>
-                                        </div>
-                                        <div class="menu-filter-list" id="menu-cuisine-filter-list"></div>
+                                <button
+                                    aria-controls="menu-cuisine-filter-panel"
+                                    aria-expanded="false"
+                                    aria-haspopup="true"
+                                    class="menu-header-toggle"
+                                    id="menu-cuisine-filter-toggle"
+                                    type="button"
+                                >
+                                    Cuisine
+                                </button>
+                                <div
+                                    aria-label="Filter cuisines"
+                                    class="menu-filter-panel"
+                                    hidden
+                                    id="menu-cuisine-filter-panel"
+                                    role="group"
+                                >
+                                    <div class="menu-filter-header">
+                                        <p class="menu-filter-title">Filter by cuisine</p>
+                                        <button
+                                            aria-disabled="true"
+                                            class="menu-filter-clear"
+                                            id="menu-cuisine-filter-clear"
+                                            type="button"
+                                        >
+                                            Clear
+                                        </button>
                                     </div>
+                                    <div class="menu-filter-list" id="menu-cuisine-filter-list"></div>
                                 </div>
                             </div>
                         </th>

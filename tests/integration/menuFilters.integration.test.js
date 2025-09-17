@@ -11,15 +11,12 @@ const HtmlTagName = Object.freeze({
   TH: "th",
   DIV: "div",
   BUTTON: "button",
-  SPAN: "span",
   P: "p"
 });
 
 const CssClassName = Object.freeze({
   HEADER_CELL: "menu-header-cell",
-  HEADER_LABEL: "menu-header-label",
-  FILTER_CONTROL: "menu-filter-control",
-  FILTER_BUTTON: "menu-filter-button",
+  HEADER_TOGGLE: "menu-header-toggle",
   FILTER_PANEL: "menu-filter-panel",
   FILTER_HEADER: "menu-filter-header",
   FILTER_TITLE: "menu-filter-title",
@@ -121,65 +118,59 @@ function buildMenuTableMarkup() {
           <${HtmlTagName.TH}>Dish</${HtmlTagName.TH}>
           <${HtmlTagName.TH}>
             <${HtmlTagName.DIV} class="${CssClassName.HEADER_CELL}">
-              <${HtmlTagName.SPAN} class="${CssClassName.HEADER_LABEL}">Ingredients</${HtmlTagName.SPAN}>
-              <${HtmlTagName.DIV} class="${CssClassName.FILTER_CONTROL}">
-                <${HtmlTagName.BUTTON}
-                  id="${MenuElementId.INGREDIENT_FILTER_TOGGLE}"
-                  class="${CssClassName.FILTER_BUTTON}"
-                  aria-controls="${MenuElementId.INGREDIENT_FILTER_PANEL}"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                  type="button"
-                >Filter</${HtmlTagName.BUTTON}>
-                <${HtmlTagName.DIV}
-                  id="${MenuElementId.INGREDIENT_FILTER_PANEL}"
-                  class="${CssClassName.FILTER_PANEL}"
-                  hidden
-                  role="group"
-                >
-                  <${HtmlTagName.DIV} class="${CssClassName.FILTER_HEADER}">
-                    <${HtmlTagName.P} class="${CssClassName.FILTER_TITLE}">Filter by ingredient</${HtmlTagName.P}>
-                    <${HtmlTagName.BUTTON}
-                      id="${MenuElementId.INGREDIENT_FILTER_CLEAR}"
-                      class="${CssClassName.FILTER_CLEAR}"
-                      aria-disabled="true"
-                      type="button"
-                    >Clear</${HtmlTagName.BUTTON}>
-                  </${HtmlTagName.DIV}>
-                  <${HtmlTagName.DIV} id="${MenuElementId.INGREDIENT_FILTER_LIST}" class="${CssClassName.FILTER_LIST}"></${HtmlTagName.DIV}>
+              <${HtmlTagName.BUTTON}
+                id="${MenuElementId.INGREDIENT_FILTER_TOGGLE}"
+                class="${CssClassName.HEADER_TOGGLE}"
+                aria-controls="${MenuElementId.INGREDIENT_FILTER_PANEL}"
+                aria-haspopup="true"
+                aria-expanded="false"
+                type="button"
+              >Ingredients</${HtmlTagName.BUTTON}>
+              <${HtmlTagName.DIV}
+                id="${MenuElementId.INGREDIENT_FILTER_PANEL}"
+                class="${CssClassName.FILTER_PANEL}"
+                hidden
+                role="group"
+              >
+                <${HtmlTagName.DIV} class="${CssClassName.FILTER_HEADER}">
+                  <${HtmlTagName.P} class="${CssClassName.FILTER_TITLE}">Filter by ingredient</${HtmlTagName.P}>
+                  <${HtmlTagName.BUTTON}
+                    id="${MenuElementId.INGREDIENT_FILTER_CLEAR}"
+                    class="${CssClassName.FILTER_CLEAR}"
+                    aria-disabled="true"
+                    type="button"
+                  >Clear</${HtmlTagName.BUTTON}>
                 </${HtmlTagName.DIV}>
+                <${HtmlTagName.DIV} id="${MenuElementId.INGREDIENT_FILTER_LIST}" class="${CssClassName.FILTER_LIST}"></${HtmlTagName.DIV}>
               </${HtmlTagName.DIV}>
             </${HtmlTagName.DIV}>
           </${HtmlTagName.TH}>
           <${HtmlTagName.TH}>
             <${HtmlTagName.DIV} class="${CssClassName.HEADER_CELL}">
-              <${HtmlTagName.SPAN} class="${CssClassName.HEADER_LABEL}">Cuisine</${HtmlTagName.SPAN}>
-              <${HtmlTagName.DIV} class="${CssClassName.FILTER_CONTROL}">
-                <${HtmlTagName.BUTTON}
-                  id="${MenuElementId.CUISINE_FILTER_TOGGLE}"
-                  class="${CssClassName.FILTER_BUTTON}"
-                  aria-controls="${MenuElementId.CUISINE_FILTER_PANEL}"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                  type="button"
-                >Filter</${HtmlTagName.BUTTON}>
-                <${HtmlTagName.DIV}
-                  id="${MenuElementId.CUISINE_FILTER_PANEL}"
-                  class="${CssClassName.FILTER_PANEL}"
-                  hidden
-                  role="group"
-                >
-                  <${HtmlTagName.DIV} class="${CssClassName.FILTER_HEADER}">
-                    <${HtmlTagName.P} class="${CssClassName.FILTER_TITLE}">Filter by cuisine</${HtmlTagName.P}>
-                    <${HtmlTagName.BUTTON}
-                      id="${MenuElementId.CUISINE_FILTER_CLEAR}"
-                      class="${CssClassName.FILTER_CLEAR}"
-                      aria-disabled="true"
-                      type="button"
-                    >Clear</${HtmlTagName.BUTTON}>
-                  </${HtmlTagName.DIV}>
-                  <${HtmlTagName.DIV} id="${MenuElementId.CUISINE_FILTER_LIST}" class="${CssClassName.FILTER_LIST}"></${HtmlTagName.DIV}>
+              <${HtmlTagName.BUTTON}
+                id="${MenuElementId.CUISINE_FILTER_TOGGLE}"
+                class="${CssClassName.HEADER_TOGGLE}"
+                aria-controls="${MenuElementId.CUISINE_FILTER_PANEL}"
+                aria-haspopup="true"
+                aria-expanded="false"
+                type="button"
+              >Cuisine</${HtmlTagName.BUTTON}>
+              <${HtmlTagName.DIV}
+                id="${MenuElementId.CUISINE_FILTER_PANEL}"
+                class="${CssClassName.FILTER_PANEL}"
+                hidden
+                role="group"
+              >
+                <${HtmlTagName.DIV} class="${CssClassName.FILTER_HEADER}">
+                  <${HtmlTagName.P} class="${CssClassName.FILTER_TITLE}">Filter by cuisine</${HtmlTagName.P}>
+                  <${HtmlTagName.BUTTON}
+                    id="${MenuElementId.CUISINE_FILTER_CLEAR}"
+                    class="${CssClassName.FILTER_CLEAR}"
+                    aria-disabled="true"
+                    type="button"
+                  >Clear</${HtmlTagName.BUTTON}>
                 </${HtmlTagName.DIV}>
+                <${HtmlTagName.DIV} id="${MenuElementId.CUISINE_FILTER_LIST}" class="${CssClassName.FILTER_LIST}"></${HtmlTagName.DIV}>
               </${HtmlTagName.DIV}>
             </${HtmlTagName.DIV}>
           </${HtmlTagName.TH}>
