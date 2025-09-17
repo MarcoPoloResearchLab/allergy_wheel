@@ -54,17 +54,29 @@ const AvatarResourceEntries = Object.freeze([
   [AvatarId.SUNNY_GIRL, AvatarAssetPath.SUNNY_GIRL],
   [AvatarId.CURIOUS_GIRL, AvatarAssetPath.CURIOUS_GIRL],
   [AvatarId.ADVENTUROUS_BOY, AvatarAssetPath.ADVENTUROUS_BOY],
-  [AvatarId.CREATIVE_BOY, AvatarAssetPath.CREATIVE_BOY]
+  [AvatarId.CREATIVE_BOY, AvatarAssetPath.CREATIVE_BOY],
+  [AvatarId.TYRANNOSAURUS_REX, AvatarAssetPath.TYRANNOSAURUS_REX],
+  [AvatarId.TRICERATOPS, AvatarAssetPath.TRICERATOPS]
 ]);
 
 const AvatarSelectionTestDescription = Object.freeze({
   CREATIVE: "selecting the creative boy avatar renders it on the result card",
-  CURIOUS: "selecting the curious girl avatar renders it on the result card"
+  CURIOUS: "selecting the curious girl avatar renders it on the result card",
+  TYRANNOSAURUS: "selecting the tyrannosaurus rex avatar renders it on the result card",
+  TRICERATOPS: "selecting the triceratops avatar renders it on the result card"
 });
 
 const AvatarSelectionTestCases = [
   { description: AvatarSelectionTestDescription.CREATIVE, chosenAvatarId: AvatarId.CREATIVE_BOY },
-  { description: AvatarSelectionTestDescription.CURIOUS, chosenAvatarId: AvatarId.CURIOUS_GIRL }
+  { description: AvatarSelectionTestDescription.CURIOUS, chosenAvatarId: AvatarId.CURIOUS_GIRL },
+  {
+    description: AvatarSelectionTestDescription.TYRANNOSAURUS,
+    chosenAvatarId: AvatarId.TYRANNOSAURUS_REX
+  },
+  {
+    description: AvatarSelectionTestDescription.TRICERATOPS,
+    chosenAvatarId: AvatarId.TRICERATOPS
+  }
 ];
 
 afterEach(() => {
