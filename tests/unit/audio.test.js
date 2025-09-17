@@ -318,7 +318,10 @@ const NomNomPlaybackTestCases = Object.freeze([
     durationMs: 600,
     randomSequence: [0.1, 0.2, 0.25],
     bufferDurationSeconds: NomNomShortSampleDurationSeconds,
-    expectedStartTimes: [0, NomNomQuickRepeatDelaySeconds, NomNomChewGapSeconds]
+    expectedStartTimes: [0, NomNomQuickRepeatDelaySeconds, NomNomChewGapSeconds],
+    shouldRandomizeOffsets: true,
+    expectedRandomCallCount: 3,
+    expectedStopTimes: []
   }),
   Object.freeze({
     description: "schedules the optional fourth bite when duration allows for short samples",
@@ -330,14 +333,20 @@ const NomNomPlaybackTestCases = Object.freeze([
       NomNomQuickRepeatDelaySeconds,
       NomNomChewGapSeconds,
       NomNomChewGapSeconds * 2
-    ]
+    ],
+    shouldRandomizeOffsets: true,
+    expectedRandomCallCount: 4,
+    expectedStopTimes: []
   }),
   Object.freeze({
-    description: "plays longer chewing audio once with a randomized offset",
+    description: "plays longer chewing audio once from the beginning",
     durationMs: 1200,
     randomSequence: [0.5],
     bufferDurationSeconds: NomNomLongSampleDurationSeconds,
-    expectedStartTimes: [0]
+    expectedStartTimes: [0],
+    shouldRandomizeOffsets: false,
+    expectedRandomCallCount: 0,
+    expectedStopTimes: [NomNomLongSampleDurationSeconds]
   })
 ]);
 
@@ -380,7 +389,15 @@ describe("playNomNom", () => {
 
   it.each(NomNomPlaybackTestCases)(
     "playNomNom $description",
-    async ({ durationMs, randomSequence, bufferDurationSeconds, expectedStartTimes }) => {
+    async ({
+      durationMs,
+      randomSequence,
+      bufferDurationSeconds,
+      expectedStartTimes,
+      shouldRandomizeOffsets,
+      expectedRandomCallCount,
+      expectedStopTimes
+    }) => {
       const remainingRandomValues = [...randomSequence];
       const deterministicRandom = jest.fn(() => {
         if (remainingRandomValues.length === 0) {
@@ -410,26 +427,45 @@ describe("playNomNom", () => {
         0,
         decodedNomNomBuffer.duration - NomNomStartOffsetSafetyMarginSeconds
       );
+      const offsetRandomizationEnabled = shouldRandomizeOffsets !== false;
 
       mockContext.createdBufferSources.forEach((source, index) => {
         const [[startTime, offsetSeconds]] = source.start.mock.calls;
         expect(startTime).toBeCloseTo(expectedStartTimes[index], 5);
-        expect(offsetSeconds).toBeGreaterThanOrEqual(0);
-        expect(offsetSeconds).toBeLessThan(decodedNomNomBuffer.duration);
+        if (offsetRandomizationEnabled) {
+          expect(offsetSeconds).toBeGreaterThanOrEqual(0);
+          expect(offsetSeconds).toBeLessThan(decodedNomNomBuffer.duration);
 
-        if (playableDurationSeconds > 0) {
-          const expectedRandomValue = Math.max(
-            0,
-            Math.min(
-              randomSequence[index] ?? randomSequence[randomSequence.length - 1] ?? 0.5,
-              NomNomRandomValueMaximum
-            )
-          );
-          expect(offsetSeconds / playableDurationSeconds).toBeCloseTo(expectedRandomValue, 5);
+          if (playableDurationSeconds > 0) {
+            const expectedRandomValue = Math.max(
+              0,
+              Math.min(
+                randomSequence[index] ?? randomSequence[randomSequence.length - 1] ?? 0.5,
+                NomNomRandomValueMaximum
+              )
+            );
+            expect(offsetSeconds / playableDurationSeconds).toBeCloseTo(
+              expectedRandomValue,
+              5
+            );
+          }
+        } else {
+          expect(offsetSeconds).toBe(0);
+        }
+
+        const expectedStopTime = expectedStopTimes?.[index];
+        if (expectedStopTime === undefined || expectedStopTime === null) {
+          expect(source.stop).not.toHaveBeenCalled();
+        } else {
+          expect(source.stop).toHaveBeenCalledTimes(1);
+          const [[stopTimeSeconds]] = source.stop.mock.calls;
+          expect(stopTimeSeconds).toBeCloseTo(expectedStopTime, 5);
         }
       });
 
-      expect(deterministicRandom).toHaveBeenCalledTimes(expectedStartTimes.length);
+      const expectedRandomCalls =
+        expectedRandomCallCount ?? expectedStartTimes.length;
+      expect(deterministicRandom).toHaveBeenCalledTimes(expectedRandomCalls);
 
       mockContext.createdGains.forEach((gainNode, index) => {
         const [[gainValue, gainTime]] = gainNode.gain.setValueAtTime.mock.calls;
