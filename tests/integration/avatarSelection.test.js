@@ -61,17 +61,29 @@ const AvatarResourceEntries = Object.freeze([
   [AvatarId.SUNNY_GIRL, AvatarAssetPath.SUNNY_GIRL],
   [AvatarId.CURIOUS_GIRL, AvatarAssetPath.CURIOUS_GIRL],
   [AvatarId.ADVENTUROUS_BOY, AvatarAssetPath.ADVENTUROUS_BOY],
-  [AvatarId.CREATIVE_BOY, AvatarAssetPath.CREATIVE_BOY]
+  [AvatarId.CREATIVE_BOY, AvatarAssetPath.CREATIVE_BOY],
+  [AvatarId.TYRANNOSAURUS_REX, AvatarAssetPath.TYRANNOSAURUS_REX],
+  [AvatarId.TRICERATOPS, AvatarAssetPath.TRICERATOPS]
 ]);
 
 const AvatarSelectionScenarioDescription = Object.freeze({
-  CREATIVE_PERSISTENCE: "selecting the creative boy avatar persists across rounds"
+  CREATIVE_PERSISTENCE: "selecting the creative boy avatar persists across rounds",
+  TYRANNOSAURUS_PERSISTENCE: "selecting the tyrannosaurus rex avatar persists across rounds",
+  TRICERATOPS_PERSISTENCE: "selecting the triceratops avatar persists across rounds"
 });
 
 const AvatarSelectionScenarios = [
   {
     description: AvatarSelectionScenarioDescription.CREATIVE_PERSISTENCE,
     chosenAvatarId: AvatarId.CREATIVE_BOY
+  },
+  {
+    description: AvatarSelectionScenarioDescription.TYRANNOSAURUS_PERSISTENCE,
+    chosenAvatarId: AvatarId.TYRANNOSAURUS_REX
+  },
+  {
+    description: AvatarSelectionScenarioDescription.TRICERATOPS_PERSISTENCE,
+    chosenAvatarId: AvatarId.TRICERATOPS
   }
 ];
 

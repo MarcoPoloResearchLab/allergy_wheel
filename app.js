@@ -90,7 +90,9 @@ const avatarResourceMap = new Map([
     [AvatarId.SUNNY_GIRL, AvatarAssetPath.SUNNY_GIRL],
     [AvatarId.CURIOUS_GIRL, AvatarAssetPath.CURIOUS_GIRL],
     [AvatarId.ADVENTUROUS_BOY, AvatarAssetPath.ADVENTUROUS_BOY],
-    [AvatarId.CREATIVE_BOY, AvatarAssetPath.CREATIVE_BOY]
+    [AvatarId.CREATIVE_BOY, AvatarAssetPath.CREATIVE_BOY],
+    [AvatarId.TYRANNOSAURUS_REX, AvatarAssetPath.TYRANNOSAURUS_REX],
+    [AvatarId.TRICERATOPS, AvatarAssetPath.TRICERATOPS]
 ]);
 
 const revealCardPresenter = new ResultCard({
