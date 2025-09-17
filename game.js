@@ -38,7 +38,7 @@ const ButtonClassName = Object.freeze({
 });
 
 const GameErrorMessage = Object.freeze({
-    MISSING_DEPENDENCIES: "GameController requires wheel, board, listenerBinder, stateManager, uiPresenter, firstCardPresenter, revealCardPresenter, heartsPresenter, audioPresenter, dataLoader, createNormalizationEngine, and pickRandomUnique.",
+    MISSING_DEPENDENCIES: "GameController requires wheel, board, listenerBinder, stateManager, uiPresenter, firstCardPresenter, revealCardPresenter, heartsPresenter, audioPresenter, menuPresenter, dataLoader, createNormalizationEngine, and pickRandomUnique.",
     INVALID_DATA_LOADER: "GameController requires dataLoader.loadJson to be a function.",
     INVALID_NORMALIZATION_FACTORY: "GameController requires createNormalizationEngine to be a function.",
     INVALID_RANDOM_PICKER: "GameController requires pickRandomUnique to be a function.",
@@ -192,6 +192,8 @@ export class GameController {
 
     #audioPresenter;
 
+    #menuPresenter;
+
     #uiPresenter;
 
     #dataLoader;
@@ -218,13 +220,14 @@ export class GameController {
         revealCardPresenter,
         heartsPresenter,
         audioPresenter,
+        menuPresenter,
         uiPresenter,
         dataLoader,
         createNormalizationEngine,
         pickRandomUnique
     }) {
         if (!wheel || !board || !listenerBinder || !stateManager || !uiPresenter || !firstCardPresenter
-            || !revealCardPresenter || !heartsPresenter || !audioPresenter || !dataLoader) {
+            || !revealCardPresenter || !heartsPresenter || !audioPresenter || !menuPresenter || !dataLoader) {
             throw new Error(GameErrorMessage.MISSING_DEPENDENCIES);
         }
         if (typeof dataLoader.loadJson !== "function") {
@@ -248,6 +251,7 @@ export class GameController {
         this.#revealCardPresenter = revealCardPresenter;
         this.#heartsPresenter = heartsPresenter;
         this.#audioPresenter = audioPresenter;
+        this.#menuPresenter = menuPresenter;
         this.#uiPresenter = uiPresenter;
         this.#dataLoader = dataLoader;
         this.#createNormalizationEngine = createNormalizationEngine;
@@ -335,6 +339,19 @@ export class GameController {
                 cuisineToFlagMap: this.#cuisineToFlagMap,
                 ingredientEmojiByName: this.#ingredientEmojiByName
             });
+        }
+
+        if (this.#menuPresenter && typeof this.#menuPresenter.updateDataDependencies === "function") {
+            this.#menuPresenter.updateDataDependencies({
+                dishesCatalog,
+                normalizationEngine: this.#normalizationEngine,
+                ingredientEmojiByName: this.#ingredientEmojiByName,
+                cuisineToFlagMap: this.#cuisineToFlagMap,
+                allergensCatalog
+            });
+            if (typeof this.#menuPresenter.renderMenu === "function") {
+                this.#menuPresenter.renderMenu();
+            }
         }
 
         const initialHeartsCount = this.#stateManager.getInitialHeartsCount();
@@ -751,6 +768,21 @@ export class GameController {
         }
         if (this.#stateManager.resetWheelCandidates) {
             this.#stateManager.resetWheelCandidates();
+        }
+        if (this.#menuPresenter && typeof this.#menuPresenter.updateSelectedAllergen === "function") {
+            const selectedToken = this.#stateManager.getSelectedAllergenToken
+                ? this.#stateManager.getSelectedAllergenToken()
+                : null;
+            const selectedLabel = this.#stateManager.getSelectedAllergenLabel
+                ? this.#stateManager.getSelectedAllergenLabel()
+                : "";
+            this.#menuPresenter.updateSelectedAllergen({
+                token: selectedToken,
+                label: selectedLabel
+            });
+        }
+        if (this.#menuPresenter && typeof this.#menuPresenter.renderMenu === "function") {
+            this.#menuPresenter.renderMenu();
         }
         this.#setStartButtonBlockedState(true);
         if (typeof this.#firstCardPresenter.updateBadges === "function") {

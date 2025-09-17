@@ -146,6 +146,14 @@ function createHeartsPresenterStub() {
   };
 }
 
+function createMenuPresenterStub() {
+  return {
+    updateDataDependencies: jest.fn(),
+    renderMenu: jest.fn(),
+    updateSelectedAllergen: jest.fn()
+  };
+}
+
 function createAudioPresenterStub({ stateManager } = {}) {
   const effect = {
     playTick: jest.fn(),
@@ -348,6 +356,7 @@ describe("GameController integration", () => {
       });
       const heartsPresenter = createHeartsPresenterStub();
       const audioPresenter = createAudioPresenterStub({ stateManager });
+      const menuPresenter = createMenuPresenterStub();
       const uiPresenter = createUiPresenterStub();
       const normalizationFactory = createNormalizationFactoryStub();
       const randomPicker = createPickRandomUniqueStub();
@@ -373,6 +382,7 @@ describe("GameController integration", () => {
         revealCardPresenter,
         heartsPresenter,
         audioPresenter,
+        menuPresenter,
         uiPresenter,
         dataLoader,
         createNormalizationEngine: normalizationFactory,
@@ -385,6 +395,10 @@ describe("GameController integration", () => {
       expect(dataLoader.loadJson).toHaveBeenCalledTimes(5);
       expect(firstCardPresenter.renderAllergens).toHaveBeenCalledWith(expect.any(Array));
       expect(wheelStub.registerSpinCallbacks).toHaveBeenCalled();
+      expect(menuPresenter.updateDataDependencies).toHaveBeenCalledWith(
+        expect.objectContaining({ dishesCatalog: expect.any(Array) })
+      );
+      expect(menuPresenter.renderMenu).toHaveBeenCalled();
 
       stateManager.setSelectedAllergen({ token: TestAllergen.TOKEN, label: TestAllergen.LABEL });
       stateManager.setWheelCandidates({
@@ -431,6 +445,7 @@ describe("GameController integration", () => {
     });
     const heartsPresenter = createHeartsPresenterStub();
     const audioPresenter = createAudioPresenterStub({ stateManager });
+    const menuPresenter = createMenuPresenterStub();
     const uiPresenter = createUiPresenterStub();
     const normalizationFactory = createNormalizationFactoryStub();
     const randomPicker = createPickRandomUniqueStub();
@@ -456,6 +471,7 @@ describe("GameController integration", () => {
       revealCardPresenter,
       heartsPresenter,
       audioPresenter,
+      menuPresenter,
       uiPresenter,
       dataLoader,
       createNormalizationEngine: normalizationFactory,
@@ -505,6 +521,7 @@ describe("GameController wheel allergen distribution", () => {
       });
       const heartsPresenter = createHeartsPresenterStub();
       const audioPresenter = createAudioPresenterStub({ stateManager });
+      const menuPresenter = createMenuPresenterStub();
       const uiPresenter = createUiPresenterStub();
       const normalizationFactory = createNormalizationFactoryStub();
       const randomPicker = createPickRandomUniqueStub();
@@ -534,6 +551,7 @@ describe("GameController wheel allergen distribution", () => {
         revealCardPresenter,
         heartsPresenter,
         audioPresenter,
+        menuPresenter,
         uiPresenter,
         dataLoader,
         createNormalizationEngine: normalizationFactory,

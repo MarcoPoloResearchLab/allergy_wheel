@@ -2,7 +2,8 @@
 
 export const ScreenName = Object.freeze({
     ALLERGY: "allergy",
-    WHEEL: "wheel"
+    WHEEL: "wheel",
+    MENU: "menu"
 });
 
 
@@ -61,7 +62,9 @@ export const ControlElementId = Object.freeze({
     RESTART_BUTTON: "restart",
     AVATAR_TOGGLE: "avatar-toggle",
     AVATAR_MENU: "avatar-menu",
-    ALLERGY_TITLE: "allergy-title"
+    ALLERGY_TITLE: "allergy-title",
+    NAV_GAME_BUTTON: "nav-game",
+    NAV_MENU_BUTTON: "nav-menu"
 });
 
 const AvatarOptionClassName = "avatar-option";
@@ -98,6 +101,16 @@ export const ResultCardElementId = Object.freeze({
     FACE_SVG: "face",
     GAME_OVER_SECTION: ControlElementId.GAME_OVER_SECTION,
     WIN_RESTART_BUTTON: "win-restart"
+});
+
+export const ScreenElementId = Object.freeze({
+    ALLERGY: "screen-allergy",
+    WHEEL: "screen-wheel",
+    MENU: "screen-menu"
+});
+
+export const MenuElementId = Object.freeze({
+    TABLE_BODY: "menu-table-body"
 });
 
 export const DocumentElementId = Object.freeze({
