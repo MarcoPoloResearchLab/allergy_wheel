@@ -32,14 +32,12 @@
             --card: #fff;
             --muted: #666;
             --shadow: 0 12px 30px rgba(0, 0, 0, .15);
-            --chip-bg: linear-gradient(135deg, #fff8d6 0%, #ffeaa1 100%);
-            --chip-hover-bg: linear-gradient(135deg, #fff3bf 0%, #ffe08a 100%);
-            --chip-selected-bg: linear-gradient(135deg, #ffea9c 0%, #ffd866 100%);
-            --chip-shadow: 2px 3px 0 #000;
-            --chip-hover-shadow: 3px 4px 0 #000;
-            --chip-radio-bg: #fffdf5;
-            --chip-radio-border: #2b1b05;
-            --chip-radio-dot: var(--primary);
+            --chip-bg: #fff7c8;
+            --chip-hover-bg: #fff1a1;
+            --chip-selected-bg: #ffe485;
+            --chip-shadow: 2px 2px 0 #000;
+            --chip-hover-shadow: 3px 3px 0 #000;
+            --chip-radio-accent: #ffcc4d;
             --chip-text: #2b1b05;
             --start-button-bg: linear-gradient(135deg, #ffe066 0%, #ffc857 100%);
             --start-button-hover-bg: linear-gradient(135deg, #ffec85 0%, #ffd45a 100%);
@@ -343,12 +341,11 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: clamp(20px, 3vw, 28px) clamp(32px, 5.2vw, 60px);
-            font-size: clamp(22px, 3vw, 30px);
+            padding: clamp(20px, 3.6vw, 28px) clamp(32px, 5.8vw, 64px);
+            font-size: clamp(22px, 3.4vw, 30px);
             font-weight: 900;
             inline-size: 100%;
-            max-inline-size: clamp(260px, 42vw, 520px);
-            min-height: clamp(72px, 12vw, 100px);
+            min-height: clamp(68px, 12vw, 96px);
             line-height: 1.2;
             text-align: center;
             background: var(--start-button-bg);
@@ -397,100 +394,51 @@
             padding-block: clamp(8px, 2vw, 16px);
         }
 
-        .allergen-grid .chip { inline-size: 100%; }
+        .allergen-grid .chip {
+            inline-size: 100%;
+        }
 
         .allergen-grid .start-button {
-            grid-column: -3 / -1;
+            grid-column: -2 / -1;
             align-self: end;
             justify-self: stretch;
-            margin: 0;
+            margin-block-start: clamp(8px, 2vw, 16px);
         }
 
         @media (max-width: 960px) {
-            .allergen-grid .start-button {
-                grid-column: -2 / -1;
+            .allergen-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
-        }
 
-        @media (max-width: 640px) {
             .allergen-grid .start-button {
                 grid-column: 1 / -1;
-            }
-            .btn.start-button {
-                max-inline-size: none;
             }
         }
 
         .chip {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
+            display: flex;
             align-items: center;
             gap: 12px;
-            padding: 14px 18px;
+            padding: 12px 16px;
             border-radius: 999px;
             background: var(--chip-bg);
-            border: 3px solid #000;
+            border: 2px solid #000;
             box-shadow: var(--chip-shadow);
             cursor: pointer;
             font-family: "Fredoka One", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
             font-weight: 900;
-            letter-spacing: .1px;
-            font-size: clamp(16px, 1.55vw, 20px);
+            letter-spacing: .2px;
+            font-size: clamp(16px, 1.6vw, 20px);
             color: var(--chip-text);
-            transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+            transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
         }
 
-        .chip__label {
-            display: block;
-            line-height: 1.15;
-        }
-
-        .chip__emoji {
-            justify-self: end;
-        }
-
-        .chip__radio {
-            appearance: none;
-            -webkit-appearance: none;
-            inline-size: 26px;
-            block-size: 26px;
-            border-radius: 50%;
-            border: 3px solid var(--chip-radio-border);
-            background: var(--chip-radio-bg);
-            box-shadow: inset 0 0 0 4px var(--chip-radio-bg);
-            display: grid;
-            place-items: center;
-            transition: box-shadow 160ms ease, border-color 160ms ease;
-            cursor: pointer;
-        }
-
-        .chip__radio::after {
-            content: "";
-            inline-size: 12px;
-            block-size: 12px;
-            border-radius: 50%;
-            background: var(--chip-radio-dot);
-            transform: scale(0);
-            transition: transform 160ms ease;
-        }
-
-        .chip__radio:checked {
-            box-shadow: inset 0 0 0 4px var(--chip-radio-dot);
-        }
-
-        .chip__radio:checked::after {
-            transform: scale(1);
-        }
-
-        .chip__radio:focus-visible {
-            outline: none;
-            box-shadow: inset 0 0 0 4px var(--chip-radio-dot), 0 0 0 3px rgba(0, 0, 0, 0.35);
-        }
-
-        .chip:hover {
+        .chip:hover,
+        .chip:focus-visible {
             background: var(--chip-hover-bg);
             box-shadow: var(--chip-hover-shadow);
             transform: translateY(-1px);
+            outline: none;
         }
 
         .chip--selected {
@@ -499,8 +447,27 @@
             transform: translateY(-1px);
         }
 
-        .chip--selected .chip__radio {
-            box-shadow: inset 0 0 0 4px var(--chip-radio-dot);
+        .chip__radio {
+            inline-size: 20px;
+            block-size: 20px;
+            flex-shrink: 0;
+            accent-color: var(--chip-radio-accent);
+            cursor: pointer;
+        }
+
+        .chip__radio:focus-visible {
+            outline: 3px solid var(--chip-radio-accent);
+            outline-offset: 2px;
+        }
+
+        .chip__label {
+            flex: 1 1 auto;
+            line-height: 1.15;
+        }
+
+        .chip__emoji {
+            margin-inline-start: auto;
+            line-height: 1;
         }
 
         @supports selector(:has(*)) {
