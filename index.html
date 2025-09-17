@@ -331,6 +331,16 @@
             min-height: clamp(60px, 12vw, 88px);
         }
 
+        .start-button[data-blocked="true"] {
+            opacity: 0.55;
+            transform: none;
+        }
+
+        .start-button[data-blocked="true"]:hover,
+        .start-button[data-blocked="true"]:focus-visible {
+            transform: none;
+        }
+
         /* Unified center action button */
         .btn.action { color: #fff; border: 4px solid #000; box-shadow: 4px 6px 0 #000; font-weight: 900; }
         .btn.action.is-start { background: var(--success); }
@@ -455,7 +465,7 @@
                 <p class="muted" id="loading">Loading data…</p>
                 <p class="muted" hidden id="load-error">Could not load data. Check JSON paths.</p>
             </div>
-            <button class="btn primary start-button" disabled id="start">Spin the Wheel</button>
+            <button aria-disabled="true" class="btn primary start-button" data-blocked="true" id="start">Spin the Wheel</button>
         </div>
     </div>
 </main>

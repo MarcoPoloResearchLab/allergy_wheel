@@ -103,10 +103,12 @@ export const HeartsElementId = Object.freeze({
 
 export const AttributeName = Object.freeze({
     ARIA_HIDDEN: "aria-hidden",
+    ARIA_LABEL: "aria-label",
+    ARIA_EXPANDED: "aria-expanded",
+    ARIA_DISABLED: "aria-disabled",
     DATA_SCREEN: "data-screen",
     DATA_COUNT: "data-count",
-    ARIA_LABEL: "aria-label",
-    ARIA_EXPANDED: "aria-expanded"
+    DATA_BLOCKED: "data-blocked"
 });
 
 export const AttributeBooleanValue = Object.freeze({
