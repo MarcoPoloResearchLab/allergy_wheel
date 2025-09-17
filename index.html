@@ -602,18 +602,17 @@
 
         .menu-card__header { display: flex; flex-direction: column; gap: 8px; }
 
-        .menu-card__filters {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 12px;
-            margin-top: 4px;
-        }
+        .menu-table__header-cell--filter { padding: 16px; }
+
+        .menu-table__header-cell--filter .menu-filter { width: 100%; }
 
         .menu-filter {
-            display: flex;
+            position: relative;
+            display: inline-flex;
             flex-direction: column;
-            gap: 6px;
+            align-items: stretch;
+            gap: 8px;
+            width: 100%;
         }
 
         .menu-filter__toggle {
@@ -634,6 +633,8 @@
             padding: 10px 16px;
             text-transform: uppercase;
             transition: transform 160ms ease, box-shadow 160ms ease;
+            justify-content: space-between;
+            width: 100%;
         }
 
         .menu-filter__toggle:hover,
@@ -670,6 +671,11 @@
             box-shadow: var(--shadow);
             padding: 12px;
             background: #fff;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 100%;
+            z-index: 5;
         }
 
         .menu-filter__panel[hidden] {
@@ -679,7 +685,7 @@
         .menu-table-wrapper {
             border-radius: 22px;
             border: 3px solid #000;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .menu-table {
@@ -697,6 +703,7 @@
             border-bottom: 3px solid #000;
             text-transform: uppercase;
             letter-spacing: 0.6px;
+            vertical-align: top;
         }
 
         .menu-table tbody tr:nth-child(odd) { background: #fff; }
@@ -750,6 +757,11 @@
             .menu-table-wrapper { border-radius: 18px; }
             .menu-table thead { position: sticky; top: 0; z-index: 1; }
             .menu-table tbody td { display: block; }
+            .menu-table__header-cell--filter .menu-filter { align-items: stretch; }
+            .menu-table__header-cell--filter .menu-filter__panel {
+                position: static;
+                margin-top: 8px;
+            }
         }
 
         /* Reveal overlay only on wheel screen */
@@ -912,63 +924,63 @@
             <div class="menu-card__header">
                 <h2 class="title" id="menu-title">Global Allergy-Friendly Menu</h2>
                 <p class="muted">Browse every dish from the wheel with its colorful story.</p>
-                <div aria-label="Menu filters" class="menu-card__filters" role="toolbar">
-                    <div class="menu-filter">
-                        <button
-                            aria-controls="menu-ingredient-filter-panel"
-                            aria-expanded="false"
-                            aria-haspopup="true"
-                            class="menu-filter__toggle menu-header-label"
-                            id="menu-ingredient-filter-toggle"
-                            type="button"
-                        >
-                            <span class="menu-filter__label-text">Ingredients</span>
-                            <span aria-hidden="true" class="menu-filter__chevron">▾</span>
-                        </button>
-                        <div
-                            aria-label="Filter dishes by ingredient"
-                            class="menu-filter__panel"
-                            hidden
-                            id="menu-ingredient-filter-panel"
-                            role="region"
-                        ></div>
-                    </div>
-                    <div class="menu-filter">
-                        <button
-                            aria-controls="menu-cuisine-filter-panel"
-                            aria-expanded="false"
-                            aria-haspopup="true"
-                            class="menu-filter__toggle menu-header-label"
-                            id="menu-cuisine-filter-toggle"
-                            type="button"
-                        >
-                            <span class="menu-filter__label-text">Cuisine</span>
-                            <span aria-hidden="true" class="menu-filter__chevron">▾</span>
-                        </button>
-                        <div
-                            aria-label="Filter dishes by cuisine"
-                            class="menu-filter__panel"
-                            hidden
-                            id="menu-cuisine-filter-panel"
-                            role="region"
-                        ></div>
-                    </div>
-                </div>
             </div>
             <div class="menu-table-wrapper">
                 <table aria-describedby="menu-title" class="menu-table">
-                <thead>
-                    <tr>
-                        <th scope="col">Dish</th>
-                        <th scope="col">Ingredients</th>
-                        <th scope="col">Cuisine</th>
-                        <th scope="col">Story</th>
-                    </tr>
-                </thead>
-                <tbody id="menu-table-body"></tbody>
-            </table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Dish</th>
+                            <th class="menu-table__header-cell--filter" scope="col">
+                                <div class="menu-filter">
+                                    <button
+                                        aria-controls="menu-ingredient-filter-panel"
+                                        aria-expanded="false"
+                                        aria-haspopup="true"
+                                        class="menu-filter__toggle menu-header-label"
+                                        id="menu-ingredient-filter-toggle"
+                                        type="button"
+                                    >
+                                        <span class="menu-filter__label-text">Ingredients</span>
+                                        <span aria-hidden="true" class="menu-filter__chevron">▾</span>
+                                    </button>
+                                    <div
+                                        aria-label="Filter dishes by ingredient"
+                                        class="menu-filter__panel"
+                                        hidden
+                                        id="menu-ingredient-filter-panel"
+                                        role="region"
+                                    ></div>
+                                </div>
+                            </th>
+                            <th class="menu-table__header-cell--filter" scope="col">
+                                <div class="menu-filter">
+                                    <button
+                                        aria-controls="menu-cuisine-filter-panel"
+                                        aria-expanded="false"
+                                        aria-haspopup="true"
+                                        class="menu-filter__toggle menu-header-label"
+                                        id="menu-cuisine-filter-toggle"
+                                        type="button"
+                                    >
+                                        <span class="menu-filter__label-text">Cuisine</span>
+                                        <span aria-hidden="true" class="menu-filter__chevron">▾</span>
+                                    </button>
+                                    <div
+                                        aria-label="Filter dishes by cuisine"
+                                        class="menu-filter__panel"
+                                        hidden
+                                        id="menu-cuisine-filter-panel"
+                                        role="region"
+                                    ></div>
+                                </div>
+                            </th>
+                            <th scope="col">Story</th>
+                        </tr>
+                    </thead>
+                    <tbody id="menu-table-body"></tbody>
+                </table>
+            </div>
         </div>
-    </div>
 </section>
 
 <!-- Reveal -->

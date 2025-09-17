@@ -4,7 +4,10 @@ import { fileURLToPath } from "node:url";
 
 const HtmlTagName = Object.freeze({
   BUTTON: "BUTTON",
-  DIV: "DIV"
+  DIV: "DIV",
+  TH: "TH",
+  THEAD: "THEAD",
+  TR: "TR"
 });
 
 const AttributeName = Object.freeze({
@@ -12,6 +15,7 @@ const AttributeName = Object.freeze({
   ARIA_EXPANDED: "aria-expanded",
   ARIA_HAS_POPUP: "aria-haspopup",
   ROLE: "role",
+  SCOPE: "scope",
   TYPE: "type"
 });
 
@@ -28,8 +32,20 @@ const RoleName = Object.freeze({
   REGION: "region"
 });
 
-const FilterToolbarSelector = Object.freeze({
-  CONTAINER_CLASS: "menu-card__filters"
+const TableStructureSelector = Object.freeze({
+  HEADER_ROW: ".menu-table thead tr"
+});
+
+const DeprecatedStructureClass = Object.freeze({
+  FILTER_TOOLBAR: "menu-card__filters"
+});
+
+const ColumnScope = Object.freeze({
+  COLUMN: "col"
+});
+
+const ExpectedHeaderCellCount = Object.freeze({
+  TOTAL: 4
 });
 
 const MenuFilterToggleScenarios = Object.freeze([
@@ -69,7 +85,31 @@ describe("menu filter header toggles", () => {
     ({ toggleId, expectedLabel, expectedPanelId }) => {
       const toggleElement = documentRoot.getElementById(toggleId);
       expect(toggleElement).not.toBeNull();
+      if (!toggleElement) {
+        return;
+      }
       expect(toggleElement.tagName).toBe(HtmlTagName.BUTTON);
+
+      const headerCellElement = toggleElement.closest(HtmlTagName.TH.toLowerCase());
+      expect(headerCellElement).not.toBeNull();
+      if (!headerCellElement) {
+        return;
+      }
+      expect(headerCellElement.getAttribute(AttributeName.SCOPE)).toBe(ColumnScope.COLUMN);
+
+      const headerRowElement = headerCellElement.parentElement;
+      expect(headerRowElement).not.toBeNull();
+      if (!headerRowElement) {
+        return;
+      }
+      expect(headerRowElement.tagName).toBe(HtmlTagName.TR);
+
+      const headerSectionElement = headerRowElement.parentElement;
+      expect(headerSectionElement).not.toBeNull();
+      if (!headerSectionElement) {
+        return;
+      }
+      expect(headerSectionElement.tagName).toBe(HtmlTagName.THEAD);
 
       const normalizedLabel = normalizeWhitespace(toggleElement.textContent);
       expect(normalizedLabel).toContain(expectedLabel);
@@ -87,16 +127,26 @@ describe("menu filter header toggles", () => {
     }
   );
 
-  test("menu filter toolbar avoids redundant filter buttons", () => {
-    const toolbarElement = documentRoot.querySelector(`.${FilterToolbarSelector.CONTAINER_CLASS}`);
-    expect(toolbarElement).not.toBeNull();
+  test("menu filter toggles are embedded in the menu table header row", () => {
+    const headerRowElement = documentRoot.querySelector(TableStructureSelector.HEADER_ROW);
+    expect(headerRowElement).not.toBeNull();
+    if (!headerRowElement) {
+      return;
+    }
 
-    const toggleElements = toolbarElement.querySelectorAll(HtmlTagName.BUTTON.toLowerCase());
-    expect(toggleElements.length).toBeGreaterThan(0);
+    const headerCellElements = headerRowElement.querySelectorAll(HtmlTagName.TH.toLowerCase());
+    expect(headerCellElements.length).toBe(ExpectedHeaderCellCount.TOTAL);
 
-    toggleElements.forEach((toggleElement) => {
-      const normalizedLabel = normalizeWhitespace(toggleElement.textContent);
-      expect(normalizedLabel).not.toBe("Filter");
+    const toggleIds = MenuFilterToggleScenarios.map((scenario) => scenario.toggleId);
+    toggleIds.forEach((toggleId) => {
+      const toggleElement = documentRoot.getElementById(toggleId);
+      expect(toggleElement).not.toBeNull();
+      if (toggleElement) {
+        expect(headerRowElement.contains(toggleElement)).toBe(true);
+      }
     });
+
+    const deprecatedToolbarElement = documentRoot.querySelector(`.${DeprecatedStructureClass.FILTER_TOOLBAR}`);
+    expect(deprecatedToolbarElement).toBeNull();
   });
 });
