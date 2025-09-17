@@ -52,21 +52,6 @@ function createMockGainNode(connections) {
   return gainNode;
 }
 
-function createMockBiquadFilter(connections) {
-  const biquadFilter = createConnectableNode(connections);
-  biquadFilter.frequency = createMockAudioParam(0);
-  biquadFilter.Q = createMockAudioParam(1);
-  biquadFilter.type = "";
-  return biquadFilter;
-}
-
-function createMockWaveShaper(connections) {
-  const waveShaper = createConnectableNode(connections);
-  waveShaper.curve = null;
-  waveShaper.oversample = "";
-  return waveShaper;
-}
-
 function createMockBufferSource(connections) {
   const bufferSource = createConnectableNode(connections);
   bufferSource.buffer = null;
@@ -94,8 +79,6 @@ function createMockAudioContext() {
   const connections = [];
   const createdOscillators = [];
   const createdGains = [];
-  const createdBiquadFilters = [];
-  const createdWaveShapers = [];
   const createdBufferSources = [];
   const createdBuffers = [];
   const context = {
@@ -104,8 +87,6 @@ function createMockAudioContext() {
     connections,
     createdOscillators,
     createdGains,
-    createdBiquadFilters,
-    createdWaveShapers,
     createdBufferSources,
     createdBuffers,
     sampleRate: 44100,
@@ -121,13 +102,16 @@ function createMockAudioContext() {
       return gainNode;
     }),
     createBiquadFilter: jest.fn(() => {
-      const biquadFilter = createMockBiquadFilter(connections);
-      createdBiquadFilters.push(biquadFilter);
+      const biquadFilter = createConnectableNode(connections);
+      biquadFilter.frequency = createMockAudioParam(0);
+      biquadFilter.Q = createMockAudioParam(1);
+      biquadFilter.type = "";
       return biquadFilter;
     }),
     createWaveShaper: jest.fn(() => {
-      const waveShaper = createMockWaveShaper(connections);
-      createdWaveShapers.push(waveShaper);
+      const waveShaper = createConnectableNode(connections);
+      waveShaper.curve = null;
+      waveShaper.oversample = "";
       return waveShaper;
     }),
     createBufferSource: jest.fn(() => {
@@ -229,7 +213,7 @@ describe("playSiren", () => {
       expect(mockContext.decodeAudioData).toHaveBeenCalledWith(arrayBuffer);
 
       expect(mockContext.createdOscillators).toHaveLength(0);
-      expect(mockContext.createdWaveShapers).toHaveLength(0);
+      expect(mockContext.createWaveShaper).not.toHaveBeenCalled();
 
       const bufferSources = mockContext.createdBufferSources;
       expect(bufferSources).toHaveLength(1);
