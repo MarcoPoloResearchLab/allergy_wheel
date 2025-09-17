@@ -239,7 +239,13 @@ function determineBufferStartOffsetSeconds(buffer, randomGenerator) {
     return normalizedRandomValue * playableDurationSeconds;
 }
 
-function scheduleNomNomPlaybackAt(context, buffer, playbackStartTime, offsetSeconds) {
+function scheduleNomNomPlaybackAt(
+    context,
+    buffer,
+    playbackStartTime,
+    offsetSeconds,
+    optionalStopTimeSeconds = null
+) {
     const bufferSourceNode = context.createBufferSource();
     const playbackGainNode = context.createGain();
     bufferSourceNode.buffer = buffer;
@@ -249,6 +255,13 @@ function scheduleNomNomPlaybackAt(context, buffer, playbackStartTime, offsetSeco
     );
     bufferSourceNode.connect(playbackGainNode).connect(context.destination);
     bufferSourceNode.start(playbackStartTime, offsetSeconds);
+    if (
+        typeof optionalStopTimeSeconds === "number" &&
+        Number.isFinite(optionalStopTimeSeconds)
+    ) {
+        const clampedStopTimeSeconds = Math.max(optionalStopTimeSeconds, playbackStartTime);
+        bufferSourceNode.stop(clampedStopTimeSeconds);
+    }
 }
 
 async function getNomNomBuffer(context) {
@@ -277,8 +290,17 @@ export async function playNomNom(durationMs = 1200, randomGenerator = Math.rando
         knownBufferDurationSeconds <= NomNomMultiBiteMaximumSampleDurationSeconds;
 
     if (!shouldScheduleMultipleBites) {
-        const bufferOffsetSeconds = determineBufferStartOffsetSeconds(audioBuffer, randomGenerator);
-        scheduleNomNomPlaybackAt(context, audioBuffer, startTimeSeconds, bufferOffsetSeconds);
+        const stopTimeSeconds =
+            typeof knownBufferDurationSeconds === "number"
+                ? startTimeSeconds + knownBufferDurationSeconds
+                : null;
+        scheduleNomNomPlaybackAt(
+            context,
+            audioBuffer,
+            startTimeSeconds,
+            0,
+            stopTimeSeconds
+        );
         return;
     }
 
