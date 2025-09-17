@@ -1,12 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
-  <circle cx="60" cy="60" r="56" fill="#dff5e6" stroke="#20503b" stroke-width="4"/>
-  <path d="M30 76c0-28 20-48 46-48 16 0 30 8 38 20-4 20-18 34-30 38 6 4 10 10 10 14-12 8-32 12-48 8-12-4-16-14-16-32z" fill="#3fa766" stroke="#20503b" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M48 68c0-14 12-28 26-30 10 0 18 6 22 14-4 12-12 20-22 24-12 4-26 2-26-8z" fill="#69c585" stroke="#20503b" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M54 88c-2 6 0 12 4 16" fill="none" stroke="#20503b" stroke-width="4" stroke-linecap="round"/>
-  <path d="M72 86c6 4 14 4 20-2" fill="none" stroke="#1b1b1b" stroke-width="4" stroke-linecap="round"/>
-  <circle cx="78" cy="58" r="5" fill="#1b1b1b"/>
-  <path d="M62 64c-6-6-16-6-22 0" fill="none" stroke="#20503b" stroke-width="4" stroke-linecap="round"/>
-  <path d="M50 80l-10 8" fill="none" stroke="#20503b" stroke-width="4" stroke-linecap="round"/>
-  <path d="M58 78l-6 10" fill="none" stroke="#20503b" stroke-width="4" stroke-linecap="round"/>
-  <path d="M88 60l10-6" fill="none" stroke="#20503b" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="60" cy="60" r="56" fill="#ffffff" stroke="#1b1b1b" stroke-width="4"/>
+  <path d="M32 56 C32 44 44 34 60 32 C78 30 96 40 102 56 C106 68 100 82 88 92 C78 100 64 104 56 104 C46 104 40 98 40 88 C40 80 36 70 32 62 C30 60 30 58 32 56 Z" fill="#3f8f4c"/>
+  <path d="M44 72 C38 82 40 94 48 102 C56 110 72 106 84 92 C90 84 94 74 94 66 C82 68 62 70 44 72 Z" fill="#f2d5a1"/>
+  <path d="M36 60 C38 52 50 46 64 48 C78 50 90 58 94 68 C84 78 62 82 46 72 C40 68 36 64 36 60 Z" fill="#1f2a22"/>
+  <path d="M36 66 C36 72 42 78 54 82 C66 86 80 80 88 70 C74 64 58 62 46 62 C40 62 36 64 36 66 Z" fill="#f4dcb4"/>
+  <path d="M44 70 C46 76 54 82 66 82 C74 80 82 76 86 70 C74 70 60 70 44 70 Z" fill="#eecb95"/>
+  <path d="M50 74 C56 80 68 82 80 78 C72 84 60 86 50 74 Z" fill="#d6ba84"/>
+  <path d="M52 80 C48 82 48 88 52 92 C56 94 60 92 62 86 C60 82 56 80 52 80 Z" fill="#2c6f3f"/>
+  <path d="M54 90 L58 92 L54 94 Z M60 86 L64 88 L60 90 Z" fill="#f8fbff"/>
+  <path d="M46 58 L50 58 L48 62 Z M54 58 L58 58 L56 62 Z M62 58 L66 58 L64 62 Z" fill="#f8fbff"/>
+  <path d="M52 70 L54 66 L58 66 L56 70 Z M60 70 L62 66 L66 66 L64 70 Z" fill="#f8fbff"/>
+  <circle cx="64" cy="50" r="6" fill="#111111"/>
+  <circle cx="62" cy="48" r="2" fill="#ffffff"/>
+  <circle cx="46" cy="54" r="2.4" fill="#1b1b1b"/>
+  <path d="M54 40 C64 36 78 38 86 46 C74 42 62 42 54 40 Z" fill="#6fb874" opacity="0.6"/>
+  <path d="M74 54 C84 56 92 62 96 70 C84 60 68 56 58 56 C62 54 68 54 74 54 Z" fill="#6fb874" opacity="0.4"/>
 </svg>
