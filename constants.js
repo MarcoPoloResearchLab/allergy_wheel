@@ -38,7 +38,7 @@ const AvatarAssetPathSunnyGirl = "assets/avatars/sunny-girl.svg";
 const AvatarAssetPathCuriousGirl = "assets/avatars/curious-girl.svg";
 const AvatarAssetPathAdventurousBoy = "assets/avatars/adventurous-boy.svg";
 const AvatarAssetPathCreativeBoy = "assets/avatars/creative-boy.svg";
-const AvatarAssetPathTyrannosaurusRex = "assets/avatars/tyrannosaurus-rex.svg";
+const AvatarAssetPathTyrannosaurusRex = "assets/avatars/t-rex.svg";
 const AvatarAssetPathTriceratops = "assets/avatars/triceratops.svg";
 
 export const AvatarAssetPath = Object.freeze({
