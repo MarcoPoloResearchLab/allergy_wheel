@@ -27,6 +27,7 @@ import {
     ResultCardElementId,
     AvatarId,
     AvatarAssetPath,
+    AvatarDisplayName,
     AvatarClassName,
     ScreenName,
     MenuElementId
@@ -127,6 +128,8 @@ const avatarResourceMap = new Map([
     [AvatarId.TRICERATOPS, AvatarAssetPath.TRICERATOPS]
 ]);
 
+const avatarDisplayNameMap = new Map(Object.entries(AvatarDisplayName));
+
 const revealCardPresenter = new ResultCard({
     documentReference: document,
     revealSectionElement: document.getElementById(ResultCardElementId.REVEAL_SECTION),
@@ -149,6 +152,9 @@ const headerAvatarToggleElement = document.getElementById(ControlElementId.AVATA
 const headerAvatarImageElement = headerAvatarToggleElement
     ? headerAvatarToggleElement.getElementsByClassName(AvatarClassName.IMAGE)[0] || null
     : null;
+const headerAvatarLabelElement = headerAvatarToggleElement
+    ? headerAvatarToggleElement.getElementsByClassName(AvatarClassName.LABEL)[0] || null
+    : null;
 
 /**
  * Updates the header avatar image element with the resource mapped to the selected identifier.
@@ -156,14 +162,21 @@ const headerAvatarImageElement = headerAvatarToggleElement
  *
  * @param {string} avatarIdentifier - Identifier representing the avatar to display.
  */
-const updateHeaderAvatarImage = (avatarIdentifier) => {
-    if (!headerAvatarImageElement) {
-        return;
-    }
+const updateHeaderAvatarSelection = (avatarIdentifier) => {
+    const resolvedAvatarIdentifier = avatarResourceMap.has(avatarIdentifier)
+        ? avatarIdentifier
+        : AvatarId.DEFAULT;
+
     const resolvedAvatarResource =
-        avatarResourceMap.get(avatarIdentifier) || avatarResourceMap.get(AvatarId.DEFAULT);
-    if (resolvedAvatarResource) {
+        avatarResourceMap.get(resolvedAvatarIdentifier) || avatarResourceMap.get(AvatarId.DEFAULT);
+    if (headerAvatarImageElement && resolvedAvatarResource) {
         headerAvatarImageElement.src = resolvedAvatarResource;
+    }
+
+    const resolvedAvatarDisplayName =
+        avatarDisplayNameMap.get(resolvedAvatarIdentifier) || avatarDisplayNameMap.get(AvatarId.DEFAULT);
+    if (headerAvatarLabelElement && resolvedAvatarDisplayName) {
+        headerAvatarLabelElement.textContent = resolvedAvatarDisplayName;
     }
 };
 
@@ -287,11 +300,11 @@ listenerBinder.wireAvatarSelector({
         stateManager.setSelectedAvatar(avatarIdentifier);
         const resolvedAvatarIdentifier = stateManager.getSelectedAvatar();
         revealCardPresenter.updateAvatarSelection(resolvedAvatarIdentifier);
-        updateHeaderAvatarImage(resolvedAvatarIdentifier);
+        updateHeaderAvatarSelection(resolvedAvatarIdentifier);
     }
 });
 
-updateHeaderAvatarImage(stateManager.getSelectedAvatar());
+updateHeaderAvatarSelection(stateManager.getSelectedAvatar());
 
 window.addEventListener(BrowserEventName.DOM_CONTENT_LOADED, () => {
     gameController.bootstrap();

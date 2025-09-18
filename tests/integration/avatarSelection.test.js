@@ -8,6 +8,7 @@ import {
   ResultCardElementId,
   AvatarId,
   AvatarAssetPath,
+  AvatarDisplayName,
   AvatarClassName
 } from "../../constants.js";
 
@@ -18,6 +19,7 @@ const HtmlTagName = Object.freeze({
   BUTTON: "button",
   DIV: "div",
   IMG: "img",
+  SPAN: "span",
   SECTION: "section",
   SVG: "svg"
 });
@@ -135,6 +137,14 @@ function createAvatarSelectorElements({ avatarResourceEntries, defaultAvatarReso
   }
   headerAvatarToggleButtonElement.appendChild(headerAvatarImageElement);
 
+  const headerAvatarLabelElement = document.createElement(HtmlTagName.SPAN);
+  headerAvatarLabelElement.className = AvatarClassName.LABEL;
+  const defaultAvatarDisplayName = AvatarDisplayName[AvatarId.DEFAULT];
+  if (defaultAvatarDisplayName) {
+    headerAvatarLabelElement.textContent = defaultAvatarDisplayName;
+  }
+  headerAvatarToggleButtonElement.appendChild(headerAvatarLabelElement);
+
   const avatarMenuElement = document.createElement(HtmlTagName.DIV);
   avatarMenuElement.id = ControlElementId.AVATAR_MENU;
   avatarMenuElement.hidden = true;
@@ -158,6 +168,7 @@ function createAvatarSelectorElements({ avatarResourceEntries, defaultAvatarReso
   return {
     headerAvatarToggleButtonElement,
     headerAvatarImageElement,
+    headerAvatarLabelElement,
     avatarMenuElement
   };
 }
@@ -235,6 +246,7 @@ function createAvatarSelectionIntegrationHarness() {
   const {
     headerAvatarToggleButtonElement,
     headerAvatarImageElement,
+    headerAvatarLabelElement,
     avatarMenuElement
   } = createAvatarSelectorElements({
     avatarResourceEntries: AvatarResourceEntries,
@@ -287,22 +299,37 @@ function createAvatarSelectionIntegrationHarness() {
     selectedAvatarId: stateManager.getSelectedAvatar()
   });
 
-  const updateHeaderAvatarImage = (avatarIdentifier) => {
+  const avatarDisplayNameMap = new Map(Object.entries(AvatarDisplayName));
+
+  const updateHeaderAvatarSelection = (avatarIdentifier) => {
+    const resolvedAvatarIdentifier = avatarResourceMap.has(avatarIdentifier)
+      ? avatarIdentifier
+      : AvatarId.DEFAULT;
+
     const resolvedAvatarResource =
-      avatarResourceMap.get(avatarIdentifier) || avatarResourceMap.get(AvatarId.DEFAULT);
+      avatarResourceMap.get(resolvedAvatarIdentifier) || avatarResourceMap.get(AvatarId.DEFAULT);
     if (resolvedAvatarResource) {
       headerAvatarImageElement.setAttribute(HtmlAttributeName.SRC, resolvedAvatarResource);
     }
+
+    if (headerAvatarLabelElement) {
+      const resolvedAvatarDisplayName =
+        avatarDisplayNameMap.get(resolvedAvatarIdentifier) ||
+        avatarDisplayNameMap.get(AvatarId.DEFAULT);
+      if (resolvedAvatarDisplayName) {
+        headerAvatarLabelElement.textContent = resolvedAvatarDisplayName;
+      }
+    }
   };
 
-  updateHeaderAvatarImage(stateManager.getSelectedAvatar());
+  updateHeaderAvatarSelection(stateManager.getSelectedAvatar());
 
   listenerBinder.wireAvatarSelector({
     onAvatarChange: (avatarIdentifier) => {
       stateManager.setSelectedAvatar(avatarIdentifier);
       const resolvedAvatarIdentifier = stateManager.getSelectedAvatar();
       resultCard.updateAvatarSelection(resolvedAvatarIdentifier);
-      updateHeaderAvatarImage(resolvedAvatarIdentifier);
+      updateHeaderAvatarSelection(resolvedAvatarIdentifier);
     }
   });
 
@@ -334,6 +361,7 @@ function createAvatarSelectionIntegrationHarness() {
     avatarResourceMap,
     headerAvatarToggleButtonElement,
     headerAvatarImageElement,
+    headerAvatarLabelElement,
     avatarMenuElement,
     faceSvgElement,
     selectAvatar,
@@ -348,6 +376,7 @@ describe("Avatar selection persistence", () => {
       stateManager,
       avatarResourceMap,
       headerAvatarImageElement,
+      headerAvatarLabelElement,
       avatarMenuElement,
       faceSvgElement,
       selectAvatar,
@@ -367,6 +396,10 @@ describe("Avatar selection persistence", () => {
     expect(headerAvatarImageElement.getAttribute(HtmlAttributeName.SRC)).toBe(
       expectedAvatarResourcePath
     );
+
+    const expectedAvatarDisplayName =
+      AvatarDisplayName[chosenAvatarId] || AvatarDisplayName[AvatarId.DEFAULT];
+    expect(headerAvatarLabelElement.textContent).toBe(expectedAvatarDisplayName);
 
     const firstSpinResult = simulateSpinAndReveal(DishDescriptor.FIRST_ROUND);
     expect(firstSpinResult.hasTriggeringIngredient).toBe(true);
@@ -392,5 +425,6 @@ describe("Avatar selection persistence", () => {
     expect(headerAvatarImageElement.getAttribute(HtmlAttributeName.SRC)).toBe(
       expectedAvatarResourcePath
     );
+    expect(headerAvatarLabelElement.textContent).toBe(expectedAvatarDisplayName);
   });
 });

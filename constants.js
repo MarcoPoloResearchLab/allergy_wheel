@@ -42,6 +42,13 @@ const AvatarAssetPathCreativeBoy = "assets/avatars/creative-boy.svg";
 const AvatarAssetPathTyrannosaurusRex = "assets/avatars/t-rex.svg";
 const AvatarAssetPathTriceratops = "assets/avatars/triceratops.svg";
 
+const AvatarDisplayNameSunnyGirl = "Sunny Girl";
+const AvatarDisplayNameCuriousGirl = "Curious Girl";
+const AvatarDisplayNameAdventurousBoy = "Adventurous Boy";
+const AvatarDisplayNameCreativeBoy = "Creative Boy";
+const AvatarDisplayNameTyrannosaurusRex = "T-Rex";
+const AvatarDisplayNameTriceratops = "Triceratops";
+
 export const AvatarAssetPath = Object.freeze({
     SUNNY_GIRL: AvatarAssetPathSunnyGirl,
     CURIOUS_GIRL: AvatarAssetPathCuriousGirl,
@@ -49,6 +56,15 @@ export const AvatarAssetPath = Object.freeze({
     CREATIVE_BOY: AvatarAssetPathCreativeBoy,
     TYRANNOSAURUS_REX: AvatarAssetPathTyrannosaurusRex,
     TRICERATOPS: AvatarAssetPathTriceratops
+});
+
+export const AvatarDisplayName = Object.freeze({
+    [AvatarId.SUNNY_GIRL]: AvatarDisplayNameSunnyGirl,
+    [AvatarId.CURIOUS_GIRL]: AvatarDisplayNameCuriousGirl,
+    [AvatarId.ADVENTUROUS_BOY]: AvatarDisplayNameAdventurousBoy,
+    [AvatarId.CREATIVE_BOY]: AvatarDisplayNameCreativeBoy,
+    [AvatarId.TYRANNOSAURUS_REX]: AvatarDisplayNameTyrannosaurusRex,
+    [AvatarId.TRICERATOPS]: AvatarDisplayNameTriceratops
 });
 
 const AudioAssetPathYamYam = "assets/audio/yam_yam.mp3";
@@ -77,11 +93,13 @@ export const ControlElementId = Object.freeze({
 
 const AvatarOptionClassName = "avatar-option";
 const AvatarImageClassName = "avatar-image";
+const AvatarLabelClassName = "avatar-label";
 const AvatarMenuOpenClassName = "is-open";
 
 export const AvatarClassName = Object.freeze({
     OPTION: AvatarOptionClassName,
-    IMAGE: AvatarImageClassName
+    IMAGE: AvatarImageClassName,
+    LABEL: AvatarLabelClassName
 });
 
 export const AvatarMenuClassName = Object.freeze({
