@@ -1,6 +1,6 @@
 # Allergy Wheel
 
-An interactive allergy wheel game rendered in the browser. The project now includes automated tests powered by Jest to validate utility helpers, state transitions, and canvas-based integration scenarios.
+An interactive allergy wheel game rendered in the browser. The project now includes automated tests powered by Jest to validate utility helpers, state transitions, and canvas-based integration scenarios. When players land on the quick game screen they are invited to pick any troublesome allergens and see a goal reminder to spin the allergy wheel to win 10 hearts.
 
 ## Prerequisites
 
