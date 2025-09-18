@@ -85,8 +85,6 @@
         .avatar-menu-wrapper { position: relative; }
 
         .avatar-button {
-            width: 58px;
-            height: 58px;
             border-radius: 50%;
             border: 3px solid #000;
             background: #fff;
@@ -99,6 +97,25 @@
             transition: transform 180ms ease, box-shadow 180ms ease;
         }
 
+        #avatar-toggle {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 16px;
+            border-radius: 999px;
+        }
+
+        #avatar-toggle .avatar-image {
+            width: 46px;
+            height: 46px;
+        }
+
+        .avatar-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
         .avatar-button:hover,
         .avatar-button:focus-visible {
             transform: translateY(-1px) scale(1.03);
@@ -107,6 +124,11 @@
         }
 
         .avatar-image { width: 100%; height: 100%; border-radius: 50%; display: block; }
+
+        .avatar-option {
+            width: 58px;
+            height: 58px;
+        }
 
         #avatar-menu {
             position: absolute;
@@ -136,8 +158,6 @@
         #avatar-menu.is-closing {
             animation: avatar-menu-hide 160ms ease-in forwards;
         }
-
-        .avatar-option { width: 58px; height: 58px; }
 
         @keyframes avatar-menu-show {
             0% { opacity: 0; transform: translateY(-12px) scale(.96); }
@@ -900,6 +920,7 @@
             <button aria-expanded="false" aria-haspopup="true" class="avatar-button" id="avatar-toggle" type="button">
                 <span class="visually-hidden">Choose your avatar</span>
                 <img alt="Sunny girl avatar" class="avatar-image" src="assets/avatars/sunny-girl.svg"/>
+                <span class="avatar-label">Sunny Girl</span>
             </button>
             <div class="avatar-menu" id="avatar-menu" hidden>
                 <button class="avatar-button avatar-option" data-avatar-id="avatar-sunny-girl" type="button">
