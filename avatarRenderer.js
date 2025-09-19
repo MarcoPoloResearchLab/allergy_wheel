@@ -120,6 +120,13 @@ function createMenuOptionButton({
     optionImageElement.alt = `${avatarDescriptor.displayName}${avatarMenuText.OPTION_ALT_SUFFIX}`;
     optionButtonElement.appendChild(optionImageElement);
 
+    const optionLabelElement = documentReference.createElement(HtmlTagName.SPAN);
+    if (avatarClassNameMap.LABEL) {
+        optionLabelElement.classList.add(avatarClassNameMap.LABEL);
+    }
+    optionLabelElement.textContent = avatarDescriptor.displayName;
+    optionButtonElement.appendChild(optionLabelElement);
+
     return optionButtonElement;
 }
 
