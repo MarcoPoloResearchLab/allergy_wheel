@@ -78,11 +78,181 @@
 
         header h1 { margin: 0; font-size: clamp(18px, 2.2vw, 28px) }
         .header-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-        .header-right { display: flex; align-items: center; gap: 12px; }
+        .aw-header-title-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .header-right { display: flex; align-items: center; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+        .aw-header-controls { display: flex; align-items: center; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+        .aw-hearts-container { display: flex; align-items: center; }
         .header-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .aw-bottombar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .header-nav .ghost { min-width: 80px; text-align: center; }
 
         .avatar-menu-wrapper { position: relative; z-index: 70; }
+
+        @media (min-width: 768px) and (max-width: 1199px) {
+            header {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                grid-template-areas:
+                    "header-left header-controls"
+                    "header-hearts header-hearts";
+                align-items: center;
+                column-gap: 20px;
+                row-gap: 12px;
+            }
+
+            .header-left {
+                grid-area: header-left;
+                align-items: flex-start;
+                min-width: 0;
+            }
+
+            .aw-header-title-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .header-right { display: contents; }
+
+            .aw-header-controls {
+                grid-area: header-controls;
+                justify-content: flex-end;
+                gap: 16px;
+            }
+
+            .aw-header-controls .ghost { flex: 0 0 auto; }
+
+            .aw-hearts-container {
+                grid-area: header-hearts;
+                width: 100%;
+                justify-content: center;
+            }
+
+            #hearts-bar {
+                width: 100%;
+                box-sizing: border-box;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 767px) {
+            header {
+                display: grid;
+                grid-template-columns: auto 1fr auto;
+                grid-template-rows: auto auto auto;
+                align-items: center;
+                column-gap: 12px;
+                row-gap: 12px;
+                padding-top: 12px;
+                padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+                padding-left: calc(16px + env(safe-area-inset-left, 0px));
+                padding-right: calc(16px + env(safe-area-inset-right, 0px));
+            }
+
+            .header-left,
+            .header-right {
+                display: contents;
+            }
+
+            .avatar-menu-wrapper {
+                grid-column: 1;
+                grid-row: 1;
+            }
+
+            .aw-header-title-group {
+                grid-column: 2;
+                grid-row: 1;
+                justify-self: center;
+                text-align: center;
+                min-width: 0;
+            }
+
+            .aw-header-title-group h1 {
+                width: 100%;
+            }
+
+            .aw-header-controls {
+                grid-column: 3;
+                grid-row: 1;
+                justify-self: end;
+                gap: 10px;
+            }
+
+            .aw-header-controls .ghost,
+            #fs,
+            #mute {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            .aw-hearts-container {
+                grid-column: 1 / -1;
+                grid-row: 2;
+                width: 100%;
+                justify-content: center;
+            }
+
+            #hearts-bar {
+                width: 100%;
+                box-sizing: border-box;
+                justify-content: center;
+            }
+
+            .aw-bottombar {
+                grid-column: 1 / -1;
+                grid-row: 3;
+                position: sticky;
+                bottom: env(safe-area-inset-bottom, 0px);
+                padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+                background: linear-gradient(90deg, #fff0d6, #ffe5f0);
+                border-top: 2px solid #ffd6e3;
+                box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 12px;
+                z-index: 55;
+            }
+
+            .aw-bottombar .header-nav {
+                width: 100%;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+            .aw-bottombar .ghost {
+                flex: 1 1 0;
+                min-height: 44px;
+                min-width: 44px;
+                padding: 10px 12px;
+                font-size: 16px;
+            }
+
+            @media (max-width: 360px) {
+                header {
+                    column-gap: 8px;
+                }
+
+                .aw-header-title-group h1 {
+                    font-size: 18px;
+                    line-height: 1.15;
+                    word-break: keep-all;
+                }
+
+                .aw-bottombar .header-nav {
+                    gap: 8px;
+                }
+
+                .aw-bottombar .ghost {
+                    font-size: 15px;
+                    padding-inline: 8px;
+                }
+
+                .heart-icons {
+                    gap: 2px;
+                }
+            }
+        }
 
         .avatar-menu-backdrop {
             position: fixed;
@@ -958,33 +1128,41 @@
             <div aria-hidden="true" class="avatar-menu-backdrop" id="avatar-menu-backdrop" hidden></div>
             <div class="avatar-menu" id="avatar-menu" hidden></div>
         </div>
-        <h1>Allergy Wheel</h1>
-        <div aria-label="Select a view" class="header-nav" role="group">
-            <button
-                aria-pressed="true"
-                class="ghost"
-                id="nav-game"
-                type="button"
-            >
-                Game
-            </button>
-            <button
-                aria-pressed="false"
-                class="ghost"
-                id="nav-menu"
-                type="button"
-            >
-                Menu
-            </button>
+        <div class="aw-header-title-group">
+            <h1>Allergy Wheel</h1>
+        </div>
+        <div class="aw-bottombar">
+            <div aria-label="Select a view" class="header-nav" role="group">
+                <button
+                    aria-pressed="true"
+                    class="ghost"
+                    id="nav-game"
+                    type="button"
+                >
+                    Game
+                </button>
+                <button
+                    aria-pressed="false"
+                    class="ghost"
+                    id="nav-menu"
+                    type="button"
+                >
+                    Menu
+                </button>
+            </div>
         </div>
     </div>
     <div class="header-right">
-        <div aria-live="polite" class="hearts" data-count="0" id="hearts-bar" aria-label="0 hearts" title="0 hearts">
-            <span class="heart-count">0</span>
-            <span aria-hidden="true" class="heart-icons"></span>
+        <div class="aw-hearts-container">
+            <div aria-live="polite" class="hearts" data-count="0" id="hearts-bar" aria-label="0 hearts" title="0 hearts">
+                <span class="heart-count">0</span>
+                <span aria-hidden="true" class="heart-icons"></span>
+            </div>
         </div>
-        <button class="ghost" id="fs">Full Screen</button>
-        <button type="button" class="ghost" id="mute" aria-pressed="false" aria-label="Mute audio">Mute</button>
+        <div class="aw-header-controls">
+            <button class="ghost" id="fs">Full Screen</button>
+            <button type="button" class="ghost" id="mute" aria-pressed="false" aria-label="Mute audio">Mute</button>
+        </div>
     </div>
 </header>
 
