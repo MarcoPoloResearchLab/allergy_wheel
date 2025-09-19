@@ -126,6 +126,16 @@ function expectAvatarMenuMatchesCatalog(avatarMenuElement) {
     expect(optionImageElement.getAttribute(HtmlAttributeName.ALT)).toBe(
       `${expectedDescriptor.displayName}${AvatarMenuText.OPTION_ALT_SUFFIX}`
     );
+
+    const optionLabelElement = optionElement.querySelector(
+      `.${AvatarClassName.LABEL}`
+    );
+    expect(optionLabelElement).not.toBeNull();
+    if (optionLabelElement) {
+      expect(optionLabelElement.textContent).toBe(
+        expectedDescriptor.displayName
+      );
+    }
   }
 }
 
