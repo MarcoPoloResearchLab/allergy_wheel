@@ -82,7 +82,24 @@
         .header-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .header-nav .ghost { min-width: 80px; text-align: center; }
 
-        .avatar-menu-wrapper { position: relative; }
+        .avatar-menu-wrapper { position: relative; z-index: 70; }
+
+        .avatar-menu-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 160ms ease-in-out;
+            z-index: 60;
+        }
+
+        .avatar-menu-backdrop[hidden] { display: none; }
+
+        .avatar-menu-backdrop--visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
         .avatar-button {
             border-radius: 50%;
@@ -104,6 +121,8 @@
             gap: 0;
             padding: 6px;
             border-radius: 50%;
+            position: relative;
+            z-index: 70;
         }
 
         #avatar-toggle .avatar-image {
@@ -162,6 +181,7 @@
             opacity: 0;
             transform: translateY(-12px) scale(.96);
             pointer-events: none;
+            z-index: 70;
         }
 
         #avatar-menu[hidden] { display: none; }
@@ -935,6 +955,7 @@
     <div class="header-left">
         <div class="avatar-menu-wrapper">
             <button aria-expanded="false" aria-haspopup="true" class="avatar-button" id="avatar-toggle" type="button"></button>
+            <div aria-hidden="true" class="avatar-menu-backdrop" id="avatar-menu-backdrop" hidden></div>
             <div class="avatar-menu" id="avatar-menu" hidden></div>
         </div>
         <h1>Allergy Wheel</h1>

@@ -10,6 +10,7 @@ import {
   AvatarId,
   AvatarCatalog,
   AvatarClassName,
+  AvatarMenuClassName,
   AvatarMenuText,
   GlobalClassName
 } from "../../constants.js";
@@ -43,7 +44,8 @@ const RevealSectionClassName = Object.freeze({
   ACTIONS: "actions"
 });
 
-const AvatarMenuContainerClassName = "avatar-menu";
+const AvatarMenuContainerClassName = AvatarMenuClassName.CONTAINER;
+const AvatarMenuBackdropClassName = AvatarMenuClassName.BACKDROP;
 
 const AvatarDescriptorById = buildAvatarDescriptorMap(AvatarCatalog);
 
@@ -171,12 +173,24 @@ function createAvatarSelectorElements({ selectedAvatarId = AvatarId.DEFAULT } = 
     headerAvatarToggleButtonElement.classList.add(AvatarClassName.BUTTON);
   }
 
+  const avatarMenuBackdropElement = document.createElement(HtmlTagName.DIV);
+  avatarMenuBackdropElement.id = ControlElementId.AVATAR_MENU_BACKDROP;
+  if (AvatarMenuBackdropClassName) {
+    avatarMenuBackdropElement.classList.add(AvatarMenuBackdropClassName);
+  }
+  avatarMenuBackdropElement.hidden = true;
+  avatarMenuBackdropElement.setAttribute(
+    AttributeName.ARIA_HIDDEN,
+    AttributeBooleanValue.TRUE
+  );
+
   const avatarMenuElement = document.createElement(HtmlTagName.DIV);
   avatarMenuElement.id = ControlElementId.AVATAR_MENU;
   avatarMenuElement.hidden = true;
   avatarMenuElement.className = AvatarMenuContainerClassName;
 
   document.body.appendChild(headerAvatarToggleButtonElement);
+  document.body.appendChild(avatarMenuBackdropElement);
   document.body.appendChild(avatarMenuElement);
 
   const { imageElement, labelElement } = renderAvatarSelector({
@@ -196,7 +210,8 @@ function createAvatarSelectorElements({ selectedAvatarId = AvatarId.DEFAULT } = 
     headerAvatarToggleButtonElement,
     headerAvatarImageElement: imageElement,
     headerAvatarLabelElement: labelElement,
-    avatarMenuElement
+    avatarMenuElement,
+    avatarMenuBackdropElement
   };
 }
 
@@ -264,7 +279,8 @@ function createAvatarSelectionTestHarness() {
     headerAvatarToggleButtonElement,
     headerAvatarImageElement,
     headerAvatarLabelElement,
-    avatarMenuElement
+    avatarMenuElement,
+    avatarMenuBackdropElement
   } = createAvatarSelectorElements();
 
   const {
@@ -334,6 +350,7 @@ function createAvatarSelectionTestHarness() {
     stateManager,
     resultCard,
     avatarMenuElement,
+    avatarMenuBackdropElement,
     headerAvatarToggleButtonElement,
     headerAvatarImageElement,
     headerAvatarLabelElement,

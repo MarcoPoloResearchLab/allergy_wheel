@@ -184,12 +184,39 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     function wireAvatarSelector({ onAvatarChange }) {
         const avatarToggleButton = documentReference.getElementById(controlElementId.AVATAR_TOGGLE);
         const avatarMenuElement = documentReference.getElementById(controlElementId.AVATAR_MENU);
+        const avatarMenuBackdropElement = documentReference.getElementById(controlElementId.AVATAR_MENU_BACKDROP);
         if (!avatarToggleButton || !avatarMenuElement) {
             return;
         }
 
         const menuOpenClassName = AvatarMenuClassName.OPEN;
+        const backdropVisibleClassName = AvatarMenuClassName.BACKDROP_VISIBLE;
         const ariaExpandedAttributeName = attributeName.ARIA_EXPANDED;
+        const ariaHiddenAttributeName = attributeName.ARIA_HIDDEN;
+
+        const setBackdropVisibility = (shouldShowBackdrop) => {
+            if (!avatarMenuBackdropElement) {
+                return;
+            }
+
+            if (shouldShowBackdrop) {
+                avatarMenuBackdropElement.hidden = false;
+                if (backdropVisibleClassName) {
+                    avatarMenuBackdropElement.classList.add(backdropVisibleClassName);
+                }
+                if (ariaHiddenAttributeName) {
+                    avatarMenuBackdropElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.FALSE);
+                }
+            } else {
+                if (backdropVisibleClassName) {
+                    avatarMenuBackdropElement.classList.remove(backdropVisibleClassName);
+                }
+                if (ariaHiddenAttributeName) {
+                    avatarMenuBackdropElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.TRUE);
+                }
+                avatarMenuBackdropElement.hidden = true;
+            }
+        };
 
         const setMenuVisibility = (shouldShowMenu) => {
             if (shouldShowMenu) {
@@ -209,6 +236,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
                     avatarToggleButton.setAttribute(ariaExpandedAttributeName, AttributeBooleanValue.FALSE);
                 }
             }
+            setBackdropVisibility(shouldShowMenu);
         };
 
         setMenuVisibility(false);
@@ -217,6 +245,12 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
             const shouldOpenMenu = avatarMenuElement.hidden;
             setMenuVisibility(shouldOpenMenu);
         });
+
+        if (avatarMenuBackdropElement) {
+            avatarMenuBackdropElement.addEventListener(BrowserEventName.CLICK, () => {
+                setMenuVisibility(false);
+            });
+        }
 
         avatarMenuElement.addEventListener(BrowserEventName.CLICK, (eventObject) => {
             const eventTarget = eventObject.target instanceof Element

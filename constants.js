@@ -124,6 +124,7 @@ export const ControlElementId = Object.freeze({
     RESTART_BUTTON: "restart",
     AVATAR_TOGGLE: "avatar-toggle",
     AVATAR_MENU: "avatar-menu",
+    AVATAR_MENU_BACKDROP: "avatar-menu-backdrop",
     ALLERGY_TITLE: "allergy-title",
     NAV_GAME_BUTTON: "nav-game",
     NAV_MENU_BUTTON: "nav-menu"
@@ -133,7 +134,10 @@ const AvatarButtonClassName = "avatar-button";
 const AvatarOptionClassName = "avatar-option";
 const AvatarImageClassName = "avatar-image";
 const AvatarLabelClassName = "avatar-label";
+const AvatarMenuContainerClassName = "avatar-menu";
 const AvatarMenuOpenClassName = "is-open";
+const AvatarMenuBackdropClassName = "avatar-menu-backdrop";
+const AvatarMenuBackdropVisibleClassName = "avatar-menu-backdrop--visible";
 
 const VisuallyHiddenClassName = "visually-hidden";
 
@@ -149,7 +153,10 @@ export const AvatarClassName = Object.freeze({
 });
 
 export const AvatarMenuClassName = Object.freeze({
-    OPEN: AvatarMenuOpenClassName
+    CONTAINER: AvatarMenuContainerClassName,
+    OPEN: AvatarMenuOpenClassName,
+    BACKDROP: AvatarMenuBackdropClassName,
+    BACKDROP_VISIBLE: AvatarMenuBackdropVisibleClassName
 });
 
 export const GlobalClassName = Object.freeze({
