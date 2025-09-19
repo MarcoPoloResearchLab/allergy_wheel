@@ -10,7 +10,8 @@ import {
   AvatarId,
   AvatarCatalog,
   AvatarClassName,
-  AvatarMenuText
+  AvatarMenuText,
+  GlobalClassName
 } from "../../constants.js";
 
 const EmptyStringValue = "";
@@ -124,6 +125,21 @@ function expectAvatarMenuMatchesCatalog(avatarMenuElement) {
     expect(optionImageElement.getAttribute(HtmlAttributeName.ALT)).toBe(
       `${expectedDescriptor.displayName}${AvatarMenuText.OPTION_ALT_SUFFIX}`
     );
+
+    const optionLabelElement = optionElement.querySelector(
+      `.${AvatarClassName.LABEL}`
+    );
+    expect(optionLabelElement).not.toBeNull();
+    if (optionLabelElement) {
+      expect(optionLabelElement.textContent).toBe(
+        expectedDescriptor.displayName
+      );
+      expect(
+        optionLabelElement.classList.contains(
+          GlobalClassName.VISUALLY_HIDDEN
+        )
+      ).toBe(false);
+    }
   }
 }
 
@@ -142,6 +158,9 @@ function expectToggleMatchesDescriptor({
   }
   if (labelElement) {
     expect(labelElement.textContent).toBe(descriptor.displayName);
+    expect(
+      labelElement.classList.contains(GlobalClassName.VISUALLY_HIDDEN)
+    ).toBe(true);
   }
 }
 
@@ -392,6 +411,11 @@ describe("Avatar selection integration", () => {
       expect(headerAvatarLabelElement.textContent).toBe(
         expectedAvatarDescriptor.displayName
       );
+      expect(
+        headerAvatarLabelElement.classList.contains(
+          GlobalClassName.VISUALLY_HIDDEN
+        )
+      ).toBe(true);
 
       const renderedAvatarImageElement = faceSvgElement.querySelector(SvgSelector.IMAGE);
       expect(renderedAvatarImageElement).not.toBeNull();

@@ -45,10 +45,18 @@ function createToggleImageElement({
     return imageElement;
 }
 
-function createToggleLabelElement({ documentReference, avatarClassNameMap, activeDescriptor }) {
+function createToggleLabelElement({
+    documentReference,
+    avatarClassNameMap,
+    activeDescriptor,
+    globalClassName
+}) {
     const labelElement = documentReference.createElement(HtmlTagName.SPAN);
     if (avatarClassNameMap.LABEL) {
-        labelElement.className = avatarClassNameMap.LABEL;
+        labelElement.classList.add(avatarClassNameMap.LABEL);
+    }
+    if (globalClassName && globalClassName.VISUALLY_HIDDEN) {
+        labelElement.classList.add(globalClassName.VISUALLY_HIDDEN);
     }
     labelElement.textContent = activeDescriptor ? activeDescriptor.displayName : "";
     return labelElement;
@@ -86,7 +94,8 @@ function populateToggleButton({
     const labelElement = createToggleLabelElement({
         documentReference,
         avatarClassNameMap,
-        activeDescriptor
+        activeDescriptor,
+        globalClassName
     });
 
     toggleButtonElement.appendChild(hiddenPromptElement);
