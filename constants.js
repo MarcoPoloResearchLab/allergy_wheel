@@ -25,17 +25,17 @@ export const WheelControlMode = Object.freeze({
     START: WheelControlModeStringStart
 });
 
-const AvatarAssetPathSunnyGirl = "assets/avatars/sunny-girl.svg";
-const AvatarAssetPathCuriousGirl = "assets/avatars/curious-girl.svg";
+const AvatarAssetPathSunnyGirl = "assets/avatars/sunny.svg";
+const AvatarAssetPathCuriousGirl = "assets/avatars/sea.svg";
 const AvatarAssetPathAdventurousBoy = "assets/avatars/adventurous-boy.svg";
-const AvatarAssetPathCreativeBoy = "assets/avatars/creative-boy.svg";
+const AvatarAssetPathCreativeBoy = "assets/avatars/sunny girl.svg";
 const AvatarAssetPathTyrannosaurusRex = "assets/avatars/t-rex.svg";
 const AvatarAssetPathTriceratops = "assets/avatars/triceratops.svg";
 
-const AvatarDisplayNameSunnyGirl = "Sunny Girl";
-const AvatarDisplayNameCuriousGirl = "Curious Girl";
+const AvatarDisplayNameSunnyGirl = "Earthling";
+const AvatarDisplayNameCuriousGirl = "Marine";
 const AvatarDisplayNameAdventurousBoy = "Adventurous Boy";
-const AvatarDisplayNameCreativeBoy = "Creative Boy";
+const AvatarDisplayNameCreativeBoy = "Sunny Girl";
 const AvatarDisplayNameTyrannosaurusRex = "T-Rex";
 const AvatarDisplayNameTriceratops = "Triceratops";
 
