@@ -25,16 +25,6 @@ export const WheelControlMode = Object.freeze({
     START: WheelControlModeStringStart
 });
 
-export const AvatarId = Object.freeze({
-    DEFAULT: AvatarIdentifierSunnyGirl,
-    SUNNY_GIRL: AvatarIdentifierSunnyGirl,
-    CURIOUS_GIRL: AvatarIdentifierCuriousGirl,
-    ADVENTUROUS_BOY: AvatarIdentifierAdventurousBoy,
-    CREATIVE_BOY: AvatarIdentifierCreativeBoy,
-    TYRANNOSAURUS_REX: AvatarIdentifierTyrannosaurusRex,
-    TRICERATOPS: AvatarIdentifierTriceratops
-});
-
 const AvatarAssetPathSunnyGirl = "assets/avatars/sunny-girl.svg";
 const AvatarAssetPathCuriousGirl = "assets/avatars/curious-girl.svg";
 const AvatarAssetPathAdventurousBoy = "assets/avatars/adventurous-boy.svg";
@@ -49,23 +39,71 @@ const AvatarDisplayNameCreativeBoy = "Creative Boy";
 const AvatarDisplayNameTyrannosaurusRex = "T-Rex";
 const AvatarDisplayNameTriceratops = "Triceratops";
 
-export const AvatarAssetPath = Object.freeze({
-    SUNNY_GIRL: AvatarAssetPathSunnyGirl,
-    CURIOUS_GIRL: AvatarAssetPathCuriousGirl,
-    ADVENTUROUS_BOY: AvatarAssetPathAdventurousBoy,
-    CREATIVE_BOY: AvatarAssetPathCreativeBoy,
-    TYRANNOSAURUS_REX: AvatarAssetPathTyrannosaurusRex,
-    TRICERATOPS: AvatarAssetPathTriceratops
-});
+const AvatarCatalogEntries = Object.freeze([
+    Object.freeze({
+        key: "SUNNY_GIRL",
+        id: AvatarIdentifierSunnyGirl,
+        assetPath: AvatarAssetPathSunnyGirl,
+        displayName: AvatarDisplayNameSunnyGirl
+    }),
+    Object.freeze({
+        key: "CURIOUS_GIRL",
+        id: AvatarIdentifierCuriousGirl,
+        assetPath: AvatarAssetPathCuriousGirl,
+        displayName: AvatarDisplayNameCuriousGirl
+    }),
+    Object.freeze({
+        key: "ADVENTUROUS_BOY",
+        id: AvatarIdentifierAdventurousBoy,
+        assetPath: AvatarAssetPathAdventurousBoy,
+        displayName: AvatarDisplayNameAdventurousBoy
+    }),
+    Object.freeze({
+        key: "CREATIVE_BOY",
+        id: AvatarIdentifierCreativeBoy,
+        assetPath: AvatarAssetPathCreativeBoy,
+        displayName: AvatarDisplayNameCreativeBoy
+    }),
+    Object.freeze({
+        key: "TYRANNOSAURUS_REX",
+        id: AvatarIdentifierTyrannosaurusRex,
+        assetPath: AvatarAssetPathTyrannosaurusRex,
+        displayName: AvatarDisplayNameTyrannosaurusRex
+    }),
+    Object.freeze({
+        key: "TRICERATOPS",
+        id: AvatarIdentifierTriceratops,
+        assetPath: AvatarAssetPathTriceratops,
+        displayName: AvatarDisplayNameTriceratops
+    })
+]);
 
-export const AvatarDisplayName = Object.freeze({
-    [AvatarId.SUNNY_GIRL]: AvatarDisplayNameSunnyGirl,
-    [AvatarId.CURIOUS_GIRL]: AvatarDisplayNameCuriousGirl,
-    [AvatarId.ADVENTUROUS_BOY]: AvatarDisplayNameAdventurousBoy,
-    [AvatarId.CREATIVE_BOY]: AvatarDisplayNameCreativeBoy,
-    [AvatarId.TYRANNOSAURUS_REX]: AvatarDisplayNameTyrannosaurusRex,
-    [AvatarId.TRICERATOPS]: AvatarDisplayNameTriceratops
-});
+const createAvatarMapByKey = (propertyName) => {
+    const mapping = {};
+    for (const descriptor of AvatarCatalogEntries) {
+        mapping[descriptor.key] = descriptor[propertyName];
+    }
+    return mapping;
+};
+
+const createAvatarMapById = (propertyName) => {
+    const mapping = {};
+    for (const descriptor of AvatarCatalogEntries) {
+        mapping[descriptor.id] = descriptor[propertyName];
+    }
+    return mapping;
+};
+
+const avatarIdByKey = createAvatarMapByKey("id");
+avatarIdByKey.DEFAULT = AvatarIdentifierSunnyGirl;
+
+export const AvatarId = Object.freeze(avatarIdByKey);
+
+export const AvatarCatalog = AvatarCatalogEntries;
+
+export const AvatarAssetPath = Object.freeze(createAvatarMapByKey("assetPath"));
+
+export const AvatarDisplayName = Object.freeze(createAvatarMapById("displayName"));
 
 const AudioAssetPathYamYam = "assets/audio/yam_yam.mp3";
 const AudioAssetPathSiren = "assets/audio/ambulance_siren.mp3";
@@ -91,12 +129,20 @@ export const ControlElementId = Object.freeze({
     NAV_MENU_BUTTON: "nav-menu"
 });
 
+const AvatarButtonClassName = "avatar-button";
 const AvatarOptionClassName = "avatar-option";
 const AvatarImageClassName = "avatar-image";
 const AvatarLabelClassName = "avatar-label";
 const AvatarMenuOpenClassName = "is-open";
 
+const VisuallyHiddenClassName = "visually-hidden";
+
+const AvatarTogglePromptText = "Choose your avatar";
+const AvatarToggleAltSuffixText = " avatar";
+const AvatarOptionAltSuffixText = " avatar option";
+
 export const AvatarClassName = Object.freeze({
+    BUTTON: AvatarButtonClassName,
     OPTION: AvatarOptionClassName,
     IMAGE: AvatarImageClassName,
     LABEL: AvatarLabelClassName
@@ -104,6 +150,16 @@ export const AvatarClassName = Object.freeze({
 
 export const AvatarMenuClassName = Object.freeze({
     OPEN: AvatarMenuOpenClassName
+});
+
+export const GlobalClassName = Object.freeze({
+    VISUALLY_HIDDEN: VisuallyHiddenClassName
+});
+
+export const AvatarMenuText = Object.freeze({
+    TOGGLE_PROMPT: AvatarTogglePromptText,
+    TOGGLE_ALT_SUFFIX: AvatarToggleAltSuffixText,
+    OPTION_ALT_SUFFIX: AvatarOptionAltSuffixText
 });
 
 const TitleAttentionClassName = "title--attention";
@@ -171,6 +227,7 @@ export const AttributeName = Object.freeze({
     ARIA_LABEL: "aria-label",
     ARIA_PRESSED: "aria-pressed",
     ARIA_EXPANDED: "aria-expanded",
+    ARIA_HAS_POPUP: "aria-haspopup",
     ARIA_DISABLED: "aria-disabled",
     DATA_SCREEN: "data-screen",
     DATA_COUNT: "data-count",
