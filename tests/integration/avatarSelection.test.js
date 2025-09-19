@@ -1,14 +1,17 @@
 import { createListenerBinder } from "../../listeners.js";
 import { StateManager } from "../../state.js";
 import { ResultCard } from "../../lastCard.js";
+import { renderAvatarSelector, buildAvatarDescriptorMap } from "../../avatarRenderer.js";
 import {
   ControlElementId,
   AttributeName,
   AttributeBooleanValue,
   ResultCardElementId,
   AvatarId,
-  AvatarAssetPath,
-  AvatarClassName
+  AvatarCatalog,
+  AvatarClassName,
+  AvatarMenuText,
+  GlobalClassName
 } from "../../constants.js";
 
 const EmptyStringValue = "";
@@ -18,12 +21,14 @@ const HtmlTagName = Object.freeze({
   BUTTON: "button",
   DIV: "div",
   IMG: "img",
+  SPAN: "span",
   SECTION: "section",
   SVG: "svg"
 });
 
 const HtmlAttributeName = Object.freeze({
-  SRC: "src"
+  SRC: "src",
+  ALT: "alt"
 });
 
 const SvgSelector = Object.freeze({
@@ -37,6 +42,13 @@ const SvgAttributeName = Object.freeze({
 const RevealSectionClassName = Object.freeze({
   ACTIONS: "actions"
 });
+
+const AvatarMenuContainerClassName = "avatar-menu";
+
+const AvatarDescriptorById = buildAvatarDescriptorMap(AvatarCatalog);
+
+const AvatarDefaultDescriptor =
+  AvatarDescriptorById.get(AvatarId.DEFAULT) || AvatarCatalog[0];
 
 const TestAllergenDescriptor = Object.freeze({
   TOKEN: "peanut",
@@ -63,101 +75,129 @@ const AvatarSelectionScenarioDescription = Object.freeze({
   TRICERATOPS_PERSISTENCE: "selecting the triceratops avatar persists across rounds"
 });
 
-const DinosaurAvatarDescriptors = Object.freeze([
+const AvatarResourceEntries = Object.freeze(
+  AvatarCatalog.map((avatarDescriptor) =>
+    Object.freeze([avatarDescriptor.id, avatarDescriptor.assetPath])
+  )
+);
+
+const AvatarSelectionScenarios = Object.freeze([
   Object.freeze({
-    avatarIdentifier: AvatarId.TYRANNOSAURUS_REX,
-    avatarResourcePath: AvatarAssetPath.TYRANNOSAURUS_REX,
-    persistenceDescription: AvatarSelectionScenarioDescription.TYRANNOSAURUS_PERSISTENCE
+    description: AvatarSelectionScenarioDescription.CREATIVE_PERSISTENCE,
+    chosenAvatarId: AvatarId.CREATIVE_BOY
   }),
   Object.freeze({
-    avatarIdentifier: AvatarId.TRICERATOPS,
-    avatarResourcePath: AvatarAssetPath.TRICERATOPS,
-    persistenceDescription: AvatarSelectionScenarioDescription.TRICERATOPS_PERSISTENCE
+    description: AvatarSelectionScenarioDescription.TYRANNOSAURUS_PERSISTENCE,
+    chosenAvatarId: AvatarId.TYRANNOSAURUS_REX
+  }),
+  Object.freeze({
+    description: AvatarSelectionScenarioDescription.TRICERATOPS_PERSISTENCE,
+    chosenAvatarId: AvatarId.TRICERATOPS
   })
 ]);
-
-const AvatarResourceEntries = (() => {
-  const baseEntries = [
-    Object.freeze([AvatarId.SUNNY_GIRL, AvatarAssetPath.SUNNY_GIRL]),
-    Object.freeze([AvatarId.CURIOUS_GIRL, AvatarAssetPath.CURIOUS_GIRL]),
-    Object.freeze([AvatarId.ADVENTUROUS_BOY, AvatarAssetPath.ADVENTUROUS_BOY]),
-    Object.freeze([AvatarId.CREATIVE_BOY, AvatarAssetPath.CREATIVE_BOY])
-  ];
-
-  for (const dinosaurAvatarDescriptor of DinosaurAvatarDescriptors) {
-    baseEntries.push(
-      Object.freeze([
-        dinosaurAvatarDescriptor.avatarIdentifier,
-        dinosaurAvatarDescriptor.avatarResourcePath
-      ])
-    );
-  }
-
-  return Object.freeze(baseEntries);
-})();
-
-const AvatarSelectionScenarios = (() => {
-  const scenarios = [
-    Object.freeze({
-      description: AvatarSelectionScenarioDescription.CREATIVE_PERSISTENCE,
-      chosenAvatarId: AvatarId.CREATIVE_BOY
-    })
-  ];
-
-  for (const dinosaurAvatarDescriptor of DinosaurAvatarDescriptors) {
-    scenarios.push(
-      Object.freeze({
-        description: dinosaurAvatarDescriptor.persistenceDescription,
-        chosenAvatarId: dinosaurAvatarDescriptor.avatarIdentifier
-      })
-    );
-  }
-
-  return Object.freeze(scenarios);
-})();
 
 afterEach(() => {
   document.body.innerHTML = EmptyStringValue;
 });
 
-function createAvatarSelectorElements({ avatarResourceEntries, defaultAvatarResource }) {
+function getAvatarDescriptorOrDefault(avatarIdentifier) {
+  return AvatarDescriptorById.get(avatarIdentifier) || AvatarDefaultDescriptor;
+}
+
+function expectAvatarMenuMatchesCatalog(avatarMenuElement) {
+  const menuOptionElements = Array.from(
+    avatarMenuElement.querySelectorAll(`[data-avatar-id]`)
+  );
+  expect(menuOptionElements).toHaveLength(AvatarCatalog.length);
+
+  for (const optionElement of menuOptionElements) {
+    const optionAvatarIdentifier = optionElement.dataset.avatarId;
+    const expectedDescriptor = getAvatarDescriptorOrDefault(optionAvatarIdentifier);
+    expect(expectedDescriptor).toBeDefined();
+
+    const optionImageElement = optionElement.querySelector(HtmlTagName.IMG);
+    expect(optionImageElement).not.toBeNull();
+    if (!optionImageElement) {
+      continue;
+    }
+
+    expect(optionImageElement.getAttribute(HtmlAttributeName.SRC)).toBe(
+      expectedDescriptor.assetPath
+    );
+    expect(optionImageElement.getAttribute(HtmlAttributeName.ALT)).toBe(
+      `${expectedDescriptor.displayName}${AvatarMenuText.OPTION_ALT_SUFFIX}`
+    );
+
+    const optionLabelElement = optionElement.querySelector(
+      `.${AvatarClassName.LABEL}`
+    );
+    expect(optionLabelElement).not.toBeNull();
+    if (optionLabelElement) {
+      expect(optionLabelElement.textContent).toBe(
+        expectedDescriptor.displayName
+      );
+      expect(
+        optionLabelElement.classList.contains(
+          GlobalClassName.VISUALLY_HIDDEN
+        )
+      ).toBe(false);
+    }
+  }
+}
+
+function expectToggleMatchesDescriptor({
+  imageElement,
+  labelElement,
+  descriptor
+}) {
+  if (imageElement) {
+    expect(imageElement.getAttribute(HtmlAttributeName.SRC)).toBe(
+      descriptor.assetPath
+    );
+    expect(imageElement.getAttribute(HtmlAttributeName.ALT)).toBe(
+      `${descriptor.displayName}${AvatarMenuText.TOGGLE_ALT_SUFFIX}`
+    );
+  }
+  if (labelElement) {
+    expect(labelElement.textContent).toBe(descriptor.displayName);
+    expect(
+      labelElement.classList.contains(GlobalClassName.VISUALLY_HIDDEN)
+    ).toBe(true);
+  }
+}
+
+function createAvatarSelectorElements({ selectedAvatarId = AvatarId.DEFAULT } = {}) {
   const headerAvatarToggleButtonElement = document.createElement(HtmlTagName.BUTTON);
   headerAvatarToggleButtonElement.id = ControlElementId.AVATAR_TOGGLE;
-  headerAvatarToggleButtonElement.setAttribute(
-    AttributeName.ARIA_EXPANDED,
-    AttributeBooleanValue.FALSE
-  );
-
-  const headerAvatarImageElement = document.createElement(HtmlTagName.IMG);
-  headerAvatarImageElement.className = AvatarClassName.IMAGE;
-  if (defaultAvatarResource) {
-    headerAvatarImageElement.setAttribute(HtmlAttributeName.SRC, defaultAvatarResource);
+  if (AvatarClassName.BUTTON) {
+    headerAvatarToggleButtonElement.classList.add(AvatarClassName.BUTTON);
   }
-  headerAvatarToggleButtonElement.appendChild(headerAvatarImageElement);
 
   const avatarMenuElement = document.createElement(HtmlTagName.DIV);
   avatarMenuElement.id = ControlElementId.AVATAR_MENU;
   avatarMenuElement.hidden = true;
-
-  for (const [avatarIdentifier, avatarResourcePath] of avatarResourceEntries) {
-    const avatarOptionButtonElement = document.createElement(HtmlTagName.BUTTON);
-    avatarOptionButtonElement.classList.add(AvatarClassName.OPTION);
-    avatarOptionButtonElement.dataset.avatarId = avatarIdentifier;
-
-    const avatarOptionImageElement = document.createElement(HtmlTagName.IMG);
-    avatarOptionImageElement.className = AvatarClassName.IMAGE;
-    avatarOptionImageElement.setAttribute(HtmlAttributeName.SRC, avatarResourcePath);
-    avatarOptionButtonElement.appendChild(avatarOptionImageElement);
-
-    avatarMenuElement.appendChild(avatarOptionButtonElement);
-  }
+  avatarMenuElement.className = AvatarMenuContainerClassName;
 
   document.body.appendChild(headerAvatarToggleButtonElement);
   document.body.appendChild(avatarMenuElement);
 
+  const { imageElement, labelElement } = renderAvatarSelector({
+    toggleButtonElement: headerAvatarToggleButtonElement,
+    menuContainerElement: avatarMenuElement,
+    selectedAvatarId
+  });
+
+  expectAvatarMenuMatchesCatalog(avatarMenuElement);
+  expectToggleMatchesDescriptor({
+    imageElement,
+    labelElement,
+    descriptor: getAvatarDescriptorOrDefault(selectedAvatarId)
+  });
+
   return {
     headerAvatarToggleButtonElement,
-    headerAvatarImageElement,
+    headerAvatarImageElement: imageElement,
+    headerAvatarLabelElement: labelElement,
     avatarMenuElement
   };
 }
@@ -231,15 +271,12 @@ function createDishRecord(dishDescriptor) {
 
 function createAvatarSelectionIntegrationHarness() {
   const avatarResourceMap = new Map(AvatarResourceEntries);
-  const defaultAvatarResource = avatarResourceMap.get(AvatarId.DEFAULT);
   const {
     headerAvatarToggleButtonElement,
     headerAvatarImageElement,
+    headerAvatarLabelElement,
     avatarMenuElement
-  } = createAvatarSelectorElements({
-    avatarResourceEntries: AvatarResourceEntries,
-    defaultAvatarResource
-  });
+  } = createAvatarSelectorElements();
 
   const {
     revealSectionElement,
@@ -287,29 +324,39 @@ function createAvatarSelectionIntegrationHarness() {
     selectedAvatarId: stateManager.getSelectedAvatar()
   });
 
-  const updateHeaderAvatarImage = (avatarIdentifier) => {
-    const resolvedAvatarResource =
-      avatarResourceMap.get(avatarIdentifier) || avatarResourceMap.get(AvatarId.DEFAULT);
-    if (resolvedAvatarResource) {
-      headerAvatarImageElement.setAttribute(HtmlAttributeName.SRC, resolvedAvatarResource);
+  const updateHeaderAvatarSelection = (avatarIdentifier) => {
+    const resolvedDescriptor = getAvatarDescriptorOrDefault(avatarIdentifier);
+    if (headerAvatarImageElement) {
+      headerAvatarImageElement.setAttribute(
+        HtmlAttributeName.SRC,
+        resolvedDescriptor.assetPath
+      );
+      headerAvatarImageElement.setAttribute(
+        HtmlAttributeName.ALT,
+        `${resolvedDescriptor.displayName}${AvatarMenuText.TOGGLE_ALT_SUFFIX}`
+      );
+    }
+
+    if (headerAvatarLabelElement) {
+      headerAvatarLabelElement.textContent = resolvedDescriptor.displayName;
     }
   };
 
-  updateHeaderAvatarImage(stateManager.getSelectedAvatar());
+  updateHeaderAvatarSelection(stateManager.getSelectedAvatar());
 
   listenerBinder.wireAvatarSelector({
     onAvatarChange: (avatarIdentifier) => {
       stateManager.setSelectedAvatar(avatarIdentifier);
       const resolvedAvatarIdentifier = stateManager.getSelectedAvatar();
       resultCard.updateAvatarSelection(resolvedAvatarIdentifier);
-      updateHeaderAvatarImage(resolvedAvatarIdentifier);
+      updateHeaderAvatarSelection(resolvedAvatarIdentifier);
     }
   });
 
   const selectAvatar = (avatarIdentifier) => {
     headerAvatarToggleButtonElement.click();
     const avatarOptionElements = Array.from(
-      avatarMenuElement.getElementsByClassName(AvatarClassName.OPTION)
+      avatarMenuElement.querySelectorAll(`[data-avatar-id]`)
     );
     return avatarOptionElements.find((optionElement) => optionElement.dataset.avatarId === avatarIdentifier);
   };
@@ -334,6 +381,7 @@ function createAvatarSelectionIntegrationHarness() {
     avatarResourceMap,
     headerAvatarToggleButtonElement,
     headerAvatarImageElement,
+    headerAvatarLabelElement,
     avatarMenuElement,
     faceSvgElement,
     selectAvatar,
@@ -348,6 +396,7 @@ describe("Avatar selection persistence", () => {
       stateManager,
       avatarResourceMap,
       headerAvatarImageElement,
+      headerAvatarLabelElement,
       avatarMenuElement,
       faceSvgElement,
       selectAvatar,
@@ -362,11 +411,25 @@ describe("Avatar selection persistence", () => {
     expect(stateManager.getSelectedAvatar()).toBe(chosenAvatarId);
     expect(avatarMenuElement.hidden).toBe(true);
 
-    const expectedAvatarResourcePath = avatarResourceMap.get(chosenAvatarId);
+    const expectedAvatarDescriptor = getAvatarDescriptorOrDefault(chosenAvatarId);
+    const expectedAvatarResourcePath =
+      avatarResourceMap.get(chosenAvatarId) || expectedAvatarDescriptor.assetPath;
     expect(expectedAvatarResourcePath).toBeDefined();
     expect(headerAvatarImageElement.getAttribute(HtmlAttributeName.SRC)).toBe(
       expectedAvatarResourcePath
     );
+    expect(headerAvatarImageElement.getAttribute(HtmlAttributeName.ALT)).toBe(
+      `${expectedAvatarDescriptor.displayName}${AvatarMenuText.TOGGLE_ALT_SUFFIX}`
+    );
+
+    expect(headerAvatarLabelElement.textContent).toBe(
+      expectedAvatarDescriptor.displayName
+    );
+    expect(
+      headerAvatarLabelElement.classList.contains(
+        GlobalClassName.VISUALLY_HIDDEN
+      )
+    ).toBe(true);
 
     const firstSpinResult = simulateSpinAndReveal(DishDescriptor.FIRST_ROUND);
     expect(firstSpinResult.hasTriggeringIngredient).toBe(true);
@@ -391,6 +454,17 @@ describe("Avatar selection persistence", () => {
     expect(stateManager.getSelectedAvatar()).toBe(chosenAvatarId);
     expect(headerAvatarImageElement.getAttribute(HtmlAttributeName.SRC)).toBe(
       expectedAvatarResourcePath
+    );
+    expect(headerAvatarLabelElement.textContent).toBe(
+      expectedAvatarDescriptor.displayName
+    );
+    expect(
+      headerAvatarLabelElement.classList.contains(
+        GlobalClassName.VISUALLY_HIDDEN
+      )
+    ).toBe(true);
+    expect(headerAvatarImageElement.getAttribute(HtmlAttributeName.ALT)).toBe(
+      `${expectedAvatarDescriptor.displayName}${AvatarMenuText.TOGGLE_ALT_SUFFIX}`
     );
   });
 });

@@ -3,7 +3,6 @@ import {
     BrowserEventName,
     KeyboardKey,
     AttributeBooleanValue,
-    AvatarClassName,
     AvatarMenuClassName,
     TitleClassName,
     ButtonText,
@@ -219,20 +218,20 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
             setMenuVisibility(shouldOpenMenu);
         });
 
-        const avatarOptionClassName = AvatarClassName.OPTION;
-        const avatarOptionElements = avatarOptionClassName
-            ? Array.from(avatarMenuElement.getElementsByClassName(avatarOptionClassName))
-            : [];
+        avatarMenuElement.addEventListener(BrowserEventName.CLICK, (eventObject) => {
+            const eventTarget = eventObject.target instanceof Element
+                ? eventObject.target.closest(`[data-avatar-id]`)
+                : null;
+            if (!eventTarget || !avatarMenuElement.contains(eventTarget)) {
+                return;
+            }
 
-        for (const avatarOptionElement of avatarOptionElements) {
-            avatarOptionElement.addEventListener(BrowserEventName.CLICK, () => {
-                const selectedAvatarIdentifier = avatarOptionElement.dataset.avatarId;
-                if (typeof onAvatarChange === "function" && selectedAvatarIdentifier) {
-                    onAvatarChange(selectedAvatarIdentifier);
-                }
-                setMenuVisibility(false);
-            });
-        }
+            const selectedAvatarIdentifier = eventTarget.dataset.avatarId;
+            if (typeof onAvatarChange === "function" && selectedAvatarIdentifier) {
+                onAvatarChange(selectedAvatarIdentifier);
+            }
+            setMenuVisibility(false);
+        });
     }
 
     return {

@@ -18,6 +18,7 @@ import {
     playWin as playWinEffect
 } from "./audio.js";
 import { showScreen, setWheelControlToStop, setWheelControlToStartGame } from "./ui.js";
+import { renderAvatarSelector, buildAvatarDescriptorMap } from "./avatarRenderer.js";
 import {
     ControlElementId,
     AttributeName,
@@ -26,8 +27,9 @@ import {
     FirstCardElementId,
     ResultCardElementId,
     AvatarId,
-    AvatarAssetPath,
+    AvatarCatalog,
     AvatarClassName,
+    AvatarMenuText,
     ScreenName,
     MenuElementId
 } from "./constants.js";
@@ -118,14 +120,12 @@ const firstCardPresenter = new AllergenCard({
     }
 });
 
-const avatarResourceMap = new Map([
-    [AvatarId.SUNNY_GIRL, AvatarAssetPath.SUNNY_GIRL],
-    [AvatarId.CURIOUS_GIRL, AvatarAssetPath.CURIOUS_GIRL],
-    [AvatarId.ADVENTUROUS_BOY, AvatarAssetPath.ADVENTUROUS_BOY],
-    [AvatarId.CREATIVE_BOY, AvatarAssetPath.CREATIVE_BOY],
-    [AvatarId.TYRANNOSAURUS_REX, AvatarAssetPath.TYRANNOSAURUS_REX],
-    [AvatarId.TRICERATOPS, AvatarAssetPath.TRICERATOPS]
-]);
+const avatarDescriptorMap = buildAvatarDescriptorMap(AvatarCatalog);
+
+const avatarResourceMap = new Map();
+for (const avatarDescriptor of AvatarCatalog) {
+    avatarResourceMap.set(avatarDescriptor.id, avatarDescriptor.assetPath);
+}
 
 const revealCardPresenter = new ResultCard({
     documentReference: document,
@@ -146,9 +146,20 @@ const revealCardPresenter = new ResultCard({
 });
 
 const headerAvatarToggleElement = document.getElementById(ControlElementId.AVATAR_TOGGLE);
-const headerAvatarImageElement = headerAvatarToggleElement
-    ? headerAvatarToggleElement.getElementsByClassName(AvatarClassName.IMAGE)[0] || null
-    : null;
+const headerAvatarMenuElement = document.getElementById(ControlElementId.AVATAR_MENU);
+
+let headerAvatarImageElement = null;
+let headerAvatarLabelElement = null;
+
+if (headerAvatarToggleElement && headerAvatarMenuElement) {
+    const renderedAvatarElements = renderAvatarSelector({
+        toggleButtonElement: headerAvatarToggleElement,
+        menuContainerElement: headerAvatarMenuElement,
+        selectedAvatarId: stateManager.getSelectedAvatar()
+    });
+    headerAvatarImageElement = renderedAvatarElements.imageElement;
+    headerAvatarLabelElement = renderedAvatarElements.labelElement;
+}
 
 /**
  * Updates the header avatar image element with the resource mapped to the selected identifier.
@@ -156,14 +167,25 @@ const headerAvatarImageElement = headerAvatarToggleElement
  *
  * @param {string} avatarIdentifier - Identifier representing the avatar to display.
  */
-const updateHeaderAvatarImage = (avatarIdentifier) => {
-    if (!headerAvatarImageElement) {
+const defaultAvatarDescriptor = avatarDescriptorMap.get(AvatarId.DEFAULT)
+    || AvatarCatalog[0]
+    || null;
+
+const updateHeaderAvatarSelection = (avatarIdentifier) => {
+    const resolvedAvatarDescriptor = avatarDescriptorMap.get(avatarIdentifier)
+        || defaultAvatarDescriptor;
+
+    if (!resolvedAvatarDescriptor) {
         return;
     }
-    const resolvedAvatarResource =
-        avatarResourceMap.get(avatarIdentifier) || avatarResourceMap.get(AvatarId.DEFAULT);
-    if (resolvedAvatarResource) {
-        headerAvatarImageElement.src = resolvedAvatarResource;
+
+    if (headerAvatarImageElement) {
+        headerAvatarImageElement.src = resolvedAvatarDescriptor.assetPath;
+        headerAvatarImageElement.alt = `${resolvedAvatarDescriptor.displayName}${AvatarMenuText.TOGGLE_ALT_SUFFIX}`;
+    }
+
+    if (headerAvatarLabelElement) {
+        headerAvatarLabelElement.textContent = resolvedAvatarDescriptor.displayName;
     }
 };
 
@@ -287,11 +309,11 @@ listenerBinder.wireAvatarSelector({
         stateManager.setSelectedAvatar(avatarIdentifier);
         const resolvedAvatarIdentifier = stateManager.getSelectedAvatar();
         revealCardPresenter.updateAvatarSelection(resolvedAvatarIdentifier);
-        updateHeaderAvatarImage(resolvedAvatarIdentifier);
+        updateHeaderAvatarSelection(resolvedAvatarIdentifier);
     }
 });
 
-updateHeaderAvatarImage(stateManager.getSelectedAvatar());
+updateHeaderAvatarSelection(stateManager.getSelectedAvatar());
 
 window.addEventListener(BrowserEventName.DOM_CONTENT_LOADED, () => {
     gameController.bootstrap();
