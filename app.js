@@ -18,6 +18,7 @@ import {
     playWin as playWinEffect
 } from "./audio.js";
 import { showScreen, setWheelControlToStop, setWheelControlToStartGame } from "./ui.js";
+import { renderAvatarSelector, buildAvatarDescriptorMap } from "./avatarRenderer.js";
 import {
     ControlElementId,
     AttributeName,
@@ -26,9 +27,9 @@ import {
     FirstCardElementId,
     ResultCardElementId,
     AvatarId,
-    AvatarAssetPath,
-    AvatarDisplayName,
+    AvatarCatalog,
     AvatarClassName,
+    AvatarMenuText,
     ScreenName,
     MenuElementId
 } from "./constants.js";
@@ -119,16 +120,12 @@ const firstCardPresenter = new AllergenCard({
     }
 });
 
-const avatarResourceMap = new Map([
-    [AvatarId.SUNNY_GIRL, AvatarAssetPath.SUNNY_GIRL],
-    [AvatarId.CURIOUS_GIRL, AvatarAssetPath.CURIOUS_GIRL],
-    [AvatarId.ADVENTUROUS_BOY, AvatarAssetPath.ADVENTUROUS_BOY],
-    [AvatarId.CREATIVE_BOY, AvatarAssetPath.CREATIVE_BOY],
-    [AvatarId.TYRANNOSAURUS_REX, AvatarAssetPath.TYRANNOSAURUS_REX],
-    [AvatarId.TRICERATOPS, AvatarAssetPath.TRICERATOPS]
-]);
+const avatarDescriptorMap = buildAvatarDescriptorMap(AvatarCatalog);
 
-const avatarDisplayNameMap = new Map(Object.entries(AvatarDisplayName));
+const avatarResourceMap = new Map();
+for (const avatarDescriptor of AvatarCatalog) {
+    avatarResourceMap.set(avatarDescriptor.id, avatarDescriptor.assetPath);
+}
 
 const revealCardPresenter = new ResultCard({
     documentReference: document,
@@ -149,12 +146,20 @@ const revealCardPresenter = new ResultCard({
 });
 
 const headerAvatarToggleElement = document.getElementById(ControlElementId.AVATAR_TOGGLE);
-const headerAvatarImageElement = headerAvatarToggleElement
-    ? headerAvatarToggleElement.getElementsByClassName(AvatarClassName.IMAGE)[0] || null
-    : null;
-const headerAvatarLabelElement = headerAvatarToggleElement
-    ? headerAvatarToggleElement.getElementsByClassName(AvatarClassName.LABEL)[0] || null
-    : null;
+const headerAvatarMenuElement = document.getElementById(ControlElementId.AVATAR_MENU);
+
+let headerAvatarImageElement = null;
+let headerAvatarLabelElement = null;
+
+if (headerAvatarToggleElement && headerAvatarMenuElement) {
+    const renderedAvatarElements = renderAvatarSelector({
+        toggleButtonElement: headerAvatarToggleElement,
+        menuContainerElement: headerAvatarMenuElement,
+        selectedAvatarId: stateManager.getSelectedAvatar()
+    });
+    headerAvatarImageElement = renderedAvatarElements.imageElement;
+    headerAvatarLabelElement = renderedAvatarElements.labelElement;
+}
 
 /**
  * Updates the header avatar image element with the resource mapped to the selected identifier.
@@ -162,21 +167,25 @@ const headerAvatarLabelElement = headerAvatarToggleElement
  *
  * @param {string} avatarIdentifier - Identifier representing the avatar to display.
  */
-const updateHeaderAvatarSelection = (avatarIdentifier) => {
-    const resolvedAvatarIdentifier = avatarResourceMap.has(avatarIdentifier)
-        ? avatarIdentifier
-        : AvatarId.DEFAULT;
+const defaultAvatarDescriptor = avatarDescriptorMap.get(AvatarId.DEFAULT)
+    || AvatarCatalog[0]
+    || null;
 
-    const resolvedAvatarResource =
-        avatarResourceMap.get(resolvedAvatarIdentifier) || avatarResourceMap.get(AvatarId.DEFAULT);
-    if (headerAvatarImageElement && resolvedAvatarResource) {
-        headerAvatarImageElement.src = resolvedAvatarResource;
+const updateHeaderAvatarSelection = (avatarIdentifier) => {
+    const resolvedAvatarDescriptor = avatarDescriptorMap.get(avatarIdentifier)
+        || defaultAvatarDescriptor;
+
+    if (!resolvedAvatarDescriptor) {
+        return;
     }
 
-    const resolvedAvatarDisplayName =
-        avatarDisplayNameMap.get(resolvedAvatarIdentifier) || avatarDisplayNameMap.get(AvatarId.DEFAULT);
-    if (headerAvatarLabelElement && resolvedAvatarDisplayName) {
-        headerAvatarLabelElement.textContent = resolvedAvatarDisplayName;
+    if (headerAvatarImageElement) {
+        headerAvatarImageElement.src = resolvedAvatarDescriptor.assetPath;
+        headerAvatarImageElement.alt = `${resolvedAvatarDescriptor.displayName}${AvatarMenuText.TOGGLE_ALT_SUFFIX}`;
+    }
+
+    if (headerAvatarLabelElement) {
+        headerAvatarLabelElement.textContent = resolvedAvatarDescriptor.displayName;
     }
 };
 
