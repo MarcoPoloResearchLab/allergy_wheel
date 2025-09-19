@@ -10,6 +10,7 @@ import {
   AvatarId,
   AvatarCatalog,
   AvatarClassName,
+  AvatarMenuClassName,
   AvatarMenuText,
   GlobalClassName
 } from "../../constants.js";
@@ -43,7 +44,9 @@ const RevealSectionClassName = Object.freeze({
   ACTIONS: "actions"
 });
 
-const AvatarMenuContainerClassName = "avatar-menu";
+const AvatarMenuContainerClassName = AvatarMenuClassName.CONTAINER;
+const AvatarMenuBackdropClassName = AvatarMenuClassName.BACKDROP;
+const AvatarMenuBackdropVisibleClassName = AvatarMenuClassName.BACKDROP_VISIBLE;
 
 const AvatarDescriptorById = buildAvatarDescriptorMap(AvatarCatalog);
 
@@ -173,12 +176,24 @@ function createAvatarSelectorElements({ selectedAvatarId = AvatarId.DEFAULT } = 
     headerAvatarToggleButtonElement.classList.add(AvatarClassName.BUTTON);
   }
 
+  const avatarMenuBackdropElement = document.createElement(HtmlTagName.DIV);
+  avatarMenuBackdropElement.id = ControlElementId.AVATAR_MENU_BACKDROP;
+  if (AvatarMenuBackdropClassName) {
+    avatarMenuBackdropElement.classList.add(AvatarMenuBackdropClassName);
+  }
+  avatarMenuBackdropElement.hidden = true;
+  avatarMenuBackdropElement.setAttribute(
+    AttributeName.ARIA_HIDDEN,
+    AttributeBooleanValue.TRUE
+  );
+
   const avatarMenuElement = document.createElement(HtmlTagName.DIV);
   avatarMenuElement.id = ControlElementId.AVATAR_MENU;
   avatarMenuElement.hidden = true;
   avatarMenuElement.className = AvatarMenuContainerClassName;
 
   document.body.appendChild(headerAvatarToggleButtonElement);
+  document.body.appendChild(avatarMenuBackdropElement);
   document.body.appendChild(avatarMenuElement);
 
   const { imageElement, labelElement } = renderAvatarSelector({
@@ -198,7 +213,8 @@ function createAvatarSelectorElements({ selectedAvatarId = AvatarId.DEFAULT } = 
     headerAvatarToggleButtonElement,
     headerAvatarImageElement: imageElement,
     headerAvatarLabelElement: labelElement,
-    avatarMenuElement
+    avatarMenuElement,
+    avatarMenuBackdropElement
   };
 }
 
@@ -275,7 +291,8 @@ function createAvatarSelectionIntegrationHarness() {
     headerAvatarToggleButtonElement,
     headerAvatarImageElement,
     headerAvatarLabelElement,
-    avatarMenuElement
+    avatarMenuElement,
+    avatarMenuBackdropElement
   } = createAvatarSelectorElements();
 
   const {
@@ -383,12 +400,94 @@ function createAvatarSelectionIntegrationHarness() {
     headerAvatarImageElement,
     headerAvatarLabelElement,
     avatarMenuElement,
+    avatarMenuBackdropElement,
     faceSvgElement,
     selectAvatar,
     simulateSpinAndReveal,
     getRenderedAvatarImageElement
   };
 }
+
+describe("Avatar menu backdrop", () => {
+  test("synchronizes visibility with the avatar menu", () => {
+    const {
+      headerAvatarToggleButtonElement,
+      avatarMenuElement,
+      avatarMenuBackdropElement
+    } = createAvatarSelectionIntegrationHarness();
+
+    expect(avatarMenuElement.hidden).toBe(true);
+    expect(avatarMenuBackdropElement.hidden).toBe(true);
+    expect(
+      avatarMenuBackdropElement.classList.contains(
+        AvatarMenuBackdropVisibleClassName
+      )
+    ).toBe(false);
+    expect(
+      avatarMenuBackdropElement.getAttribute(AttributeName.ARIA_HIDDEN)
+    ).toBe(AttributeBooleanValue.TRUE);
+
+    headerAvatarToggleButtonElement.click();
+
+    expect(avatarMenuElement.hidden).toBe(false);
+    expect(avatarMenuBackdropElement.hidden).toBe(false);
+    expect(
+      avatarMenuBackdropElement.classList.contains(
+        AvatarMenuBackdropVisibleClassName
+      )
+    ).toBe(true);
+    expect(
+      avatarMenuBackdropElement.getAttribute(AttributeName.ARIA_HIDDEN)
+    ).toBe(AttributeBooleanValue.FALSE);
+  });
+
+  test("clicking the backdrop closes the avatar menu", () => {
+    const {
+      headerAvatarToggleButtonElement,
+      avatarMenuElement,
+      avatarMenuBackdropElement
+    } = createAvatarSelectionIntegrationHarness();
+
+    headerAvatarToggleButtonElement.click();
+    expect(avatarMenuElement.hidden).toBe(false);
+
+    avatarMenuBackdropElement.click();
+
+    expect(avatarMenuElement.hidden).toBe(true);
+    expect(avatarMenuBackdropElement.hidden).toBe(true);
+    expect(
+      avatarMenuBackdropElement.classList.contains(
+        AvatarMenuBackdropVisibleClassName
+      )
+    ).toBe(false);
+    expect(
+      avatarMenuBackdropElement.getAttribute(AttributeName.ARIA_HIDDEN)
+    ).toBe(AttributeBooleanValue.TRUE);
+  });
+
+  test("selecting an avatar hides the backdrop", () => {
+    const {
+      selectAvatar,
+      avatarMenuElement,
+      avatarMenuBackdropElement
+    } = createAvatarSelectionIntegrationHarness();
+
+    const targetOptionButtonElement = selectAvatar(AvatarId.CURIOUS_GIRL);
+    expect(targetOptionButtonElement).toBeDefined();
+    targetOptionButtonElement.click();
+
+    expect(avatarMenuElement.hidden).toBe(true);
+    expect(avatarMenuBackdropElement.hidden).toBe(true);
+    expect(
+      avatarMenuBackdropElement.classList.contains(
+        AvatarMenuBackdropVisibleClassName
+      )
+    ).toBe(false);
+    expect(
+      avatarMenuBackdropElement.getAttribute(AttributeName.ARIA_HIDDEN)
+    ).toBe(AttributeBooleanValue.TRUE);
+  });
+});
 
 describe("Avatar selection persistence", () => {
   test.each(AvatarSelectionScenarios)("%s", ({ chosenAvatarId }) => {
