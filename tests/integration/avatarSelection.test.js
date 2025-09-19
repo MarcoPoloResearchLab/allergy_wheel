@@ -10,7 +10,8 @@ import {
   AvatarId,
   AvatarCatalog,
   AvatarClassName,
-  AvatarMenuText
+  AvatarMenuText,
+  GlobalClassName
 } from "../../constants.js";
 
 const EmptyStringValue = "";
@@ -135,6 +136,11 @@ function expectAvatarMenuMatchesCatalog(avatarMenuElement) {
       expect(optionLabelElement.textContent).toBe(
         expectedDescriptor.displayName
       );
+      expect(
+        optionLabelElement.classList.contains(
+          GlobalClassName.VISUALLY_HIDDEN
+        )
+      ).toBe(false);
     }
   }
 }
@@ -154,6 +160,9 @@ function expectToggleMatchesDescriptor({
   }
   if (labelElement) {
     expect(labelElement.textContent).toBe(descriptor.displayName);
+    expect(
+      labelElement.classList.contains(GlobalClassName.VISUALLY_HIDDEN)
+    ).toBe(true);
   }
 }
 
@@ -416,6 +425,11 @@ describe("Avatar selection persistence", () => {
     expect(headerAvatarLabelElement.textContent).toBe(
       expectedAvatarDescriptor.displayName
     );
+    expect(
+      headerAvatarLabelElement.classList.contains(
+        GlobalClassName.VISUALLY_HIDDEN
+      )
+    ).toBe(true);
 
     const firstSpinResult = simulateSpinAndReveal(DishDescriptor.FIRST_ROUND);
     expect(firstSpinResult.hasTriggeringIngredient).toBe(true);
@@ -444,6 +458,11 @@ describe("Avatar selection persistence", () => {
     expect(headerAvatarLabelElement.textContent).toBe(
       expectedAvatarDescriptor.displayName
     );
+    expect(
+      headerAvatarLabelElement.classList.contains(
+        GlobalClassName.VISUALLY_HIDDEN
+      )
+    ).toBe(true);
     expect(headerAvatarImageElement.getAttribute(HtmlAttributeName.ALT)).toBe(
       `${expectedAvatarDescriptor.displayName}${AvatarMenuText.TOGGLE_ALT_SUFFIX}`
     );
