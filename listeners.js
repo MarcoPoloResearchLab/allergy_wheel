@@ -112,18 +112,37 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         buttonElement.addEventListener(BrowserEventName.KEY_DOWN, handleKeyDown);
     };
 
+    const dismissRevealSectionAndRefreshRestartControl = () => {
+        const revealSectionElement = documentReference.getElementById(controlElementId.REVEAL_SECTION);
+        if (!revealSectionElement) {
+            updateWheelRestartControlVisibilityFromRevealState();
+            return false;
+        }
+
+        let wasRevealDismissed = false;
+        const ariaHiddenAttributeName = attributeName.ARIA_HIDDEN;
+        if (ariaHiddenAttributeName) {
+            const revealVisibilityAttributeValue = revealSectionElement.getAttribute(ariaHiddenAttributeName);
+            if (revealVisibilityAttributeValue !== AttributeBooleanValue.TRUE) {
+                revealSectionElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.TRUE);
+                wasRevealDismissed = true;
+            }
+        } else if (!revealSectionElement.hidden) {
+            revealSectionElement.hidden = true;
+            wasRevealDismissed = true;
+        }
+
+        updateWheelRestartControlVisibilityFromRevealState();
+        return wasRevealDismissed;
+    };
+
     const invokeRestartWorkflow = (restartCallback) => {
         const gameOverSection = documentReference.getElementById(controlElementId.GAME_OVER_SECTION);
         if (gameOverSection) {
             gameOverSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
         }
 
-        const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
-        if (revealSection) {
-            revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
-        }
-
-        updateWheelRestartControlVisibilityFromRevealState();
+        dismissRevealSectionAndRefreshRestartControl();
 
         if (typeof restartCallback === "function") {
             restartCallback();
@@ -379,11 +398,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         const spinAgainButton = documentReference.getElementById(controlElementId.SPIN_AGAIN_BUTTON);
         if (!spinAgainButton) return;
         spinAgainButton.addEventListener(BrowserEventName.CLICK, () => {
-            const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
-            if (revealSection) {
-                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
-                updateWheelRestartControlVisibilityFromRevealState();
-            }
+            dismissRevealSectionAndRefreshRestartControl();
             if (typeof onSpinAgain === "function") onSpinAgain();
         });
     }
@@ -393,16 +408,16 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         if (!revealSection) return;
         revealSection.addEventListener(BrowserEventName.CLICK, (eventObject) => {
             if (eventObject.target === revealSection) {
-                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
-                updateWheelRestartControlVisibilityFromRevealState();
+                dismissRevealSectionAndRefreshRestartControl();
             }
         });
         documentReference.addEventListener(BrowserEventName.KEY_DOWN, (eventObject) => {
             const isEscapeKey = eventObject.key === KeyboardKey.ESCAPE || eventObject.key === KeyboardKey.ESC;
-            const isRevealVisible = revealSection.getAttribute(attributeName.ARIA_HIDDEN) === AttributeBooleanValue.FALSE;
-            if (isEscapeKey && isRevealVisible) {
-                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
-                updateWheelRestartControlVisibilityFromRevealState();
+            if (isEscapeKey) {
+                const wasRevealDismissed = dismissRevealSectionAndRefreshRestartControl();
+                if (wasRevealDismissed && typeof eventObject.preventDefault === "function") {
+                    eventObject.preventDefault();
+                }
             }
         });
     }

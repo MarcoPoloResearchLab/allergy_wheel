@@ -43,12 +43,18 @@ function applyWheelRestartButtonVisibility(wheelRestartButtonElement, shouldHide
 export function updateWheelRestartControlVisibilityFromRevealState() {
     const wheelRestartButtonElement = document.getElementById(ControlElementId.WHEEL_RESTART_BUTTON);
     if (!wheelRestartButtonElement) {
-        return false;
+        return {
+            didUpdateVisibility: false,
+            shouldHideRestartControl: isRevealSectionVisible()
+        };
     }
 
     const shouldHideButton = isRevealSectionVisible();
     applyWheelRestartButtonVisibility(wheelRestartButtonElement, shouldHideButton);
-    return true;
+    return {
+        didUpdateVisibility: true,
+        shouldHideRestartControl: shouldHideButton
+    };
 }
 
 const ScreenElementEntries = Object.freeze([
@@ -119,7 +125,7 @@ export function setWheelControlToStartGame() {
         wheelControlElement.classList.remove(WheelControlClassName.STOP_MODE);
     }
 
-    updateWheelRestartControlVisibilityFromRevealState();
+    return updateWheelRestartControlVisibilityFromRevealState();
 }
 
 export function openRestartConfirmation() {
