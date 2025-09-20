@@ -24,6 +24,7 @@ import {
     AttributeName,
     AttributeBooleanValue,
     BrowserEventName,
+    DocumentReadyState,
     FirstCardElementId,
     ResultCardElementId,
     AvatarId,
@@ -316,6 +317,10 @@ listenerBinder.wireAvatarSelector({
 
 updateHeaderAvatarSelection(stateManager.getSelectedAvatar());
 
-window.addEventListener(BrowserEventName.DOM_CONTENT_LOADED, () => {
+if (document.readyState !== DocumentReadyState.LOADING) {
+    gameController.bootstrap();
+}
+
+document.addEventListener(BrowserEventName.DOM_CONTENT_LOADED, () => {
     gameController.bootstrap();
 });
