@@ -1134,6 +1134,18 @@
             min-width: clamp(240px, 42vmin, 400px);
         }
 
+        #wheel-control.wheel-control--stop-mode {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        #wheel-control.wheel-control--stop-mode .wheel-control__continue {
+            border-right: 0;
+        }
+
+        #wheel-control.wheel-control--stop-mode .wheel-control__restart {
+            border-left: 0;
+        }
+
         #wheel-control .btn.action {
             border: 0;
             border-radius: 0;

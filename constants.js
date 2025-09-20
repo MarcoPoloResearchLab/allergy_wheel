@@ -9,6 +9,8 @@ export const ScreenName = Object.freeze({
 
 const WheelControlModeStringStop = "stop";
 const WheelControlModeStringStart = "start";
+const WheelControlStopClassName = "wheel-control--stop-mode";
+const WheelControlContainerElementId = "wheel-control";
 
 const AvatarIdentifierSunnyGirl = "avatar-sunny-girl";
 const AvatarIdentifierCuriousGirl = "avatar-curious-girl";
@@ -23,6 +25,10 @@ export const MODE_START = WheelControlModeStringStart;
 export const WheelControlMode = Object.freeze({
     STOP: WheelControlModeStringStop,
     START: WheelControlModeStringStart
+});
+
+export const WheelControlClassName = Object.freeze({
+    STOP_MODE: WheelControlStopClassName
 });
 
 const AvatarAssetPathSunnyGirl = "assets/avatars/sunny.svg";
@@ -117,6 +123,7 @@ export const ControlElementId = Object.freeze({
     START_BUTTON: "start",
     WHEEL_CONTINUE_BUTTON: "wheel-continue",
     WHEEL_RESTART_BUTTON: "wheel-restart",
+    WHEEL_CONTROL_CONTAINER: WheelControlContainerElementId,
     FULLSCREEN_BUTTON: "fs",
     MUTE_BUTTON: "mute",
     SPIN_AGAIN_BUTTON: "again",
