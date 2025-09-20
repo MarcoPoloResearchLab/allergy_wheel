@@ -300,7 +300,7 @@ export const KeyboardKey = Object.freeze({
 });
 
 export const ButtonText = Object.freeze({
-    CONTINUE: "CONTINUE",
+    SPIN: "SPIN",
     STOP: "STOP",
     RESTART: "Restart",
     MUTE: "Mute",

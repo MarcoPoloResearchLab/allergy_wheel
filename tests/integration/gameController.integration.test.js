@@ -6,6 +6,7 @@ import {
   AttributeBooleanValue,
   DocumentElementId,
   BrowserEventName,
+  ButtonText,
   ScreenName,
   WheelControlClassName
 } from "../../constants.js";
@@ -351,7 +352,7 @@ function createDomSkeleton() {
     <div id="wheel-wrapper">
       <canvas id="${DocumentElementId.WHEEL_CANVAS}"></canvas>
       <div id="${ControlElementId.WHEEL_CONTROL_CONTAINER}">
-        <button id="${ControlElementId.WHEEL_CONTINUE_BUTTON}"></button>
+        <button id="${ControlElementId.WHEEL_CONTINUE_BUTTON}">${ButtonText.SPIN}</button>
         <button id="${ControlElementId.WHEEL_RESTART_BUTTON}"></button>
       </div>
     </div>
@@ -479,6 +480,14 @@ describe("GameController integration", () => {
 
       await gameController.bootstrap();
 
+      const wheelContinueButton = document.getElementById(
+        ControlElementId.WHEEL_CONTINUE_BUTTON
+      );
+      if (!wheelContinueButton) {
+        throw new Error("Wheel continue button not found in DOM");
+      }
+      expect(wheelContinueButton.textContent).toBe(ButtonText.SPIN);
+
       expect(normalizationFactory).toHaveBeenCalled();
       expect(dataLoader.loadJson).toHaveBeenCalledTimes(5);
       expect(firstCardPresenter.renderAllergens).toHaveBeenCalledWith(expect.any(Array));
@@ -496,6 +505,8 @@ describe("GameController integration", () => {
 
       expect(typeof registeredCallbacks.onStop).toBe("function");
       registeredCallbacks.onStop(0);
+
+      expect(wheelContinueButton.textContent).toBe(ButtonText.SPIN);
 
       const renderHeartsCalls = heartsPresenter.renderHearts.mock.calls;
       const latestRenderCall = renderHeartsCalls[renderHeartsCalls.length - 1];
