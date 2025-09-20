@@ -45,7 +45,12 @@ function renderRestartModalSkeleton() {
   document.body.innerHTML = `
     <section id="${ControlElementId.REVEAL_SECTION}" aria-hidden="${AttributeBooleanValue.FALSE}"></section>
     <section id="${ControlElementId.GAME_OVER_SECTION}" aria-hidden="${AttributeBooleanValue.FALSE}"></section>
-    <button id="${ControlElementId.WHEEL_RESTART_BUTTON}" type="button"></button>
+    <div
+      aria-hidden="${AttributeBooleanValue.FALSE}"
+      id="${ControlElementId.WHEEL_RESTART_BUTTON}"
+      role="button"
+      tabindex="0"
+    ></div>
     <div
       aria-hidden="${AttributeBooleanValue.TRUE}"
       hidden

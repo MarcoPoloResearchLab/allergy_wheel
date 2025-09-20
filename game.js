@@ -1,5 +1,4 @@
 import {
-    ButtonText,
     ScreenName,
     WheelControlMode,
     BrowserEventName,
@@ -817,7 +816,14 @@ export class GameController {
         const wheelContinueButtonElement = this.#documentReference.getElementById(
             this.#controlElementIdMap.WHEEL_CONTINUE_BUTTON
         );
+        const wheelControlElement = this.#documentReference.getElementById(
+            this.#controlElementIdMap.WHEEL_CONTROL_CONTAINER
+        );
+        const wheelRestartButtonElement = this.#documentReference.getElementById(
+            this.#controlElementIdMap.WHEEL_RESTART_BUTTON
+        );
         const wheelControlModeAttributeName = this.#attributeNameMap.DATA_WHEEL_CONTROL_MODE;
+        const ariaHiddenAttributeName = this.#attributeNameMap.ARIA_HIDDEN;
 
         if (!wheelContinueButtonElement) {
             if (this.#stateManager.setWheelControlMode) {
@@ -828,7 +834,6 @@ export class GameController {
             }
             return;
         }
-        wheelContinueButtonElement.textContent = ButtonText.SPIN;
         wheelContinueButtonElement.classList.add(ButtonClassName.ACTION, ButtonClassName.START);
         wheelContinueButtonElement.classList.remove(
             ButtonClassName.STOP,
@@ -836,10 +841,18 @@ export class GameController {
             ButtonClassName.DANGER
         );
         if (wheelControlModeAttributeName) {
-            wheelContinueButtonElement.setAttribute(
-                wheelControlModeAttributeName,
-                WheelControlMode.START
-            );
+            const wheelModeTargetElement = wheelControlElement || wheelContinueButtonElement;
+            wheelModeTargetElement.setAttribute(wheelControlModeAttributeName, WheelControlMode.START);
+        }
+        if (wheelRestartButtonElement) {
+            if (ariaHiddenAttributeName) {
+                wheelRestartButtonElement.setAttribute(
+                    ariaHiddenAttributeName,
+                    AttributeBooleanValue.FALSE
+                );
+            }
+            wheelRestartButtonElement.tabIndex = 0;
+            wheelRestartButtonElement.setAttribute("tabindex", "0");
         }
         if (this.#stateManager.setWheelControlMode) {
             this.#stateManager.setWheelControlMode(WheelControlMode.START);
@@ -853,7 +866,14 @@ export class GameController {
         const wheelContinueButtonElement = this.#documentReference.getElementById(
             this.#controlElementIdMap.WHEEL_CONTINUE_BUTTON
         );
+        const wheelControlElement = this.#documentReference.getElementById(
+            this.#controlElementIdMap.WHEEL_CONTROL_CONTAINER
+        );
+        const wheelRestartButtonElement = this.#documentReference.getElementById(
+            this.#controlElementIdMap.WHEEL_RESTART_BUTTON
+        );
         const wheelControlModeAttributeName = this.#attributeNameMap.DATA_WHEEL_CONTROL_MODE;
+        const ariaHiddenAttributeName = this.#attributeNameMap.ARIA_HIDDEN;
 
         if (!wheelContinueButtonElement) {
             if (this.#stateManager.setWheelControlMode) {
@@ -864,7 +884,6 @@ export class GameController {
             }
             return;
         }
-        wheelContinueButtonElement.textContent = ButtonText.STOP;
         wheelContinueButtonElement.classList.add(ButtonClassName.ACTION, ButtonClassName.STOP);
         wheelContinueButtonElement.classList.remove(
             ButtonClassName.START,
@@ -872,10 +891,18 @@ export class GameController {
             ButtonClassName.DANGER
         );
         if (wheelControlModeAttributeName) {
-            wheelContinueButtonElement.setAttribute(
-                wheelControlModeAttributeName,
-                WheelControlMode.STOP
-            );
+            const wheelModeTargetElement = wheelControlElement || wheelContinueButtonElement;
+            wheelModeTargetElement.setAttribute(wheelControlModeAttributeName, WheelControlMode.STOP);
+        }
+        if (wheelRestartButtonElement) {
+            if (ariaHiddenAttributeName) {
+                wheelRestartButtonElement.setAttribute(
+                    ariaHiddenAttributeName,
+                    AttributeBooleanValue.TRUE
+                );
+            }
+            wheelRestartButtonElement.tabIndex = -1;
+            wheelRestartButtonElement.setAttribute("tabindex", "-1");
         }
         if (this.#stateManager.setWheelControlMode) {
             this.#stateManager.setWheelControlMode(WheelControlMode.STOP);

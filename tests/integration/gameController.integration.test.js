@@ -10,7 +10,8 @@ import {
   ButtonText,
   ScreenName,
   WheelControlClassName,
-  KeyboardKey
+  KeyboardKey,
+  WheelControlMode
 } from "../../constants.js";
 import { StateManager } from "../../state.js";
 import { setWheelControlToStartGame, setWheelControlToStop } from "../../ui.js";
@@ -38,9 +39,9 @@ const WheelControlSequenceStep = Object.freeze({
 });
 
 const WheelControlUiScenarioDescription = Object.freeze({
-  STOP_MODE_HIDES_RESTART: "hides the restart button when stop mode is applied",
+  STOP_MODE_HIDES_RESTART: "applies stop mode and hides the restart segment",
   START_MODE_REVEALS_RESTART:
-    "restores the restart button after returning to start mode once the confirmation modal is dismissed"
+    "restores the restart segment and start state after returning from stop mode"
 });
 
 const WheelControlUiScenarios = Object.freeze([
@@ -49,8 +50,9 @@ const WheelControlUiScenarios = Object.freeze([
     sequence: Object.freeze([WheelControlSequenceStep.APPLY_STOP_MODE]),
     expected: Object.freeze({
       isStopModeClassApplied: true,
-      isRestartHidden: true,
-      expectedAriaHidden: AttributeBooleanValue.TRUE
+      expectedMode: WheelControlMode.STOP,
+      expectedAriaHidden: AttributeBooleanValue.TRUE,
+      expectedTabIndex: -1
     })
   }),
   Object.freeze({
@@ -61,8 +63,9 @@ const WheelControlUiScenarios = Object.freeze([
     ]),
     expected: Object.freeze({
       isStopModeClassApplied: false,
-      isRestartHidden: false,
-      expectedAriaHidden: AttributeBooleanValue.FALSE
+      expectedMode: WheelControlMode.START,
+      expectedAriaHidden: AttributeBooleanValue.FALSE,
+      expectedTabIndex: 0
     })
   })
 ]);
@@ -98,9 +101,11 @@ describe("Wheel control UI integration", () => {
       expect(
         wheelControlElement.classList.contains(WheelControlClassName.STOP_MODE)
       ).toBe(expected.isStopModeClassApplied);
-      expect(wheelRestartButton.hidden).toBe(expected.isRestartHidden);
+      const modeAttribute = wheelControlElement.getAttribute(AttributeName.DATA_WHEEL_CONTROL_MODE);
+      expect(modeAttribute).toBe(expected.expectedMode);
       const ariaHiddenValue = wheelRestartButton.getAttribute(AttributeName.ARIA_HIDDEN);
       expect(ariaHiddenValue).toBe(expected.expectedAriaHidden);
+      expect(wheelRestartButton.tabIndex).toBe(expected.expectedTabIndex);
     }
   );
 });
@@ -353,9 +358,22 @@ function createDomSkeleton() {
     <div id="${DocumentElementId.LOAD_ERROR}"></div>
     <div id="wheel-wrapper">
       <canvas id="${DocumentElementId.WHEEL_CANVAS}"></canvas>
-      <div id="${ControlElementId.WHEEL_CONTROL_CONTAINER}">
-        <button id="${ControlElementId.WHEEL_CONTINUE_BUTTON}">${ButtonText.SPIN}</button>
-        <button id="${ControlElementId.WHEEL_RESTART_BUTTON}"></button>
+      <div
+        data-wheel-control-mode="${WheelControlMode.START}"
+        id="${ControlElementId.WHEEL_CONTROL_CONTAINER}"
+      >
+        <button id="${ControlElementId.WHEEL_CONTINUE_BUTTON}">
+          <span class="wheel-control__label wheel-control__label--spin">${ButtonText.SPIN}</span>
+          <span class="wheel-control__label wheel-control__label--stop">${ButtonText.STOP}</span>
+        </button>
+        <div
+          aria-hidden="${AttributeBooleanValue.FALSE}"
+          id="${ControlElementId.WHEEL_RESTART_BUTTON}"
+          role="button"
+          tabindex="0"
+        >
+          ${ButtonText.RESTART}
+        </div>
       </div>
     </div>
     <button id="${ControlElementId.START_BUTTON}"></button>
@@ -488,7 +506,13 @@ describe("GameController integration", () => {
       if (!wheelContinueButton) {
         throw new Error("Wheel continue button not found in DOM");
       }
-      expect(wheelContinueButton.textContent).toBe(ButtonText.SPIN);
+      const wheelControlElement = document.getElementById(ControlElementId.WHEEL_CONTROL_CONTAINER);
+      if (!wheelControlElement) {
+        throw new Error("Wheel control container not found in DOM");
+      }
+      expect(wheelControlElement.getAttribute(AttributeName.DATA_WHEEL_CONTROL_MODE)).toBe(
+        WheelControlMode.START
+      );
 
       expect(normalizationFactory).toHaveBeenCalled();
       expect(dataLoader.loadJson).toHaveBeenCalledTimes(5);
@@ -508,7 +532,18 @@ describe("GameController integration", () => {
       expect(typeof registeredCallbacks.onStop).toBe("function");
       registeredCallbacks.onStop(0);
 
-      expect(wheelContinueButton.textContent).toBe(ButtonText.SPIN);
+      expect(wheelControlElement.getAttribute(AttributeName.DATA_WHEEL_CONTROL_MODE)).toBe(
+        WheelControlMode.START
+      );
+      const restartSegmentElement = document.getElementById(
+        ControlElementId.WHEEL_RESTART_BUTTON
+      );
+      if (!restartSegmentElement) {
+        throw new Error("Wheel restart segment not found in DOM");
+      }
+      expect(restartSegmentElement.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(
+        AttributeBooleanValue.FALSE
+      );
 
       const renderHeartsCalls = heartsPresenter.renderHearts.mock.calls;
       const latestRenderCall = renderHeartsCalls[renderHeartsCalls.length - 1];
@@ -539,8 +574,9 @@ describe("GameController integration", () => {
     }
 
     revealSectionElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
-    wheelRestartButtonElement.hidden = true;
     wheelRestartButtonElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+    wheelRestartButtonElement.tabIndex = -1;
+    wheelRestartButtonElement.setAttribute("tabindex", "-1");
 
     const { wheelStub, registeredCallbacks } = createWheelStub();
     const board = createBoardStub({
@@ -619,15 +655,15 @@ describe("GameController integration", () => {
     registeredCallbacks.onStop(0);
 
     expect(revealSectionElement.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.FALSE);
-    expect(wheelRestartButtonElement.hidden).toBe(true);
     expect(wheelRestartButtonElement.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.TRUE);
+    expect(wheelRestartButtonElement.tabIndex).toBe(-1);
 
     const escapeEvent = new KeyboardEvent(BrowserEventName.KEY_DOWN, { key: KeyboardKey.ESCAPE, bubbles: true });
     document.dispatchEvent(escapeEvent);
 
     expect(revealSectionElement.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.TRUE);
-    expect(wheelRestartButtonElement.hidden).toBe(false);
     expect(wheelRestartButtonElement.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.FALSE);
+    expect(wheelRestartButtonElement.tabIndex).toBe(0);
   });
 
   test(AudioMuteScenarioDescription, async () => {
