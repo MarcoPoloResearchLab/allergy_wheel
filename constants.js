@@ -9,6 +9,8 @@ export const ScreenName = Object.freeze({
 
 const WheelControlModeStringStop = "stop";
 const WheelControlModeStringStart = "start";
+const WheelControlStopClassName = "wheel-control--stop-mode";
+const WheelControlContainerElementId = "wheel-control";
 
 const AvatarIdentifierSunnyGirl = "avatar-sunny-girl";
 const AvatarIdentifierCuriousGirl = "avatar-curious-girl";
@@ -23,6 +25,10 @@ export const MODE_START = WheelControlModeStringStart;
 export const WheelControlMode = Object.freeze({
     STOP: WheelControlModeStringStop,
     START: WheelControlModeStringStart
+});
+
+export const WheelControlClassName = Object.freeze({
+    STOP_MODE: WheelControlStopClassName
 });
 
 const AvatarAssetPathSunnyGirl = "assets/avatars/sunny.svg";
@@ -115,7 +121,9 @@ export const AudioAssetPath = Object.freeze({
 
 export const ControlElementId = Object.freeze({
     START_BUTTON: "start",
-    STOP_BUTTON: "stop",
+    WHEEL_CONTINUE_BUTTON: "wheel-continue",
+    WHEEL_RESTART_BUTTON: "wheel-restart",
+    WHEEL_CONTROL_CONTAINER: WheelControlContainerElementId,
     FULLSCREEN_BUTTON: "fs",
     MUTE_BUTTON: "mute",
     SPIN_AGAIN_BUTTON: "again",
@@ -127,7 +135,19 @@ export const ControlElementId = Object.freeze({
     AVATAR_MENU_BACKDROP: "avatar-menu-backdrop",
     ALLERGY_TITLE: "allergy-title",
     NAV_GAME_BUTTON: "nav-game",
-    NAV_MENU_BUTTON: "nav-menu"
+    NAV_MENU_BUTTON: "nav-menu",
+    RESTART_CONFIRMATION_CONTAINER: "restart-confirmation",
+    RESTART_CONFIRMATION_OVERLAY: "restart-confirmation-overlay",
+    RESTART_CONFIRMATION_DIALOG: "restart-confirmation-dialog",
+    RESTART_CONFIRMATION_CONFIRM_BUTTON: "restart-confirmation-confirm",
+    RESTART_CONFIRMATION_CANCEL_BUTTON: "restart-confirmation-cancel"
+});
+
+export const RestartConfirmationText = Object.freeze({
+    TITLE: "Restart the game?",
+    MESSAGE: "Are you sure you want to restart? Your current progress will be lost.",
+    CONFIRM: "Yes, restart",
+    CANCEL: "Continue playing"
 });
 
 const AvatarButtonClassName = "avatar-button";
@@ -238,12 +258,23 @@ export const AttributeName = Object.freeze({
     ARIA_DISABLED: "aria-disabled",
     DATA_SCREEN: "data-screen",
     DATA_COUNT: "data-count",
-    DATA_BLOCKED: "data-blocked"
+    DATA_BLOCKED: "data-blocked",
+    DATA_WHEEL_CONTROL_MODE: "data-wheel-control-mode"
 });
 
 export const AttributeBooleanValue = Object.freeze({
     TRUE: "true",
     FALSE: "false"
+});
+
+const DocumentReadyStateLoading = "loading";
+const DocumentReadyStateInteractive = "interactive";
+const DocumentReadyStateComplete = "complete";
+
+export const DocumentReadyState = Object.freeze({
+    LOADING: DocumentReadyStateLoading,
+    INTERACTIVE: DocumentReadyStateInteractive,
+    COMPLETE: DocumentReadyStateComplete
 });
 
 export const BrowserEventName = Object.freeze({
@@ -254,13 +285,22 @@ export const BrowserEventName = Object.freeze({
     ANIMATION_END: "animationend"
 });
 
+const KeyboardKeyEnter = "Enter";
+const KeyboardKeySpace = " ";
+const KeyboardKeySpacebar = "Spacebar";
+const KeyboardKeyEscape = "Escape";
+const KeyboardKeyEsc = "Esc";
+
 export const KeyboardKey = Object.freeze({
-    ESCAPE: "Escape",
-    ESC: "Esc"
+    ENTER: KeyboardKeyEnter,
+    SPACE: KeyboardKeySpace,
+    SPACEBAR: KeyboardKeySpacebar,
+    ESCAPE: KeyboardKeyEscape,
+    ESC: KeyboardKeyEsc
 });
 
 export const ButtonText = Object.freeze({
-    START: "Start",
+    SPIN: "SPIN",
     STOP: "STOP",
     RESTART: "Restart",
     MUTE: "Mute",

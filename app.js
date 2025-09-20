@@ -17,13 +17,14 @@ import {
     playNomNom as playNomNomEffect,
     playWin as playWinEffect
 } from "./audio.js";
-import { showScreen, setWheelControlToStop, setWheelControlToStartGame } from "./ui.js";
+import { openRestartConfirmation, setWheelControlToStop, setWheelControlToStartGame, showScreen } from "./ui.js";
 import { renderAvatarSelector, buildAvatarDescriptorMap } from "./avatarRenderer.js";
 import {
     ControlElementId,
     AttributeName,
     AttributeBooleanValue,
     BrowserEventName,
+    DocumentReadyState,
     FirstCardElementId,
     ResultCardElementId,
     AvatarId,
@@ -252,7 +253,8 @@ const navAwareShowScreen = (screenName) => {
 const uiPresenter = {
     showScreen: navAwareShowScreen,
     setWheelControlToStop,
-    setWheelControlToStartGame
+    setWheelControlToStartGame,
+    openRestartConfirmation
 };
 
 const dataLoader = {
@@ -315,6 +317,27 @@ listenerBinder.wireAvatarSelector({
 
 updateHeaderAvatarSelection(stateManager.getSelectedAvatar());
 
-window.addEventListener(BrowserEventName.DOM_CONTENT_LOADED, () => {
+let hasGameBootstrapCompleted = false;
+
+const bootstrapGameWhenDocumentIsReady = () => {
+    if (hasGameBootstrapCompleted) {
+        return;
+    }
+
+    hasGameBootstrapCompleted = true;
     gameController.bootstrap();
-});
+
+    document.removeEventListener(
+        BrowserEventName.DOM_CONTENT_LOADED,
+        bootstrapGameWhenDocumentIsReady
+    );
+};
+
+if (document.readyState !== DocumentReadyState.LOADING) {
+    bootstrapGameWhenDocumentIsReady();
+}
+
+document.addEventListener(
+    BrowserEventName.DOM_CONTENT_LOADED,
+    bootstrapGameWhenDocumentIsReady
+);
