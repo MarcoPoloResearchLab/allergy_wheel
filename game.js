@@ -520,6 +520,12 @@ export class GameController {
                     if (typeof this.#uiPresenter.openRestartConfirmation === "function") {
                         this.#uiPresenter.openRestartConfirmation();
                     }
+                },
+                onRestartConfirmed: () => {
+                    if (this.#wheel && typeof this.#wheel.stop === "function") {
+                        this.#wheel.stop();
+                    }
+                    this.#resetGame();
                 }
             });
         }

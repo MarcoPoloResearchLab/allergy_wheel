@@ -128,7 +128,19 @@ export const ControlElementId = Object.freeze({
     AVATAR_MENU_BACKDROP: "avatar-menu-backdrop",
     ALLERGY_TITLE: "allergy-title",
     NAV_GAME_BUTTON: "nav-game",
-    NAV_MENU_BUTTON: "nav-menu"
+    NAV_MENU_BUTTON: "nav-menu",
+    RESTART_CONFIRMATION_CONTAINER: "restart-confirmation",
+    RESTART_CONFIRMATION_OVERLAY: "restart-confirmation-overlay",
+    RESTART_CONFIRMATION_DIALOG: "restart-confirmation-dialog",
+    RESTART_CONFIRMATION_CONFIRM_BUTTON: "restart-confirmation-confirm",
+    RESTART_CONFIRMATION_CANCEL_BUTTON: "restart-confirmation-cancel"
+});
+
+export const RestartConfirmationText = Object.freeze({
+    TITLE: "Restart the game?",
+    MESSAGE: "Are you sure you want to restart? Your current progress will be lost.",
+    CONFIRM: "Yes, restart",
+    CANCEL: "Continue playing"
 });
 
 const AvatarButtonClassName = "avatar-button";

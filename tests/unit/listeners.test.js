@@ -41,6 +41,31 @@ function dispatchKeydownEvent(targetElement, keyValue) {
   targetElement.dispatchEvent(keyboardEvent);
 }
 
+function renderRestartModalSkeleton() {
+  document.body.innerHTML = `
+    <section id="${ControlElementId.REVEAL_SECTION}" aria-hidden="${AttributeBooleanValue.FALSE}"></section>
+    <section id="${ControlElementId.GAME_OVER_SECTION}" aria-hidden="${AttributeBooleanValue.FALSE}"></section>
+    <button id="${ControlElementId.WHEEL_RESTART_BUTTON}" type="button"></button>
+    <div
+      aria-hidden="${AttributeBooleanValue.TRUE}"
+      hidden
+      id="${ControlElementId.RESTART_CONFIRMATION_CONTAINER}"
+    >
+      <div id="${ControlElementId.RESTART_CONFIRMATION_OVERLAY}"></div>
+      <div
+        aria-hidden="${AttributeBooleanValue.TRUE}"
+        id="${ControlElementId.RESTART_CONFIRMATION_DIALOG}"
+        tabindex="-1"
+      >
+        <div>
+          <button id="${ControlElementId.RESTART_CONFIRMATION_CONFIRM_BUTTON}" type="button"></button>
+          <button id="${ControlElementId.RESTART_CONFIRMATION_CANCEL_BUTTON}" type="button"></button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 const MuteInitializationScenarios = [
   {
     description: "applies the unmuted presentation when audio starts active",
@@ -198,11 +223,11 @@ describe("listenerBinder wireWheelContinueButton", () => {
 describe("listenerBinder wireWheelRestartButton", () => {
   const RestartActivationScenarios = [
     {
-      description: "clicking hides overlays and notifies listeners",
+      description: "clicking opens the restart confirmation and notifies listeners",
       trigger: (buttonElement) => buttonElement.click()
     },
     {
-      description: "pressing Enter hides overlays and notifies listeners",
+      description: "pressing Enter opens the restart confirmation and notifies listeners",
       trigger: (buttonElement) => dispatchKeydownEvent(buttonElement, KeyboardKey.ENTER)
     }
   ];
@@ -210,11 +235,7 @@ describe("listenerBinder wireWheelRestartButton", () => {
   test.each(RestartActivationScenarios)(
     "%s",
     ({ description: _description, trigger }) => {
-      document.body.innerHTML = `
-        <section id="${ControlElementId.REVEAL_SECTION}" aria-hidden="false"></section>
-        <section id="${ControlElementId.GAME_OVER_SECTION}" aria-hidden="false"></section>
-        <button id="${ControlElementId.WHEEL_RESTART_BUTTON}" type="button"></button>
-      `;
+      renderRestartModalSkeleton();
       const stateManager = createStateManagerStub();
       const binder = createListenerBinder({
         controlElementId: ControlElementId,
@@ -231,13 +252,60 @@ describe("listenerBinder wireWheelRestartButton", () => {
         throw new Error("Wheel restart button not found in DOM");
       }
 
+      const modalContainer = document.getElementById(ControlElementId.RESTART_CONFIRMATION_CONTAINER);
+      const modalDialog = document.getElementById(ControlElementId.RESTART_CONFIRMATION_DIALOG);
+      const revealSection = document.getElementById(ControlElementId.REVEAL_SECTION);
+      const gameOverSection = document.getElementById(ControlElementId.GAME_OVER_SECTION);
+
       trigger(restartButton);
 
       expect(onRestartRequested).toHaveBeenCalledTimes(1);
-      const revealSection = document.getElementById(ControlElementId.REVEAL_SECTION);
-      const gameOverSection = document.getElementById(ControlElementId.GAME_OVER_SECTION);
-      expect(revealSection.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.TRUE);
-      expect(gameOverSection.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.TRUE);
+      expect(modalContainer.hidden).toBe(false);
+      expect(modalContainer.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.FALSE);
+      expect(modalDialog.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.FALSE);
+      expect(document.activeElement).toBe(modalDialog);
+      expect(revealSection.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.FALSE);
+      expect(gameOverSection.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.FALSE);
     }
   );
+
+  test("confirming hides overlays and invokes the restart callback", () => {
+    renderRestartModalSkeleton();
+    const stateManager = createStateManagerStub();
+    const binder = createListenerBinder({
+      controlElementId: ControlElementId,
+      attributeName: AttributeName,
+      documentReference: document,
+      stateManager
+    });
+    const onRestartRequested = jest.fn();
+    const onRestartConfirmed = jest.fn();
+
+    binder.wireWheelRestartButton({
+      onRestartRequested,
+      onRestartConfirmed
+    });
+
+    const restartButton = document.getElementById(ControlElementId.WHEEL_RESTART_BUTTON);
+    const confirmButton = document.getElementById(ControlElementId.RESTART_CONFIRMATION_CONFIRM_BUTTON);
+    const modalContainer = document.getElementById(ControlElementId.RESTART_CONFIRMATION_CONTAINER);
+    const modalDialog = document.getElementById(ControlElementId.RESTART_CONFIRMATION_DIALOG);
+    const revealSection = document.getElementById(ControlElementId.REVEAL_SECTION);
+    const gameOverSection = document.getElementById(ControlElementId.GAME_OVER_SECTION);
+
+    if (!restartButton || !confirmButton) {
+      throw new Error("Restart confirmation controls not found in DOM");
+    }
+
+    restartButton.click();
+    confirmButton.click();
+
+    expect(onRestartRequested).toHaveBeenCalledTimes(1);
+    expect(onRestartConfirmed).toHaveBeenCalledTimes(1);
+    expect(modalContainer.hidden).toBe(true);
+    expect(modalContainer.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.TRUE);
+    expect(modalDialog.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.TRUE);
+    expect(revealSection.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.TRUE);
+    expect(gameOverSection.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.TRUE);
+  });
 });
