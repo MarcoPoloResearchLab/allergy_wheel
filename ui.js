@@ -9,6 +9,48 @@ import {
     WheelControlClassName
 } from "./constants.js";
 
+function isRevealSectionVisible() {
+    const revealElement = document.getElementById(ResultCardElementId.REVEAL_SECTION);
+    if (!revealElement) {
+        return false;
+    }
+
+    const ariaHiddenAttributeName = AttributeName.ARIA_HIDDEN;
+    if (!ariaHiddenAttributeName) {
+        return false;
+    }
+
+    const revealHiddenState = revealElement.getAttribute(ariaHiddenAttributeName);
+    return revealHiddenState === AttributeBooleanValue.FALSE;
+}
+
+function applyWheelRestartButtonVisibility(wheelRestartButtonElement, shouldHideButton) {
+    if (!wheelRestartButtonElement) {
+        return;
+    }
+
+    wheelRestartButtonElement.hidden = shouldHideButton;
+
+    const ariaHiddenAttributeName = AttributeName.ARIA_HIDDEN;
+    if (ariaHiddenAttributeName) {
+        wheelRestartButtonElement.setAttribute(
+            ariaHiddenAttributeName,
+            shouldHideButton ? AttributeBooleanValue.TRUE : AttributeBooleanValue.FALSE
+        );
+    }
+}
+
+export function updateWheelRestartControlVisibilityFromRevealState() {
+    const wheelRestartButtonElement = document.getElementById(ControlElementId.WHEEL_RESTART_BUTTON);
+    if (!wheelRestartButtonElement) {
+        return false;
+    }
+
+    const shouldHideButton = isRevealSectionVisible();
+    applyWheelRestartButtonVisibility(wheelRestartButtonElement, shouldHideButton);
+    return true;
+}
+
 const ScreenElementEntries = Object.freeze([
     Object.freeze([ScreenName.ALLERGY, ScreenElementId.ALLERGY]),
     Object.freeze([ScreenName.WHEEL, ScreenElementId.WHEEL]),
@@ -77,17 +119,7 @@ export function setWheelControlToStartGame() {
         wheelControlElement.classList.remove(WheelControlClassName.STOP_MODE);
     }
 
-    const wheelRestartButtonElement = document.getElementById(ControlElementId.WHEEL_RESTART_BUTTON);
-    if (!wheelRestartButtonElement) {
-        return;
-    }
-
-    wheelRestartButtonElement.hidden = false;
-
-    const ariaHiddenAttributeName = AttributeName.ARIA_HIDDEN;
-    if (ariaHiddenAttributeName) {
-        wheelRestartButtonElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.FALSE);
-    }
+    updateWheelRestartControlVisibilityFromRevealState();
 }
 
 export function openRestartConfirmation() {

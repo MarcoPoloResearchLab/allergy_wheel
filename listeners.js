@@ -8,6 +8,7 @@ import {
     ButtonText,
     AudioControlLabel
 } from "./constants.js";
+import { updateWheelRestartControlVisibilityFromRevealState } from "./ui.js";
 
 const ListenerErrorMessage = {
     MISSING_DEPENDENCIES: "createListenerBinder requires controlElementId, attributeName, and stateManager",
@@ -121,6 +122,8 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         if (revealSection) {
             revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
         }
+
+        updateWheelRestartControlVisibilityFromRevealState();
 
         if (typeof restartCallback === "function") {
             restartCallback();
@@ -379,6 +382,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
             const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
             if (revealSection) {
                 revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+                updateWheelRestartControlVisibilityFromRevealState();
             }
             if (typeof onSpinAgain === "function") onSpinAgain();
         });
@@ -390,6 +394,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         revealSection.addEventListener(BrowserEventName.CLICK, (eventObject) => {
             if (eventObject.target === revealSection) {
                 revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+                updateWheelRestartControlVisibilityFromRevealState();
             }
         });
         documentReference.addEventListener(BrowserEventName.KEY_DOWN, (eventObject) => {
@@ -397,6 +402,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
             const isRevealVisible = revealSection.getAttribute(attributeName.ARIA_HIDDEN) === AttributeBooleanValue.FALSE;
             if (isEscapeKey && isRevealVisible) {
                 revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+                updateWheelRestartControlVisibilityFromRevealState();
             }
         });
     }

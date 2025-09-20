@@ -1,5 +1,6 @@
 import { jest } from "@jest/globals";
 import { GameController } from "../../game.js";
+import { createListenerBinder } from "../../listeners.js";
 import {
   ControlElementId,
   AttributeName,
@@ -8,7 +9,8 @@ import {
   BrowserEventName,
   ButtonText,
   ScreenName,
-  WheelControlClassName
+  WheelControlClassName,
+  KeyboardKey
 } from "../../constants.js";
 import { StateManager } from "../../state.js";
 import { setWheelControlToStartGame, setWheelControlToStop } from "../../ui.js";
@@ -526,6 +528,107 @@ describe("GameController integration", () => {
       }
     }
   );
+
+  test("keeps the wheel restart control hidden until the reveal modal is dismissed", async () => {
+    createDomSkeleton();
+
+    const revealSectionElement = document.getElementById(ControlElementId.REVEAL_SECTION);
+    const wheelRestartButtonElement = document.getElementById(ControlElementId.WHEEL_RESTART_BUTTON);
+    if (!revealSectionElement || !wheelRestartButtonElement) {
+      throw new Error("Reveal modal elements not found in DOM");
+    }
+
+    revealSectionElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+    wheelRestartButtonElement.hidden = true;
+    wheelRestartButtonElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+
+    const { wheelStub, registeredCallbacks } = createWheelStub();
+    const board = createBoardStub({
+      [TestAllergen.TOKEN]: [DishRecord.SAFE]
+    });
+    const stateManager = new StateManager({ initialHeartsCount: 5 });
+
+    const listenerBinder = createListenerBinder({
+      controlElementId: ControlElementId,
+      attributeName: AttributeName,
+      documentReference: document,
+      stateManager
+    });
+
+    const firstCardPresenter = createFirstCardPresenterStub();
+    const revealCardPresenter = {
+      updateDataDependencies: jest.fn(),
+      populateRevealCard: jest.fn(() => {
+        revealSectionElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.FALSE);
+        return { hasTriggeringIngredient: false };
+      }),
+      showGameOver: jest.fn(),
+      showWinningCard: jest.fn(() => ({ restartButton: null, isDisplayed: false }))
+    };
+    const heartsPresenter = createHeartsPresenterStub();
+    const audioPresenter = createAudioPresenterStub({ stateManager });
+    const menuPresenter = createMenuPresenterStub();
+    const uiPresenter = {
+      showScreen: jest.fn(),
+      setWheelControlToStartGame,
+      setWheelControlToStop,
+      openRestartConfirmation: jest.fn()
+    };
+    const normalizationFactory = createNormalizationFactoryStub();
+    const randomPicker = createPickRandomUniqueStub();
+
+    const gameDataByPath = {
+      [DataPathString.ALLERGENS]: [{ token: TestAllergen.TOKEN, label: TestAllergen.LABEL }],
+      [DataPathString.DISHES]: [DishRecord.SAFE],
+      [DataPathString.NORMALIZATION]: [{ pattern: NormalizationRule.PATTERN, token: TestAllergen.TOKEN }],
+      [DataPathString.COUNTRIES]: [{ cuisine: CountryRecord.CUISINE, flag: CountryRecord.FLAG }],
+      [DataPathString.INGREDIENTS]: [{ name: IngredientRecord.NAME, emoji: IngredientRecord.EMOJI }]
+    };
+    const dataLoader = createDataLoaderStub(gameDataByPath);
+
+    const gameController = new GameController({
+      documentReference: document,
+      controlElementIdMap: ControlElementId,
+      attributeNameMap: AttributeName,
+      wheel: wheelStub,
+      listenerBinder,
+      board,
+      stateManager,
+      firstCardPresenter,
+      revealCardPresenter,
+      heartsPresenter,
+      audioPresenter,
+      menuPresenter,
+      uiPresenter,
+      dataLoader,
+      createNormalizationEngine: normalizationFactory,
+      pickRandomUnique: randomPicker
+    });
+
+    await gameController.bootstrap();
+
+    stateManager.setSelectedAllergen({ token: TestAllergen.TOKEN, label: TestAllergen.LABEL });
+    stateManager.setWheelCandidates({
+      dishes: [DishRecord.SAFE],
+      labels: [{ label: DishRecord.SAFE.name, emoji: DishRecord.SAFE.emoji }]
+    });
+
+    if (typeof registeredCallbacks.onStop !== "function") {
+      throw new Error("Wheel stop callback was not registered");
+    }
+    registeredCallbacks.onStop(0);
+
+    expect(revealSectionElement.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.FALSE);
+    expect(wheelRestartButtonElement.hidden).toBe(true);
+    expect(wheelRestartButtonElement.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.TRUE);
+
+    const escapeEvent = new KeyboardEvent(BrowserEventName.KEY_DOWN, { key: KeyboardKey.ESCAPE, bubbles: true });
+    document.dispatchEvent(escapeEvent);
+
+    expect(revealSectionElement.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.TRUE);
+    expect(wheelRestartButtonElement.hidden).toBe(false);
+    expect(wheelRestartButtonElement.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.FALSE);
+  });
 
   test(AudioMuteScenarioDescription, async () => {
     createDomSkeleton();
