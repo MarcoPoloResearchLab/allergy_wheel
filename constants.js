@@ -260,6 +260,16 @@ export const AttributeBooleanValue = Object.freeze({
     FALSE: "false"
 });
 
+const DocumentReadyStateLoading = "loading";
+const DocumentReadyStateInteractive = "interactive";
+const DocumentReadyStateComplete = "complete";
+
+export const DocumentReadyState = Object.freeze({
+    LOADING: DocumentReadyStateLoading,
+    INTERACTIVE: DocumentReadyStateInteractive,
+    COMPLETE: DocumentReadyStateComplete
+});
+
 export const BrowserEventName = Object.freeze({
     DOM_CONTENT_LOADED: "DOMContentLoaded",
     CLICK: "click",
