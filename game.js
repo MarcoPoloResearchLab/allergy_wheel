@@ -268,6 +268,7 @@ export class GameController {
             this.#initializeSelectionUi(gameData.allergensCatalog);
             this.#configureWheel();
             this.#wireControlListeners();
+            this.#applyStartMode();
             this.#finalizeBootstrap();
         } catch (errorObject) {
             this.#handleBootstrapError(errorObject);

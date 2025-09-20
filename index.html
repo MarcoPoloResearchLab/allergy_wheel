@@ -1283,8 +1283,13 @@
         <canvas aria-label="Spinning dish wheel" height="1000" id="wheel" width="1000"></canvas>
         <!-- wheel control cluster; JS toggles .is-stop <-> .is-start on the main button -->
         <div class="wheel-control" id="wheel-control">
-            <button class="wheel-control__continue btn action is-stop" id="wheel-continue" type="button">
-                STOP
+            <button
+                class="wheel-control__continue btn action is-start"
+                data-wheel-control-mode="start"
+                id="wheel-continue"
+                type="button"
+            >
+                CONTINUE
             </button>
             <button class="wheel-control__restart" id="wheel-restart" type="button">Restart</button>
         </div>
