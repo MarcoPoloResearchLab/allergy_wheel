@@ -3,11 +3,14 @@ import { GameController } from "../../game.js";
 import {
   ControlElementId,
   AttributeName,
+  AttributeBooleanValue,
   DocumentElementId,
   BrowserEventName,
-  ScreenName
+  ScreenName,
+  WheelControlClassName
 } from "../../constants.js";
 import { StateManager } from "../../state.js";
+import { setWheelControlToStartGame, setWheelControlToStop } from "../../ui.js";
 
 const GameOutcomeDescription = Object.freeze({
   LOSS: "decrements hearts to zero and shows game over",
@@ -25,6 +28,79 @@ const DishRecord = Object.freeze({
 });
 
 const WheelSegmentCount = 8;
+
+const WheelControlSequenceStep = Object.freeze({
+  APPLY_STOP_MODE: "APPLY_STOP_MODE",
+  RESTORE_START_MODE: "RESTORE_START_MODE"
+});
+
+const WheelControlUiScenarioDescription = Object.freeze({
+  STOP_MODE_HIDES_RESTART: "hides the restart button when stop mode is applied",
+  START_MODE_REVEALS_RESTART:
+    "restores the restart button after returning to start mode once the confirmation modal is dismissed"
+});
+
+const WheelControlUiScenarios = Object.freeze([
+  Object.freeze({
+    description: WheelControlUiScenarioDescription.STOP_MODE_HIDES_RESTART,
+    sequence: Object.freeze([WheelControlSequenceStep.APPLY_STOP_MODE]),
+    expected: Object.freeze({
+      isStopModeClassApplied: true,
+      isRestartHidden: true,
+      expectedAriaHidden: AttributeBooleanValue.TRUE
+    })
+  }),
+  Object.freeze({
+    description: WheelControlUiScenarioDescription.START_MODE_REVEALS_RESTART,
+    sequence: Object.freeze([
+      WheelControlSequenceStep.APPLY_STOP_MODE,
+      WheelControlSequenceStep.RESTORE_START_MODE
+    ]),
+    expected: Object.freeze({
+      isStopModeClassApplied: false,
+      isRestartHidden: false,
+      expectedAriaHidden: AttributeBooleanValue.FALSE
+    })
+  })
+]);
+
+describe("Wheel control UI integration", () => {
+  test.each(WheelControlUiScenarios)(
+    "%s",
+    ({ sequence, expected }) => {
+      createDomSkeleton();
+
+      for (const sequenceStep of sequence) {
+        if (sequenceStep === WheelControlSequenceStep.APPLY_STOP_MODE) {
+          setWheelControlToStop();
+          continue;
+        }
+        if (sequenceStep === WheelControlSequenceStep.RESTORE_START_MODE) {
+          setWheelControlToStartGame();
+        }
+      }
+
+      const wheelControlElement = document.getElementById(
+        ControlElementId.WHEEL_CONTROL_CONTAINER
+      );
+      const wheelRestartButton = document.getElementById(ControlElementId.WHEEL_RESTART_BUTTON);
+
+      expect(wheelControlElement).not.toBeNull();
+      expect(wheelRestartButton).not.toBeNull();
+
+      if (!wheelControlElement || !wheelRestartButton) {
+        return;
+      }
+
+      expect(
+        wheelControlElement.classList.contains(WheelControlClassName.STOP_MODE)
+      ).toBe(expected.isStopModeClassApplied);
+      expect(wheelRestartButton.hidden).toBe(expected.isRestartHidden);
+      const ariaHiddenValue = wheelRestartButton.getAttribute(AttributeName.ARIA_HIDDEN);
+      expect(ariaHiddenValue).toBe(expected.expectedAriaHidden);
+    }
+  );
+});
 
 const WheelDistributionDescription = Object.freeze({
   LOW_HEARTS: "allocates minimal allergen segments when hearts are low",
@@ -274,7 +350,7 @@ function createDomSkeleton() {
     <div id="${DocumentElementId.LOAD_ERROR}"></div>
     <div id="wheel-wrapper">
       <canvas id="${DocumentElementId.WHEEL_CANVAS}"></canvas>
-      <div id="wheel-control">
+      <div id="${ControlElementId.WHEEL_CONTROL_CONTAINER}">
         <button id="${ControlElementId.WHEEL_CONTINUE_BUTTON}"></button>
         <button id="${ControlElementId.WHEEL_RESTART_BUTTON}"></button>
       </div>
