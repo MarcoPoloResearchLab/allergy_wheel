@@ -28,7 +28,7 @@ class StateManager {
 
     #wheelCandidateLabels;
 
-    #stopButtonMode;
+    #wheelControlMode;
 
     #selectedAvatarId = AvatarId.DEFAULT;
 
@@ -36,22 +36,22 @@ class StateManager {
 
     constructor({
         initialHeartsCount = DEFAULT_INITIAL_HEARTS_COUNT,
-        initialStopButtonMode = WheelControlMode.STOP
+        initialWheelControlMode = WheelControlMode.STOP
     } = {}) {
-        this.initialize({ initialHeartsCount, initialStopButtonMode });
+        this.initialize({ initialHeartsCount, initialWheelControlMode });
     }
 
     initialize({
         initialHeartsCount = DEFAULT_INITIAL_HEARTS_COUNT,
-        initialStopButtonMode = WheelControlMode.STOP
+        initialWheelControlMode = WheelControlMode.STOP
     } = {}) {
         if (typeof initialHeartsCount !== "number" || Number.isNaN(initialHeartsCount)) {
             throw new Error(StateManagerErrorMessage.INVALID_INITIAL_HEARTS_COUNT);
         }
         this.#initialHeartsCount = initialHeartsCount;
         this.#heartsCount = initialHeartsCount;
-        this.#stopButtonMode =
-            initialStopButtonMode === WheelControlMode.START
+        this.#wheelControlMode =
+            initialWheelControlMode === WheelControlMode.START
                 ? WheelControlMode.START
                 : WheelControlMode.STOP;
         this.#selectedAllergenToken = null;
@@ -136,13 +136,13 @@ class StateManager {
         return this.#initialHeartsCount;
     }
 
-    setStopButtonMode(mode) {
-        this.#stopButtonMode =
+    setWheelControlMode(mode) {
+        this.#wheelControlMode =
             mode === WheelControlMode.START ? WheelControlMode.START : WheelControlMode.STOP;
     }
 
-    getStopButtonMode() {
-        return this.#stopButtonMode;
+    getWheelControlMode() {
+        return this.#wheelControlMode;
     }
 
     setAudioMuted(shouldMuteAudio) {

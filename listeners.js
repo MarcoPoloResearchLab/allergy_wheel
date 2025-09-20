@@ -8,11 +8,12 @@ import {
     ButtonText,
     AudioControlLabel
 } from "./constants.js";
+import { updateWheelRestartControlVisibilityFromRevealState } from "./ui.js";
 
 const ListenerErrorMessage = {
     MISSING_DEPENDENCIES: "createListenerBinder requires controlElementId, attributeName, and stateManager",
     MISSING_STATE_MANAGER_METHODS:
-        "createListenerBinder requires stateManager methods hasSelectedAllergen, getStopButtonMode, isAudioMuted, and toggleAudioMuted"
+        "createListenerBinder requires stateManager methods hasSelectedAllergen, getWheelControlMode, isAudioMuted, and toggleAudioMuted"
 };
 
 function createListenerBinder({ controlElementId, attributeName, documentReference = document, stateManager }) {
@@ -21,7 +22,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     }
     if (
         typeof stateManager.hasSelectedAllergen !== "function"
-        || typeof stateManager.getStopButtonMode !== "function"
+        || typeof stateManager.getWheelControlMode !== "function"
         || typeof stateManager.isAudioMuted !== "function"
         || typeof stateManager.toggleAudioMuted !== "function"
     ) {
@@ -74,16 +75,265 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         });
     }
 
-    function wireStopButton({ onStopRequested, onShowAllergyScreen }) {
-        const stopButton = documentReference.getElementById(controlElementId.STOP_BUTTON);
-        if (!stopButton) return;
-        stopButton.addEventListener(BrowserEventName.CLICK, () => {
-            if (stateManager.getStopButtonMode() === WheelControlMode.STOP) {
-                if (typeof onStopRequested === "function") onStopRequested();
-            } else if (typeof onShowAllergyScreen === "function") {
-                onShowAllergyScreen();
+    const ActivationKeyValueSet = new Set([
+        KeyboardKey.ENTER,
+        KeyboardKey.SPACE,
+        KeyboardKey.SPACEBAR
+    ]);
+
+    const EscapeKeyValueSet = new Set([
+        KeyboardKey.ESCAPE,
+        KeyboardKey.ESC
+    ]);
+
+    const addActivationListenersToButton = (buttonElement, activationHandler) => {
+        if (!buttonElement || typeof activationHandler !== "function") {
+            return;
+        }
+
+        const handleClick = () => {
+            activationHandler();
+        };
+
+        const handleKeyDown = (eventObject) => {
+            const pressedKey = eventObject && typeof eventObject.key === "string"
+                ? eventObject.key
+                : "";
+            if (!ActivationKeyValueSet.has(pressedKey)) {
+                return;
             }
-        });
+            if (typeof eventObject.preventDefault === "function") {
+                eventObject.preventDefault();
+            }
+            activationHandler();
+        };
+
+        buttonElement.addEventListener(BrowserEventName.CLICK, handleClick);
+        buttonElement.addEventListener(BrowserEventName.KEY_DOWN, handleKeyDown);
+    };
+
+    const invokeRestartWorkflow = (restartCallback) => {
+        const gameOverSection = documentReference.getElementById(controlElementId.GAME_OVER_SECTION);
+        if (gameOverSection) {
+            gameOverSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+        }
+
+        const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
+        if (revealSection) {
+            revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+        }
+
+        updateWheelRestartControlVisibilityFromRevealState();
+
+        if (typeof restartCallback === "function") {
+            restartCallback();
+        }
+    };
+
+    function wireWheelContinueButton({ onStartRequested, onStopRequested } = {}) {
+        const wheelContinueButton = documentReference.getElementById(
+            controlElementId.WHEEL_CONTINUE_BUTTON
+        );
+        if (!wheelContinueButton) {
+            return;
+        }
+
+        const resolveWheelControlMode = () => {
+            const managerMode = stateManager.getWheelControlMode();
+            if (managerMode === WheelControlMode.STOP || managerMode === WheelControlMode.START) {
+                return managerMode;
+            }
+
+            const modeAttributeName = attributeName.DATA_WHEEL_CONTROL_MODE;
+            if (modeAttributeName) {
+                const wheelControlContainer = documentReference.getElementById(
+                    controlElementId.WHEEL_CONTROL_CONTAINER
+                );
+                const attributeSourceElement = wheelControlContainer || wheelContinueButton;
+                const attributeModeValue = attributeSourceElement
+                    ? attributeSourceElement.getAttribute(modeAttributeName)
+                    : null;
+                if (attributeModeValue === WheelControlMode.STOP || attributeModeValue === WheelControlMode.START) {
+                    return attributeModeValue;
+                }
+            }
+
+            return WheelControlMode.START;
+        };
+
+        const handleActivation = () => {
+            const currentMode = resolveWheelControlMode();
+            if (currentMode === WheelControlMode.STOP) {
+                if (typeof onStopRequested === "function") {
+                    onStopRequested();
+                }
+                return;
+            }
+            if (typeof onStartRequested === "function") {
+                onStartRequested();
+            }
+        };
+
+        addActivationListenersToButton(wheelContinueButton, handleActivation);
+    }
+
+    function wireWheelRestartButton({ onRestartRequested, onRestartConfirmed } = {}) {
+        const wheelRestartSegmentElement = documentReference.getElementById(
+            controlElementId.WHEEL_RESTART_BUTTON
+        );
+        if (!wheelRestartSegmentElement) {
+            return;
+        }
+
+        const restartConfirmationElements = {
+            containerElement: documentReference.getElementById(
+                controlElementId.RESTART_CONFIRMATION_CONTAINER
+            ),
+            overlayElement: documentReference.getElementById(
+                controlElementId.RESTART_CONFIRMATION_OVERLAY
+            ),
+            dialogElement: documentReference.getElementById(
+                controlElementId.RESTART_CONFIRMATION_DIALOG
+            ),
+            confirmButtonElement: documentReference.getElementById(
+                controlElementId.RESTART_CONFIRMATION_CONFIRM_BUTTON
+            ),
+            cancelButtonElement: documentReference.getElementById(
+                controlElementId.RESTART_CONFIRMATION_CANCEL_BUTTON
+            )
+        };
+
+        const ariaHiddenAttributeName = attributeName.ARIA_HIDDEN;
+
+        const restartConfirmationState = {
+            isVisible: false,
+            lastFocusedElement: null
+        };
+
+        const closeRestartConfirmation = ({ shouldRestoreFocus = true } = {}) => {
+            if (!restartConfirmationState.isVisible) {
+                return;
+            }
+
+            const { containerElement, dialogElement } = restartConfirmationElements;
+
+            if (containerElement) {
+                if (ariaHiddenAttributeName) {
+                    containerElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.TRUE);
+                }
+                containerElement.hidden = true;
+            }
+
+            if (dialogElement && ariaHiddenAttributeName) {
+                dialogElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.TRUE);
+            }
+
+            restartConfirmationState.isVisible = false;
+
+            const focusTargetElement = restartConfirmationState.lastFocusedElement;
+            restartConfirmationState.lastFocusedElement = null;
+
+            if (
+                shouldRestoreFocus
+                && focusTargetElement
+                && typeof focusTargetElement.focus === "function"
+                && (typeof focusTargetElement.isConnected !== "boolean" || focusTargetElement.isConnected)
+            ) {
+                focusTargetElement.focus();
+            }
+        };
+
+        const openRestartConfirmation = () => {
+            const { containerElement, dialogElement } = restartConfirmationElements;
+
+            if (!containerElement || !dialogElement) {
+                return false;
+            }
+
+            if (restartConfirmationState.isVisible) {
+                return true;
+            }
+
+            restartConfirmationState.lastFocusedElement = wheelRestartSegmentElement;
+
+            containerElement.hidden = false;
+            if (ariaHiddenAttributeName) {
+                containerElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.FALSE);
+                dialogElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.FALSE);
+            }
+
+            restartConfirmationState.isVisible = true;
+
+            if (typeof dialogElement.focus === "function") {
+                dialogElement.focus({ preventScroll: true });
+            }
+
+            return true;
+        };
+
+        const handleEscapeKeyDown = (eventObject) => {
+            if (!restartConfirmationState.isVisible) {
+                return;
+            }
+
+            const pressedKey = typeof eventObject.key === "string" ? eventObject.key : "";
+            if (!EscapeKeyValueSet.has(pressedKey)) {
+                return;
+            }
+
+            if (typeof eventObject.preventDefault === "function") {
+                eventObject.preventDefault();
+            }
+
+            closeRestartConfirmation({ shouldRestoreFocus: true });
+        };
+
+        const handleRestartRequest = () => {
+            const wasModalOpened = openRestartConfirmation();
+
+            if (wasModalOpened) {
+                if (typeof onRestartRequested === "function") {
+                    onRestartRequested();
+                }
+                return;
+            }
+
+            invokeRestartWorkflow(onRestartConfirmed);
+        };
+
+        const handleRestartConfirmation = () => {
+            closeRestartConfirmation({ shouldRestoreFocus: false });
+            invokeRestartWorkflow(onRestartConfirmed);
+        };
+
+        const handleRestartCancellation = () => {
+            closeRestartConfirmation({ shouldRestoreFocus: true });
+        };
+
+        if (restartConfirmationElements.overlayElement) {
+            restartConfirmationElements.overlayElement.addEventListener(
+                BrowserEventName.CLICK,
+                handleRestartCancellation
+            );
+        }
+
+        if (restartConfirmationElements.cancelButtonElement) {
+            addActivationListenersToButton(
+                restartConfirmationElements.cancelButtonElement,
+                handleRestartCancellation
+            );
+        }
+
+        if (restartConfirmationElements.confirmButtonElement) {
+            addActivationListenersToButton(
+                restartConfirmationElements.confirmButtonElement,
+                handleRestartConfirmation
+            );
+        }
+
+        documentReference.addEventListener(BrowserEventName.KEY_DOWN, handleEscapeKeyDown);
+
+        addActivationListenersToButton(wheelRestartSegmentElement, handleRestartRequest);
     }
 
     function wireFullscreenButton() {
@@ -138,6 +388,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
             const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
             if (revealSection) {
                 revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+                updateWheelRestartControlVisibilityFromRevealState();
             }
             if (typeof onSpinAgain === "function") onSpinAgain();
         });
@@ -149,6 +400,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         revealSection.addEventListener(BrowserEventName.CLICK, (eventObject) => {
             if (eventObject.target === revealSection) {
                 revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+                updateWheelRestartControlVisibilityFromRevealState();
             }
         });
         documentReference.addEventListener(BrowserEventName.KEY_DOWN, (eventObject) => {
@@ -156,24 +408,29 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
             const isRevealVisible = revealSection.getAttribute(attributeName.ARIA_HIDDEN) === AttributeBooleanValue.FALSE;
             if (isEscapeKey && isRevealVisible) {
                 revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+                updateWheelRestartControlVisibilityFromRevealState();
             }
         });
     }
 
     function wireRestartButton({ onRestart }) {
-        const restartButton = documentReference.getElementById(controlElementId.RESTART_BUTTON);
-        if (!restartButton) return;
-        restartButton.addEventListener(BrowserEventName.CLICK, () => {
-            const gameOverSection = documentReference.getElementById(controlElementId.GAME_OVER_SECTION);
-            if (gameOverSection) {
-                gameOverSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+        const restartControlIdentifiers = [controlElementId.RESTART_BUTTON];
+
+        for (const restartControlId of restartControlIdentifiers) {
+            if (!restartControlId) {
+                continue;
             }
-            const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
-            if (revealSection) {
-                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+            const restartButtonElement = documentReference.getElementById(restartControlId);
+            if (!restartButtonElement) {
+                continue;
             }
-            if (typeof onRestart === "function") onRestart();
-        });
+
+            const handleRestart = () => {
+                invokeRestartWorkflow(onRestart);
+            };
+
+            addActivationListenersToButton(restartButtonElement, handleRestart);
+        }
     }
 
     /**
@@ -270,11 +527,12 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
 
     return {
         wireStartButton,
-        wireStopButton,
+        wireWheelContinueButton,
         wireFullscreenButton,
         wireMuteButton,
         wireSpinAgainButton,
         wireRevealBackdropDismissal,
+        wireWheelRestartButton,
         wireRestartButton,
         wireAvatarSelector
     };

@@ -1,5 +1,4 @@
 import {
-    ButtonText,
     ScreenName,
     WheelControlMode,
     BrowserEventName,
@@ -268,6 +267,7 @@ export class GameController {
             this.#initializeSelectionUi(gameData.allergensCatalog);
             this.#configureWheel();
             this.#wireControlListeners();
+            this.#applyStartMode();
             this.#finalizeBootstrap();
         } catch (errorObject) {
             this.#handleBootstrapError(errorObject);
@@ -453,13 +453,18 @@ export class GameController {
     #wireControlListeners() {
         const {
             wireStartButton,
-            wireStopButton,
+            wireWheelContinueButton,
+            wireWheelRestartButton,
             wireFullscreenButton,
             wireMuteButton,
             wireSpinAgainButton,
             wireRevealBackdropDismissal,
             wireRestartButton
         } = this.#listenerBinder;
+
+        const initiateWheelSpin = () => {
+            this.#startSpinWithFreshState();
+        };
 
         if (typeof wireStartButton === "function") {
             wireStartButton({
@@ -470,21 +475,19 @@ export class GameController {
                     if (this.#wheel.ensureSize) {
                         this.#wheel.ensureSize();
                     }
-                    this.#startSpinWithFreshState();
+                    initiateWheelSpin();
                 }
             });
         }
-        if (typeof wireStopButton === "function") {
-            wireStopButton({
+        if (typeof wireWheelContinueButton === "function") {
+            wireWheelContinueButton({
                 onStopRequested: () => {
                     if (this.#wheel.stop) {
                         this.#wheel.stop();
                     }
                 },
-                onShowAllergyScreen: () => {
-                    if (this.#uiPresenter.showScreen) {
-                        this.#uiPresenter.showScreen(ScreenName.ALLERGY);
-                    }
+                onStartRequested: () => {
+                    initiateWheelSpin();
                 }
             });
         }
@@ -504,12 +507,27 @@ export class GameController {
         if (typeof wireSpinAgainButton === "function") {
             wireSpinAgainButton({
                 onSpinAgain: () => {
-                    this.#startSpinWithFreshState();
+                    initiateWheelSpin();
                 }
             });
         }
         if (typeof wireRevealBackdropDismissal === "function") {
             wireRevealBackdropDismissal();
+        }
+        if (typeof wireWheelRestartButton === "function") {
+            wireWheelRestartButton({
+                onRestartRequested: () => {
+                    if (typeof this.#uiPresenter.openRestartConfirmation === "function") {
+                        this.#uiPresenter.openRestartConfirmation();
+                    }
+                },
+                onRestartConfirmed: () => {
+                    if (this.#wheel && typeof this.#wheel.stop === "function") {
+                        this.#wheel.stop();
+                    }
+                    this.#resetGame();
+                }
+            });
         }
         if (typeof wireRestartButton === "function") {
             wireRestartButton({
@@ -795,21 +813,49 @@ export class GameController {
     }
 
     #applyStartMode() {
-        const centerButton = this.#documentReference.getElementById(this.#controlElementIdMap.STOP_BUTTON);
-        if (!centerButton) {
-            if (this.#stateManager.setStopButtonMode) {
-                this.#stateManager.setStopButtonMode(WheelControlMode.START);
+        const wheelContinueButtonElement = this.#documentReference.getElementById(
+            this.#controlElementIdMap.WHEEL_CONTINUE_BUTTON
+        );
+        const wheelControlElement = this.#documentReference.getElementById(
+            this.#controlElementIdMap.WHEEL_CONTROL_CONTAINER
+        );
+        const wheelRestartButtonElement = this.#documentReference.getElementById(
+            this.#controlElementIdMap.WHEEL_RESTART_BUTTON
+        );
+        const wheelControlModeAttributeName = this.#attributeNameMap.DATA_WHEEL_CONTROL_MODE;
+        const ariaHiddenAttributeName = this.#attributeNameMap.ARIA_HIDDEN;
+
+        if (!wheelContinueButtonElement) {
+            if (this.#stateManager.setWheelControlMode) {
+                this.#stateManager.setWheelControlMode(WheelControlMode.START);
             }
             if (this.#uiPresenter.setWheelControlToStartGame) {
                 this.#uiPresenter.setWheelControlToStartGame();
             }
             return;
         }
-        centerButton.textContent = ButtonText.START;
-        centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.START);
-        centerButton.classList.remove(ButtonClassName.STOP, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
-        if (this.#stateManager.setStopButtonMode) {
-            this.#stateManager.setStopButtonMode(WheelControlMode.START);
+        wheelContinueButtonElement.classList.add(ButtonClassName.ACTION, ButtonClassName.START);
+        wheelContinueButtonElement.classList.remove(
+            ButtonClassName.STOP,
+            ButtonClassName.PRIMARY,
+            ButtonClassName.DANGER
+        );
+        if (wheelControlModeAttributeName) {
+            const wheelModeTargetElement = wheelControlElement || wheelContinueButtonElement;
+            wheelModeTargetElement.setAttribute(wheelControlModeAttributeName, WheelControlMode.START);
+        }
+        if (wheelRestartButtonElement) {
+            if (ariaHiddenAttributeName) {
+                wheelRestartButtonElement.setAttribute(
+                    ariaHiddenAttributeName,
+                    AttributeBooleanValue.FALSE
+                );
+            }
+            wheelRestartButtonElement.tabIndex = 0;
+            wheelRestartButtonElement.setAttribute("tabindex", "0");
+        }
+        if (this.#stateManager.setWheelControlMode) {
+            this.#stateManager.setWheelControlMode(WheelControlMode.START);
         }
         if (this.#uiPresenter.setWheelControlToStartGame) {
             this.#uiPresenter.setWheelControlToStartGame();
@@ -817,21 +863,49 @@ export class GameController {
     }
 
     #applyStopMode() {
-        const centerButton = this.#documentReference.getElementById(this.#controlElementIdMap.STOP_BUTTON);
-        if (!centerButton) {
-            if (this.#stateManager.setStopButtonMode) {
-                this.#stateManager.setStopButtonMode(WheelControlMode.STOP);
+        const wheelContinueButtonElement = this.#documentReference.getElementById(
+            this.#controlElementIdMap.WHEEL_CONTINUE_BUTTON
+        );
+        const wheelControlElement = this.#documentReference.getElementById(
+            this.#controlElementIdMap.WHEEL_CONTROL_CONTAINER
+        );
+        const wheelRestartButtonElement = this.#documentReference.getElementById(
+            this.#controlElementIdMap.WHEEL_RESTART_BUTTON
+        );
+        const wheelControlModeAttributeName = this.#attributeNameMap.DATA_WHEEL_CONTROL_MODE;
+        const ariaHiddenAttributeName = this.#attributeNameMap.ARIA_HIDDEN;
+
+        if (!wheelContinueButtonElement) {
+            if (this.#stateManager.setWheelControlMode) {
+                this.#stateManager.setWheelControlMode(WheelControlMode.STOP);
             }
             if (this.#uiPresenter.setWheelControlToStop) {
                 this.#uiPresenter.setWheelControlToStop();
             }
             return;
         }
-        centerButton.textContent = ButtonText.STOP;
-        centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.STOP);
-        centerButton.classList.remove(ButtonClassName.START, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
-        if (this.#stateManager.setStopButtonMode) {
-            this.#stateManager.setStopButtonMode(WheelControlMode.STOP);
+        wheelContinueButtonElement.classList.add(ButtonClassName.ACTION, ButtonClassName.STOP);
+        wheelContinueButtonElement.classList.remove(
+            ButtonClassName.START,
+            ButtonClassName.PRIMARY,
+            ButtonClassName.DANGER
+        );
+        if (wheelControlModeAttributeName) {
+            const wheelModeTargetElement = wheelControlElement || wheelContinueButtonElement;
+            wheelModeTargetElement.setAttribute(wheelControlModeAttributeName, WheelControlMode.STOP);
+        }
+        if (wheelRestartButtonElement) {
+            if (ariaHiddenAttributeName) {
+                wheelRestartButtonElement.setAttribute(
+                    ariaHiddenAttributeName,
+                    AttributeBooleanValue.TRUE
+                );
+            }
+            wheelRestartButtonElement.tabIndex = -1;
+            wheelRestartButtonElement.setAttribute("tabindex", "-1");
+        }
+        if (this.#stateManager.setWheelControlMode) {
+            this.#stateManager.setWheelControlMode(WheelControlMode.STOP);
         }
         if (this.#uiPresenter.setWheelControlToStop) {
             this.#uiPresenter.setWheelControlToStop();

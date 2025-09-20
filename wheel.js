@@ -432,6 +432,10 @@ export class Wheel {
     }
 
     stop() {
+        if (!this.isSpinning) {
+            return;
+        }
+
         this.cancelScheduledAnimation();
         this._finalizeSpin();
         this.draw();

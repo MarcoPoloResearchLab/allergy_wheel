@@ -1081,14 +1081,128 @@
         #gameover { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; place-items: center; z-index: 20; }
         #gameover[aria-hidden="false"] { display: grid; }
 
+        .restart-modal { position: fixed; inset: 0; display: none; place-items: center; padding: clamp(12px, 4vmin, 24px); z-index: 30; }
+        .restart-modal:not([hidden]) { display: grid; }
+        .restart-modal__overlay { position: absolute; inset: 0; background: rgba(17, 17, 17, 0.55); }
+        .restart-modal__dialog {
+            position: relative;
+            background: var(--card);
+            border: 4px solid #000;
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            padding: clamp(20px, 3.6vmin, 32px);
+            width: min(420px, 92vw);
+            display: grid;
+            gap: clamp(16px, 3vmin, 24px);
+        }
+        .restart-modal__title { margin: 0; font-size: clamp(20px, 2.6vw, 32px); text-align: center; }
+        .restart-modal__message { margin: 0; color: var(--muted); font-size: clamp(16px, 2.2vw, 20px); line-height: 1.5; text-align: center; }
+        .restart-modal__actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+        .restart-modal__confirm,
+        .restart-modal__cancel {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1 1 160px;
+        }
+        .restart-modal__cancel { text-transform: uppercase; font-weight: 800; }
+
+        @media (min-width: 600px) {
+            .restart-modal__actions { justify-content: flex-end; }
+            .restart-modal__title,
+            .restart-modal__message { text-align: left; }
+        }
+
         .wheel-wrap { position: relative; width: min(96vmin, 980px); aspect-ratio: 1; display: grid; place-items: center; margin-inline: auto }
         #wheel {
             width: 100%; height: 100%; background: #fff; border-radius: 50%;
             border: 6px solid #000; box-shadow: var(--shadow)
         }
-        #stop {
-            position: absolute; inset: auto auto 50% 50%; transform: translate(-50%, 50%);
-            padding: 22px 34px; border-radius: 999px; font-weight: 900; font-size: clamp(18px, 2.6vw, 28px)
+        #wheel-control {
+            position: absolute;
+            inset: auto auto 50% 50%;
+            transform: translate(-50%, 50%);
+            display: inline-flex;
+            align-items: stretch;
+            gap: 0;
+            background: #fff;
+            border-radius: 999px;
+            border: 4px solid #000;
+            box-shadow: 4px 6px 0 #000;
+            overflow: hidden;
+            min-width: clamp(240px, 42vmin, 400px);
+        }
+
+        #wheel-control .btn.action {
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .wheel-control__continue {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: clamp(18px, 3.5vmin, 28px) clamp(26px, 4.8vmin, 36px);
+            font-weight: 900;
+            font-size: clamp(18px, 2.6vw, 28px);
+            gap: clamp(6px, 1.2vmin, 10px);
+            text-transform: uppercase;
+        }
+
+        .wheel-control__label {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        #wheel-control[data-wheel-control-mode="start"] .wheel-control__label--spin,
+        #wheel-control:not([data-wheel-control-mode]) .wheel-control__label--spin {
+            display: inline-flex;
+        }
+
+        #wheel-control[data-wheel-control-mode="stop"] .wheel-control__label--stop,
+        #wheel-control.wheel-control--stop-mode .wheel-control__label--stop {
+            display: inline-flex;
+        }
+
+        .wheel-control__restart {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffe08a;
+            color: #000;
+            border-left: 4px solid #000;
+            font-weight: 800;
+            font-size: clamp(14px, 1.8vw, 20px);
+            letter-spacing: 0.04em;
+            line-height: 1;
+            padding: clamp(14px, 2.8vmin, 22px) clamp(16px, 3.2vmin, 24px);
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        #wheel-control[data-wheel-control-mode="stop"] .wheel-control__restart,
+        #wheel-control.wheel-control--stop-mode .wheel-control__restart,
+        .wheel-control__restart[aria-hidden="true"] {
+            display: none;
+        }
+
+        #wheel-control[data-wheel-control-mode="stop"],
+        #wheel-control.wheel-control--stop-mode {
+            min-width: clamp(200px, 34vmin, 320px);
+        }
+
+        #wheel-control[data-wheel-control-mode="stop"] .wheel-control__continue,
+        #wheel-control.wheel-control--stop-mode .wheel-control__continue {
+            padding-inline: clamp(28px, 5vmin, 44px);
+        }
+
+        .wheel-control__restart:focus-visible {
+            outline: 3px solid var(--ink);
+            outline-offset: -3px;
         }
 
         .status { text-align: center; margin-top: 12px; font-weight: 700 }
@@ -1201,10 +1315,54 @@
 <main id="screen-wheel">
     <div class="wheel-wrap">
         <canvas aria-label="Spinning dish wheel" height="1000" id="wheel" width="1000"></canvas>
-        <!-- unified action button; JS toggles .is-stop <-> .is-start -->
-        <button class="btn action is-stop" id="stop">STOP</button>
+        <!-- wheel control cluster; JS toggles .is-stop <-> .is-start on the main button -->
+        <div class="wheel-control" data-wheel-control-mode="start" id="wheel-control">
+            <button class="wheel-control__continue btn action is-start" id="wheel-continue" type="button">
+                <span class="wheel-control__label wheel-control__label--spin">SPIN</span>
+                <span class="wheel-control__label wheel-control__label--stop">STOP</span>
+            </button>
+            <div
+                aria-hidden="false"
+                class="wheel-control__restart"
+                id="wheel-restart"
+                role="button"
+                tabindex="0"
+            >
+                Restart
+            </div>
+        </div>
     </div>
     <div class="status">Allergens: <span id="sel-badges"></span></div>
+    <div
+        aria-hidden="true"
+        class="restart-modal"
+        hidden
+        id="restart-confirmation"
+    >
+        <div class="restart-modal__overlay" id="restart-confirmation-overlay"></div>
+        <div
+            aria-describedby="restart-confirmation-description"
+            aria-labelledby="restart-confirmation-title"
+            aria-modal="true"
+            class="restart-modal__dialog"
+            id="restart-confirmation-dialog"
+            role="dialog"
+            tabindex="-1"
+        >
+            <h2 class="restart-modal__title" id="restart-confirmation-title">Restart the game?</h2>
+            <p class="restart-modal__message" id="restart-confirmation-description">
+                Are you sure you want to restart? Your current progress will be lost.
+            </p>
+            <div class="restart-modal__actions">
+                <button class="btn danger restart-modal__confirm" id="restart-confirmation-confirm" type="button">
+                    Yes, restart
+                </button>
+                <button class="ghost restart-modal__cancel" id="restart-confirmation-cancel" type="button">
+                    Continue playing
+                </button>
+            </div>
+        </div>
+    </div>
 </main>
 
 <!-- Menu -->
