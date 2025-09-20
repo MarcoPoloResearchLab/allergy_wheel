@@ -75,9 +75,11 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     }
 
     function wireStopButton({ onStopRequested, onShowAllergyScreen }) {
-        const stopButton = documentReference.getElementById(controlElementId.STOP_BUTTON);
-        if (!stopButton) return;
-        stopButton.addEventListener(BrowserEventName.CLICK, () => {
+        const wheelContinueButton = documentReference.getElementById(
+            controlElementId.WHEEL_CONTINUE_BUTTON
+        );
+        if (!wheelContinueButton) return;
+        wheelContinueButton.addEventListener(BrowserEventName.CLICK, () => {
             if (stateManager.getStopButtonMode() === WheelControlMode.STOP) {
                 if (typeof onStopRequested === "function") onStopRequested();
             } else if (typeof onShowAllergyScreen === "function") {
@@ -161,19 +163,31 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     }
 
     function wireRestartButton({ onRestart }) {
-        const restartButton = documentReference.getElementById(controlElementId.RESTART_BUTTON);
-        if (!restartButton) return;
-        restartButton.addEventListener(BrowserEventName.CLICK, () => {
-            const gameOverSection = documentReference.getElementById(controlElementId.GAME_OVER_SECTION);
-            if (gameOverSection) {
-                gameOverSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+        const restartControlIdentifiers = [
+            controlElementId.RESTART_BUTTON,
+            controlElementId.WHEEL_RESTART_BUTTON
+        ];
+
+        for (const restartControlId of restartControlIdentifiers) {
+            if (!restartControlId) {
+                continue;
             }
-            const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
-            if (revealSection) {
-                revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+            const restartButtonElement = documentReference.getElementById(restartControlId);
+            if (!restartButtonElement) {
+                continue;
             }
-            if (typeof onRestart === "function") onRestart();
-        });
+            restartButtonElement.addEventListener(BrowserEventName.CLICK, () => {
+                const gameOverSection = documentReference.getElementById(controlElementId.GAME_OVER_SECTION);
+                if (gameOverSection) {
+                    gameOverSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+                }
+                const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
+                if (revealSection) {
+                    revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+                }
+                if (typeof onRestart === "function") onRestart();
+            });
+        }
     }
 
     /**

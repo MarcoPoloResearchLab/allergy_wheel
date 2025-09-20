@@ -265,9 +265,12 @@ function createDomSkeleton() {
     <div id="${DocumentElementId.LOAD_ERROR}"></div>
     <div id="wheel-wrapper">
       <canvas id="${DocumentElementId.WHEEL_CANVAS}"></canvas>
+      <div id="wheel-control">
+        <button id="${ControlElementId.WHEEL_CONTINUE_BUTTON}"></button>
+        <button id="${ControlElementId.WHEEL_RESTART_BUTTON}"></button>
+      </div>
     </div>
     <button id="${ControlElementId.START_BUTTON}"></button>
-    <button id="${ControlElementId.STOP_BUTTON}"></button>
     <button id="${ControlElementId.FULLSCREEN_BUTTON}"></button>
     <button id="${ControlElementId.MUTE_BUTTON}" aria-pressed="false"></button>
     <button id="${ControlElementId.SPIN_AGAIN_BUTTON}"></button>
