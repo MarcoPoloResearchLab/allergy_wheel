@@ -317,10 +317,15 @@ listenerBinder.wireAvatarSelector({
 
 updateHeaderAvatarSelection(stateManager.getSelectedAvatar());
 
-if (document.readyState !== DocumentReadyState.LOADING) {
+const bootstrapGameWhenDocumentIsReady = () => {
     gameController.bootstrap();
+};
+
+if (document.readyState !== DocumentReadyState.LOADING) {
+    bootstrapGameWhenDocumentIsReady();
 }
 
-document.addEventListener(BrowserEventName.DOM_CONTENT_LOADED, () => {
-    gameController.bootstrap();
-});
+document.addEventListener(
+    BrowserEventName.DOM_CONTENT_LOADED,
+    bootstrapGameWhenDocumentIsReady
+);
