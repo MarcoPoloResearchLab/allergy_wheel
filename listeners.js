@@ -80,6 +80,11 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         KeyboardKey.SPACEBAR
     ]);
 
+    const EscapeKeyValueSet = new Set([
+        KeyboardKey.ESCAPE,
+        KeyboardKey.ESC
+    ]);
+
     const addActivationListenersToButton = (buttonElement, activationHandler) => {
         if (!buttonElement || typeof activationHandler !== "function") {
             return;
@@ -163,7 +168,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         addActivationListenersToButton(wheelContinueButton, handleActivation);
     }
 
-    function wireWheelRestartButton({ onRestartRequested } = {}) {
+    function wireWheelRestartButton({ onRestartRequested, onRestartConfirmed } = {}) {
         const wheelRestartButton = documentReference.getElementById(
             controlElementId.WHEEL_RESTART_BUTTON
         );
@@ -171,9 +176,153 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
             return;
         }
 
-        const handleRestartRequest = () => {
-            invokeRestartWorkflow(onRestartRequested);
+        const restartConfirmationElements = {
+            containerElement: documentReference.getElementById(
+                controlElementId.RESTART_CONFIRMATION_CONTAINER
+            ),
+            overlayElement: documentReference.getElementById(
+                controlElementId.RESTART_CONFIRMATION_OVERLAY
+            ),
+            dialogElement: documentReference.getElementById(
+                controlElementId.RESTART_CONFIRMATION_DIALOG
+            ),
+            confirmButtonElement: documentReference.getElementById(
+                controlElementId.RESTART_CONFIRMATION_CONFIRM_BUTTON
+            ),
+            cancelButtonElement: documentReference.getElementById(
+                controlElementId.RESTART_CONFIRMATION_CANCEL_BUTTON
+            )
         };
+
+        const ariaHiddenAttributeName = attributeName.ARIA_HIDDEN;
+
+        const restartConfirmationState = {
+            isVisible: false,
+            lastFocusedElement: null
+        };
+
+        const closeRestartConfirmation = ({ shouldRestoreFocus = true } = {}) => {
+            if (!restartConfirmationState.isVisible) {
+                return;
+            }
+
+            const { containerElement, dialogElement } = restartConfirmationElements;
+
+            if (containerElement) {
+                if (ariaHiddenAttributeName) {
+                    containerElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.TRUE);
+                }
+                containerElement.hidden = true;
+            }
+
+            if (dialogElement && ariaHiddenAttributeName) {
+                dialogElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.TRUE);
+            }
+
+            restartConfirmationState.isVisible = false;
+
+            const focusTargetElement = restartConfirmationState.lastFocusedElement;
+            restartConfirmationState.lastFocusedElement = null;
+
+            if (
+                shouldRestoreFocus
+                && focusTargetElement
+                && typeof focusTargetElement.focus === "function"
+                && (typeof focusTargetElement.isConnected !== "boolean" || focusTargetElement.isConnected)
+            ) {
+                focusTargetElement.focus();
+            }
+        };
+
+        const openRestartConfirmation = () => {
+            const { containerElement, dialogElement } = restartConfirmationElements;
+
+            if (!containerElement || !dialogElement) {
+                return false;
+            }
+
+            if (restartConfirmationState.isVisible) {
+                return true;
+            }
+
+            restartConfirmationState.lastFocusedElement = wheelRestartButton;
+
+            containerElement.hidden = false;
+            if (ariaHiddenAttributeName) {
+                containerElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.FALSE);
+                dialogElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.FALSE);
+            }
+
+            restartConfirmationState.isVisible = true;
+
+            if (typeof dialogElement.focus === "function") {
+                dialogElement.focus({ preventScroll: true });
+            }
+
+            return true;
+        };
+
+        const handleEscapeKeyDown = (eventObject) => {
+            if (!restartConfirmationState.isVisible) {
+                return;
+            }
+
+            const pressedKey = typeof eventObject.key === "string" ? eventObject.key : "";
+            if (!EscapeKeyValueSet.has(pressedKey)) {
+                return;
+            }
+
+            if (typeof eventObject.preventDefault === "function") {
+                eventObject.preventDefault();
+            }
+
+            closeRestartConfirmation({ shouldRestoreFocus: true });
+        };
+
+        const handleRestartRequest = () => {
+            const wasModalOpened = openRestartConfirmation();
+
+            if (wasModalOpened) {
+                if (typeof onRestartRequested === "function") {
+                    onRestartRequested();
+                }
+                return;
+            }
+
+            invokeRestartWorkflow(onRestartConfirmed);
+        };
+
+        const handleRestartConfirmation = () => {
+            closeRestartConfirmation({ shouldRestoreFocus: false });
+            invokeRestartWorkflow(onRestartConfirmed);
+        };
+
+        const handleRestartCancellation = () => {
+            closeRestartConfirmation({ shouldRestoreFocus: true });
+        };
+
+        if (restartConfirmationElements.overlayElement) {
+            restartConfirmationElements.overlayElement.addEventListener(
+                BrowserEventName.CLICK,
+                handleRestartCancellation
+            );
+        }
+
+        if (restartConfirmationElements.cancelButtonElement) {
+            addActivationListenersToButton(
+                restartConfirmationElements.cancelButtonElement,
+                handleRestartCancellation
+            );
+        }
+
+        if (restartConfirmationElements.confirmButtonElement) {
+            addActivationListenersToButton(
+                restartConfirmationElements.confirmButtonElement,
+                handleRestartConfirmation
+            );
+        }
+
+        documentReference.addEventListener(BrowserEventName.KEY_DOWN, handleEscapeKeyDown);
 
         addActivationListenersToButton(wheelRestartButton, handleRestartRequest);
     }

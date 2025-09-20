@@ -1081,6 +1081,38 @@
         #gameover { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; place-items: center; z-index: 20; }
         #gameover[aria-hidden="false"] { display: grid; }
 
+        .restart-modal { position: fixed; inset: 0; display: none; place-items: center; padding: clamp(12px, 4vmin, 24px); z-index: 30; }
+        .restart-modal:not([hidden]) { display: grid; }
+        .restart-modal__overlay { position: absolute; inset: 0; background: rgba(17, 17, 17, 0.55); }
+        .restart-modal__dialog {
+            position: relative;
+            background: var(--card);
+            border: 4px solid #000;
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            padding: clamp(20px, 3.6vmin, 32px);
+            width: min(420px, 92vw);
+            display: grid;
+            gap: clamp(16px, 3vmin, 24px);
+        }
+        .restart-modal__title { margin: 0; font-size: clamp(20px, 2.6vw, 32px); text-align: center; }
+        .restart-modal__message { margin: 0; color: var(--muted); font-size: clamp(16px, 2.2vw, 20px); line-height: 1.5; text-align: center; }
+        .restart-modal__actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+        .restart-modal__confirm,
+        .restart-modal__cancel {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1 1 160px;
+        }
+        .restart-modal__cancel { text-transform: uppercase; font-weight: 800; }
+
+        @media (min-width: 600px) {
+            .restart-modal__actions { justify-content: flex-end; }
+            .restart-modal__title,
+            .restart-modal__message { text-align: left; }
+        }
+
         .wheel-wrap { position: relative; width: min(96vmin, 980px); aspect-ratio: 1; display: grid; place-items: center; margin-inline: auto }
         #wheel {
             width: 100%; height: 100%; background: #fff; border-radius: 50%;
@@ -1258,6 +1290,36 @@
         </div>
     </div>
     <div class="status">Allergens: <span id="sel-badges"></span></div>
+    <div
+        aria-hidden="true"
+        class="restart-modal"
+        hidden
+        id="restart-confirmation"
+    >
+        <div class="restart-modal__overlay" id="restart-confirmation-overlay"></div>
+        <div
+            aria-describedby="restart-confirmation-description"
+            aria-labelledby="restart-confirmation-title"
+            aria-modal="true"
+            class="restart-modal__dialog"
+            id="restart-confirmation-dialog"
+            role="dialog"
+            tabindex="-1"
+        >
+            <h2 class="restart-modal__title" id="restart-confirmation-title">Restart the game?</h2>
+            <p class="restart-modal__message" id="restart-confirmation-description">
+                Are you sure you want to restart? Your current progress will be lost.
+            </p>
+            <div class="restart-modal__actions">
+                <button class="btn danger restart-modal__confirm" id="restart-confirmation-confirm" type="button">
+                    Yes, restart
+                </button>
+                <button class="ghost restart-modal__cancel" id="restart-confirmation-cancel" type="button">
+                    Continue playing
+                </button>
+            </div>
+        </div>
+    </div>
 </main>
 
 <!-- Menu -->
