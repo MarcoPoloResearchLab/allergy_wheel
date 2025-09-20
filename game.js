@@ -828,7 +828,7 @@ export class GameController {
             }
             return;
         }
-        wheelContinueButtonElement.textContent = ButtonText.CONTINUE;
+        wheelContinueButtonElement.textContent = ButtonText.SPIN;
         wheelContinueButtonElement.classList.add(ButtonClassName.ACTION, ButtonClassName.START);
         wheelContinueButtonElement.classList.remove(
             ButtonClassName.STOP,
