@@ -317,8 +317,20 @@ listenerBinder.wireAvatarSelector({
 
 updateHeaderAvatarSelection(stateManager.getSelectedAvatar());
 
+let hasGameBootstrapCompleted = false;
+
 const bootstrapGameWhenDocumentIsReady = () => {
+    if (hasGameBootstrapCompleted) {
+        return;
+    }
+
+    hasGameBootstrapCompleted = true;
     gameController.bootstrap();
+
+    document.removeEventListener(
+        BrowserEventName.DOM_CONTENT_LOADED,
+        bootstrapGameWhenDocumentIsReady
+    );
 };
 
 if (document.readyState !== DocumentReadyState.LOADING) {
