@@ -17,7 +17,7 @@ import {
     playNomNom as playNomNomEffect,
     playWin as playWinEffect
 } from "./audio.js";
-import { showScreen, setWheelControlToStop, setWheelControlToStartGame } from "./ui.js";
+import { openRestartConfirmation, setWheelControlToStop, setWheelControlToStartGame, showScreen } from "./ui.js";
 import { renderAvatarSelector, buildAvatarDescriptorMap } from "./avatarRenderer.js";
 import {
     ControlElementId,
@@ -252,7 +252,8 @@ const navAwareShowScreen = (screenName) => {
 const uiPresenter = {
     showScreen: navAwareShowScreen,
     setWheelControlToStop,
-    setWheelControlToStartGame
+    setWheelControlToStartGame,
+    openRestartConfirmation
 };
 
 const dataLoader = {

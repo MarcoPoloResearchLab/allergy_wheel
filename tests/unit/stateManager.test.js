@@ -37,7 +37,7 @@ const StateTestDescription = Object.freeze({
   SELECTION_RESET: "clearSelectedAllergen resets selection state",
   CANDIDATE_DEFENSIVE_COPY: "creates defensive copies of candidate arrays",
   CANDIDATE_RESET: "resetWheelCandidates clears stored dishes and labels",
-  STOP_BUTTON_SWITCH: "switches between start and stop modes",
+  WHEEL_CONTROL_MODE_SWITCH: "switches between start and stop modes",
   AVATAR_DEFAULT: "provides the default avatar when initialized",
   AVATAR_VALID_SELECTION: "stores a provided valid avatar identifier",
   AVATAR_TYRANNOSAURUS_SELECTION: "stores the tyrannosaurus rex avatar identifier when selected",
@@ -81,7 +81,7 @@ describe("StateManager initialization", () => {
   test(StateTestDescription.DEFAULT_INITIALIZATION, () => {
     const stateManager = new StateManager();
     expect(stateManager.getInitialHeartsCount()).toBe(DEFAULT_INITIAL_HEARTS_COUNT);
-    expect(stateManager.getStopButtonMode()).toBe(MODE_STOP);
+    expect(stateManager.getWheelControlMode()).toBe(MODE_STOP);
     expect(stateManager.hasSelectedAllergen()).toBe(false);
     expect(stateManager.getSelectedAvatar()).toBe(AvatarId.DEFAULT);
     expect(stateManager.hasSelectedAvatar()).toBe(true);
@@ -266,13 +266,13 @@ describe("StateManager wheel candidate management", () => {
   });
 });
 
-describe("StateManager stop button mode", () => {
-  test(StateTestDescription.STOP_BUTTON_SWITCH, () => {
+describe("StateManager wheel control mode", () => {
+  test(StateTestDescription.WHEEL_CONTROL_MODE_SWITCH, () => {
     const stateManager = new StateManager();
-    stateManager.setStopButtonMode(MODE_START);
-    expect(stateManager.getStopButtonMode()).toBe(MODE_START);
-    stateManager.setStopButtonMode(InvalidModeValue.VALUE);
-    expect(stateManager.getStopButtonMode()).toBe(MODE_STOP);
+    stateManager.setWheelControlMode(MODE_START);
+    expect(stateManager.getWheelControlMode()).toBe(MODE_START);
+    stateManager.setWheelControlMode(InvalidModeValue.VALUE);
+    expect(stateManager.getWheelControlMode()).toBe(MODE_STOP);
   });
 });
 

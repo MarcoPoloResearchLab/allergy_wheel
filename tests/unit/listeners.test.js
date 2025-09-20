@@ -6,14 +6,21 @@ import {
   AttributeBooleanValue,
   ButtonText,
   AudioControlLabel,
-  MODE_STOP
+  WheelControlMode,
+  KeyboardKey,
+  BrowserEventName
 } from "../../constants.js";
 
-function createStateManagerStub({ initialMuted = false } = {}) {
+function createStateManagerStub({ initialMuted = false, initialWheelControlMode = WheelControlMode.STOP } = {}) {
   let mutedState = Boolean(initialMuted);
+  let wheelControlMode = initialWheelControlMode;
   return {
     hasSelectedAllergen: jest.fn(() => false),
-    getStopButtonMode: jest.fn(() => MODE_STOP),
+    getWheelControlMode: jest.fn(() => wheelControlMode),
+    setWheelControlMode: jest.fn((nextMode) => {
+      wheelControlMode = nextMode;
+      return wheelControlMode;
+    }),
     isAudioMuted: jest.fn(() => mutedState),
     toggleAudioMuted: jest.fn(() => {
       mutedState = !mutedState;
@@ -24,6 +31,14 @@ function createStateManagerStub({ initialMuted = false } = {}) {
       return mutedState;
     })
   };
+}
+
+function dispatchKeydownEvent(targetElement, keyValue) {
+  const keyboardEvent = new KeyboardEvent(BrowserEventName.KEY_DOWN, {
+    key: keyValue,
+    bubbles: true
+  });
+  targetElement.dispatchEvent(keyboardEvent);
 }
 
 const MuteInitializationScenarios = [
@@ -95,4 +110,134 @@ describe("listenerBinder wireMuteButton", () => {
     expect(muteButton.textContent).toBe(ButtonText.MUTE);
     expect(muteButton.getAttribute(AttributeName.ARIA_LABEL)).toBe(AudioControlLabel.MUTE_AUDIO);
   });
+});
+
+describe("listenerBinder wireWheelContinueButton", () => {
+  const ContinueActivationScenarios = [
+    {
+      description: "clicking stops the wheel when a spin is active",
+      initialMode: WheelControlMode.STOP,
+      trigger: (buttonElement) => buttonElement.click(),
+      expectedStopCalls: 1,
+      expectedStartCalls: 0
+    },
+    {
+      description: "pressing Enter stops the wheel when a spin is active",
+      initialMode: WheelControlMode.STOP,
+      trigger: (buttonElement) => dispatchKeydownEvent(buttonElement, KeyboardKey.ENTER),
+      expectedStopCalls: 1,
+      expectedStartCalls: 0
+    },
+    {
+      description: "pressing Spacebar stops the wheel when a spin is active",
+      initialMode: WheelControlMode.STOP,
+      trigger: (buttonElement) => dispatchKeydownEvent(buttonElement, KeyboardKey.SPACEBAR),
+      expectedStopCalls: 1,
+      expectedStartCalls: 0
+    },
+    {
+      description: "clicking starts a new spin when the wheel is idle",
+      initialMode: WheelControlMode.START,
+      trigger: (buttonElement) => buttonElement.click(),
+      expectedStopCalls: 0,
+      expectedStartCalls: 1
+    },
+    {
+      description: "pressing Space starts a new spin when the wheel is idle",
+      initialMode: WheelControlMode.START,
+      trigger: (buttonElement) => dispatchKeydownEvent(buttonElement, KeyboardKey.SPACE),
+      expectedStopCalls: 0,
+      expectedStartCalls: 1
+    },
+    {
+      description: "falls back to the button attribute when manager state is unavailable",
+      initialMode: WheelControlMode.START,
+      trigger: (buttonElement, { stateManager }) => {
+        stateManager.setWheelControlMode("unknown");
+        buttonElement.setAttribute(AttributeName.DATA_WHEEL_CONTROL_MODE, WheelControlMode.STOP);
+        buttonElement.click();
+      },
+      expectedStopCalls: 1,
+      expectedStartCalls: 0
+    }
+  ];
+
+  test.each(ContinueActivationScenarios)(
+    "%s",
+    ({ description: _description, initialMode, trigger, expectedStopCalls, expectedStartCalls }) => {
+      document.body.innerHTML = `<button id="${ControlElementId.WHEEL_CONTINUE_BUTTON}" type="button"></button>`;
+      const stateManager = createStateManagerStub({ initialWheelControlMode: initialMode });
+      const binder = createListenerBinder({
+        controlElementId: ControlElementId,
+        attributeName: AttributeName,
+        documentReference: document,
+        stateManager
+      });
+      const onStartRequested = jest.fn();
+      const onStopRequested = jest.fn();
+
+      binder.wireWheelContinueButton({ onStartRequested, onStopRequested });
+
+      const continueButton = document.getElementById(ControlElementId.WHEEL_CONTINUE_BUTTON);
+      if (!continueButton) {
+        throw new Error("Wheel continue button not found in DOM");
+      }
+
+      if (trigger.length === 2) {
+        trigger(continueButton, { stateManager });
+      } else {
+        trigger(continueButton);
+      }
+
+      expect(onStopRequested).toHaveBeenCalledTimes(expectedStopCalls);
+      expect(onStartRequested).toHaveBeenCalledTimes(expectedStartCalls);
+    }
+  );
+});
+
+describe("listenerBinder wireWheelRestartButton", () => {
+  const RestartActivationScenarios = [
+    {
+      description: "clicking hides overlays and notifies listeners",
+      trigger: (buttonElement) => buttonElement.click()
+    },
+    {
+      description: "pressing Enter hides overlays and notifies listeners",
+      trigger: (buttonElement) => dispatchKeydownEvent(buttonElement, KeyboardKey.ENTER)
+    }
+  ];
+
+  test.each(RestartActivationScenarios)(
+    "%s",
+    ({ description: _description, trigger }) => {
+      document.body.innerHTML = `
+        <section id="${ControlElementId.REVEAL_SECTION}" aria-hidden="false"></section>
+        <section id="${ControlElementId.GAME_OVER_SECTION}" aria-hidden="false"></section>
+        <button id="${ControlElementId.WHEEL_RESTART_BUTTON}" type="button"></button>
+      `;
+      const stateManager = createStateManagerStub();
+      const binder = createListenerBinder({
+        controlElementId: ControlElementId,
+        attributeName: AttributeName,
+        documentReference: document,
+        stateManager
+      });
+      const onRestartRequested = jest.fn();
+
+      binder.wireWheelRestartButton({ onRestartRequested });
+
+      const restartButton = document.getElementById(ControlElementId.WHEEL_RESTART_BUTTON);
+      if (!restartButton) {
+        throw new Error("Wheel restart button not found in DOM");
+      }
+
+      trigger(restartButton);
+
+      expect(onRestartRequested).toHaveBeenCalledTimes(1);
+      const revealSection = document.getElementById(ControlElementId.REVEAL_SECTION);
+      const gameOverSection = document.getElementById(ControlElementId.GAME_OVER_SECTION);
+      expect(revealSection.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.TRUE);
+      expect(gameOverSection.getAttribute(AttributeName.ARIA_HIDDEN)).toBe(AttributeBooleanValue.TRUE);
+    }
+  );
 });

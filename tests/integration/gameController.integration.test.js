@@ -104,12 +104,19 @@ function createWheelStub() {
 function createListenerBinderStub() {
   const binder = {
     startHandler: null,
-    muteHandler: null
+    muteHandler: null,
+    wheelContinueHandlers: { onStartRequested: null, onStopRequested: null }
   };
   binder.wireStartButton = jest.fn(({ onStartRequested }) => {
     binder.startHandler = typeof onStartRequested === "function" ? onStartRequested : null;
   });
-  binder.wireStopButton = jest.fn();
+  binder.wireWheelContinueButton = jest.fn(({ onStartRequested, onStopRequested }) => {
+    binder.wheelContinueHandlers = {
+      onStartRequested: typeof onStartRequested === "function" ? onStartRequested : null,
+      onStopRequested: typeof onStopRequested === "function" ? onStopRequested : null
+    };
+  });
+  binder.wireWheelRestartButton = jest.fn();
   binder.wireFullscreenButton = jest.fn();
   binder.wireMuteButton = jest.fn(({ onMuteChange }) => {
     binder.muteHandler = typeof onMuteChange === "function" ? onMuteChange : null;
@@ -119,6 +126,7 @@ function createListenerBinderStub() {
   binder.wireRestartButton = jest.fn();
   binder.getStartHandler = () => binder.startHandler;
   binder.getMuteHandler = () => binder.muteHandler;
+  binder.getWheelContinueHandlers = () => binder.wheelContinueHandlers;
   return binder;
 }
 
@@ -209,7 +217,8 @@ function createUiPresenterStub() {
   return {
     showScreen: jest.fn(),
     setWheelControlToStartGame: jest.fn(),
-    setWheelControlToStop: jest.fn()
+    setWheelControlToStop: jest.fn(),
+    openRestartConfirmation: jest.fn()
   };
 }
 
