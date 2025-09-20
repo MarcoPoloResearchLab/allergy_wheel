@@ -795,8 +795,10 @@ export class GameController {
     }
 
     #applyStartMode() {
-        const centerButton = this.#documentReference.getElementById(this.#controlElementIdMap.STOP_BUTTON);
-        if (!centerButton) {
+        const wheelContinueButtonElement = this.#documentReference.getElementById(
+            this.#controlElementIdMap.WHEEL_CONTINUE_BUTTON
+        );
+        if (!wheelContinueButtonElement) {
             if (this.#stateManager.setStopButtonMode) {
                 this.#stateManager.setStopButtonMode(WheelControlMode.START);
             }
@@ -805,9 +807,13 @@ export class GameController {
             }
             return;
         }
-        centerButton.textContent = ButtonText.START;
-        centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.START);
-        centerButton.classList.remove(ButtonClassName.STOP, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
+        wheelContinueButtonElement.textContent = ButtonText.CONTINUE;
+        wheelContinueButtonElement.classList.add(ButtonClassName.ACTION, ButtonClassName.START);
+        wheelContinueButtonElement.classList.remove(
+            ButtonClassName.STOP,
+            ButtonClassName.PRIMARY,
+            ButtonClassName.DANGER
+        );
         if (this.#stateManager.setStopButtonMode) {
             this.#stateManager.setStopButtonMode(WheelControlMode.START);
         }
@@ -817,8 +823,10 @@ export class GameController {
     }
 
     #applyStopMode() {
-        const centerButton = this.#documentReference.getElementById(this.#controlElementIdMap.STOP_BUTTON);
-        if (!centerButton) {
+        const wheelContinueButtonElement = this.#documentReference.getElementById(
+            this.#controlElementIdMap.WHEEL_CONTINUE_BUTTON
+        );
+        if (!wheelContinueButtonElement) {
             if (this.#stateManager.setStopButtonMode) {
                 this.#stateManager.setStopButtonMode(WheelControlMode.STOP);
             }
@@ -827,9 +835,13 @@ export class GameController {
             }
             return;
         }
-        centerButton.textContent = ButtonText.STOP;
-        centerButton.classList.add(ButtonClassName.ACTION, ButtonClassName.STOP);
-        centerButton.classList.remove(ButtonClassName.START, ButtonClassName.PRIMARY, ButtonClassName.DANGER);
+        wheelContinueButtonElement.textContent = ButtonText.STOP;
+        wheelContinueButtonElement.classList.add(ButtonClassName.ACTION, ButtonClassName.STOP);
+        wheelContinueButtonElement.classList.remove(
+            ButtonClassName.START,
+            ButtonClassName.PRIMARY,
+            ButtonClassName.DANGER
+        );
         if (this.#stateManager.setStopButtonMode) {
             this.#stateManager.setStopButtonMode(WheelControlMode.STOP);
         }

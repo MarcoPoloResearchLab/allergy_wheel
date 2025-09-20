@@ -115,7 +115,8 @@ export const AudioAssetPath = Object.freeze({
 
 export const ControlElementId = Object.freeze({
     START_BUTTON: "start",
-    STOP_BUTTON: "stop",
+    WHEEL_CONTINUE_BUTTON: "wheel-continue",
+    WHEEL_RESTART_BUTTON: "wheel-restart",
     FULLSCREEN_BUTTON: "fs",
     MUTE_BUTTON: "mute",
     SPIN_AGAIN_BUTTON: "again",
@@ -260,7 +261,7 @@ export const KeyboardKey = Object.freeze({
 });
 
 export const ButtonText = Object.freeze({
-    START: "Start",
+    CONTINUE: "CONTINUE",
     STOP: "STOP",
     RESTART: "Restart",
     MUTE: "Mute",
