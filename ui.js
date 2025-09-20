@@ -6,8 +6,14 @@ import {
     ResultCardElementId,
     ScreenElementId,
     ControlElementId,
-    WheelControlClassName
+    WheelControlClassName,
+    WheelControlMode
 } from "./constants.js";
+
+const WheelRestartTabIndex = Object.freeze({
+    ACTIVE: 0,
+    INACTIVE: -1
+});
 
 function isRevealSectionVisible() {
     const revealElement = document.getElementById(ResultCardElementId.REVEAL_SECTION);
@@ -24,12 +30,10 @@ function isRevealSectionVisible() {
     return revealHiddenState === AttributeBooleanValue.FALSE;
 }
 
-function applyWheelRestartButtonVisibility(wheelRestartButtonElement, shouldHideButton) {
+function applyWheelRestartSegmentVisibility(wheelRestartButtonElement, shouldHideButton) {
     if (!wheelRestartButtonElement) {
         return;
     }
-
-    wheelRestartButtonElement.hidden = shouldHideButton;
 
     const ariaHiddenAttributeName = AttributeName.ARIA_HIDDEN;
     if (ariaHiddenAttributeName) {
@@ -38,6 +42,12 @@ function applyWheelRestartButtonVisibility(wheelRestartButtonElement, shouldHide
             shouldHideButton ? AttributeBooleanValue.TRUE : AttributeBooleanValue.FALSE
         );
     }
+
+    const targetTabIndex = shouldHideButton
+        ? WheelRestartTabIndex.INACTIVE
+        : WheelRestartTabIndex.ACTIVE;
+    wheelRestartButtonElement.tabIndex = targetTabIndex;
+    wheelRestartButtonElement.setAttribute("tabindex", String(targetTabIndex));
 }
 
 export function updateWheelRestartControlVisibilityFromRevealState() {
@@ -46,8 +56,15 @@ export function updateWheelRestartControlVisibilityFromRevealState() {
         return false;
     }
 
-    const shouldHideButton = isRevealSectionVisible();
-    applyWheelRestartButtonVisibility(wheelRestartButtonElement, shouldHideButton);
+    const wheelControlElement = document.getElementById(ControlElementId.WHEEL_CONTROL_CONTAINER);
+    const wheelControlModeAttributeName = AttributeName.DATA_WHEEL_CONTROL_MODE;
+    const controlMode = wheelControlElement && wheelControlModeAttributeName
+        ? wheelControlElement.getAttribute(wheelControlModeAttributeName)
+        : null;
+
+    const isStopMode = controlMode === WheelControlMode.STOP;
+    const shouldHideButton = isStopMode || isRevealSectionVisible();
+    applyWheelRestartSegmentVisibility(wheelRestartButtonElement, shouldHideButton);
     return true;
 }
 
@@ -96,27 +113,30 @@ export function showScreen(screenName) {
 
 export function setWheelControlToStop() {
     const wheelControlElement = document.getElementById(ControlElementId.WHEEL_CONTROL_CONTAINER);
-    if (wheelControlElement && WheelControlClassName.STOP_MODE) {
-        wheelControlElement.classList.add(WheelControlClassName.STOP_MODE);
+    const wheelControlModeAttributeName = AttributeName.DATA_WHEEL_CONTROL_MODE;
+    if (wheelControlElement) {
+        if (WheelControlClassName.STOP_MODE) {
+            wheelControlElement.classList.add(WheelControlClassName.STOP_MODE);
+        }
+        if (wheelControlModeAttributeName) {
+            wheelControlElement.setAttribute(wheelControlModeAttributeName, WheelControlMode.STOP);
+        }
     }
 
     const wheelRestartButtonElement = document.getElementById(ControlElementId.WHEEL_RESTART_BUTTON);
-    if (!wheelRestartButtonElement) {
-        return;
-    }
-
-    wheelRestartButtonElement.hidden = true;
-
-    const ariaHiddenAttributeName = AttributeName.ARIA_HIDDEN;
-    if (ariaHiddenAttributeName) {
-        wheelRestartButtonElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.TRUE);
-    }
+    applyWheelRestartSegmentVisibility(wheelRestartButtonElement, true);
 }
 
 export function setWheelControlToStartGame() {
     const wheelControlElement = document.getElementById(ControlElementId.WHEEL_CONTROL_CONTAINER);
-    if (wheelControlElement && WheelControlClassName.STOP_MODE) {
-        wheelControlElement.classList.remove(WheelControlClassName.STOP_MODE);
+    const wheelControlModeAttributeName = AttributeName.DATA_WHEEL_CONTROL_MODE;
+    if (wheelControlElement) {
+        if (WheelControlClassName.STOP_MODE) {
+            wheelControlElement.classList.remove(WheelControlClassName.STOP_MODE);
+        }
+        if (wheelControlModeAttributeName) {
+            wheelControlElement.setAttribute(wheelControlModeAttributeName, WheelControlMode.START);
+        }
     }
 
     updateWheelRestartControlVisibilityFromRevealState();

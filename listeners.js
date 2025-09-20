@@ -146,7 +146,13 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
 
             const modeAttributeName = attributeName.DATA_WHEEL_CONTROL_MODE;
             if (modeAttributeName) {
-                const attributeModeValue = wheelContinueButton.getAttribute(modeAttributeName);
+                const wheelControlContainer = documentReference.getElementById(
+                    controlElementId.WHEEL_CONTROL_CONTAINER
+                );
+                const attributeSourceElement = wheelControlContainer || wheelContinueButton;
+                const attributeModeValue = attributeSourceElement
+                    ? attributeSourceElement.getAttribute(modeAttributeName)
+                    : null;
                 if (attributeModeValue === WheelControlMode.STOP || attributeModeValue === WheelControlMode.START) {
                     return attributeModeValue;
                 }
@@ -172,10 +178,10 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     }
 
     function wireWheelRestartButton({ onRestartRequested, onRestartConfirmed } = {}) {
-        const wheelRestartButton = documentReference.getElementById(
+        const wheelRestartSegmentElement = documentReference.getElementById(
             controlElementId.WHEEL_RESTART_BUTTON
         );
-        if (!wheelRestartButton) {
+        if (!wheelRestartSegmentElement) {
             return;
         }
 
@@ -248,7 +254,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
                 return true;
             }
 
-            restartConfirmationState.lastFocusedElement = wheelRestartButton;
+            restartConfirmationState.lastFocusedElement = wheelRestartSegmentElement;
 
             containerElement.hidden = false;
             if (ariaHiddenAttributeName) {
@@ -327,7 +333,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
 
         documentReference.addEventListener(BrowserEventName.KEY_DOWN, handleEscapeKeyDown);
 
-        addActivationListenersToButton(wheelRestartButton, handleRestartRequest);
+        addActivationListenersToButton(wheelRestartSegmentElement, handleRestartRequest);
     }
 
     function wireFullscreenButton() {
