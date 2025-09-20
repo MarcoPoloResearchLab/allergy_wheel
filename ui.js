@@ -6,7 +6,8 @@ import {
     ResultCardElementId,
     ScreenElementId,
     ControlElementId,
-    WheelControlClassName
+    WheelControlClassName,
+    WheelControlMode
 } from "./constants.js";
 
 function isRevealSectionVisible() {
@@ -40,8 +41,52 @@ function applyWheelRestartButtonVisibility(wheelRestartButtonElement, shouldHide
     }
 }
 
-export function updateWheelRestartControlVisibilityFromRevealState() {
+function collectWheelControlElements() {
+    const wheelControlElement = document.getElementById(ControlElementId.WHEEL_CONTROL_CONTAINER);
+    const wheelContinueButtonElement = document.getElementById(ControlElementId.WHEEL_CONTINUE_BUTTON);
     const wheelRestartButtonElement = document.getElementById(ControlElementId.WHEEL_RESTART_BUTTON);
+
+    return {
+        wheelControlElement,
+        wheelContinueButtonElement,
+        wheelRestartButtonElement
+    };
+}
+
+function isStopModeActiveForWheelControl({ wheelControlElement, wheelContinueButtonElement }) {
+    if (
+        wheelControlElement
+        && WheelControlClassName.STOP_MODE
+        && wheelControlElement.classList.contains(WheelControlClassName.STOP_MODE)
+    ) {
+        return true;
+    }
+
+    const wheelControlModeAttributeName = AttributeName.DATA_WHEEL_CONTROL_MODE;
+    if (wheelContinueButtonElement && wheelControlModeAttributeName) {
+        const wheelControlModeValue = wheelContinueButtonElement.getAttribute(
+            wheelControlModeAttributeName
+        );
+
+        if (wheelControlModeValue === WheelControlMode.STOP) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+export function updateWheelRestartControlVisibilityFromRevealState() {
+    const {
+        wheelControlElement,
+        wheelContinueButtonElement,
+        wheelRestartButtonElement
+    } = collectWheelControlElements();
+
+    if (isStopModeActiveForWheelControl({ wheelControlElement, wheelContinueButtonElement })) {
+        return Boolean(wheelRestartButtonElement);
+    }
+
     if (!wheelRestartButtonElement) {
         return false;
     }
@@ -95,22 +140,12 @@ export function showScreen(screenName) {
 }
 
 export function setWheelControlToStop() {
-    const wheelControlElement = document.getElementById(ControlElementId.WHEEL_CONTROL_CONTAINER);
+    const { wheelControlElement, wheelRestartButtonElement } = collectWheelControlElements();
     if (wheelControlElement && WheelControlClassName.STOP_MODE) {
         wheelControlElement.classList.add(WheelControlClassName.STOP_MODE);
     }
 
-    const wheelRestartButtonElement = document.getElementById(ControlElementId.WHEEL_RESTART_BUTTON);
-    if (!wheelRestartButtonElement) {
-        return;
-    }
-
-    wheelRestartButtonElement.hidden = true;
-
-    const ariaHiddenAttributeName = AttributeName.ARIA_HIDDEN;
-    if (ariaHiddenAttributeName) {
-        wheelRestartButtonElement.setAttribute(ariaHiddenAttributeName, AttributeBooleanValue.TRUE);
-    }
+    applyWheelRestartButtonVisibility(wheelRestartButtonElement, true);
 }
 
 export function setWheelControlToStartGame() {

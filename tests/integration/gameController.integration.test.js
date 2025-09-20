@@ -13,7 +13,11 @@ import {
   KeyboardKey
 } from "../../constants.js";
 import { StateManager } from "../../state.js";
-import { setWheelControlToStartGame, setWheelControlToStop } from "../../ui.js";
+import {
+  setWheelControlToStartGame,
+  setWheelControlToStop,
+  updateWheelRestartControlVisibilityFromRevealState
+} from "../../ui.js";
 
 const GameOutcomeDescription = Object.freeze({
   LOSS: "decrements hearts to zero and shows game over",
@@ -34,11 +38,14 @@ const WheelSegmentCount = 8;
 
 const WheelControlSequenceStep = Object.freeze({
   APPLY_STOP_MODE: "APPLY_STOP_MODE",
-  RESTORE_START_MODE: "RESTORE_START_MODE"
+  RESTORE_START_MODE: "RESTORE_START_MODE",
+  INVOKE_VISIBILITY_UPDATE_WHILE_STOPPED: "INVOKE_VISIBILITY_UPDATE_WHILE_STOPPED"
 });
 
 const WheelControlUiScenarioDescription = Object.freeze({
   STOP_MODE_HIDES_RESTART: "hides the restart button when stop mode is applied",
+  STOP_MODE_VISIBILITY_UPDATE_RETAINS_HIDDEN_STATE:
+    "keeps the restart button hidden when the visibility helper runs during stop mode",
   START_MODE_REVEALS_RESTART:
     "restores the restart button after returning to start mode once the confirmation modal is dismissed"
 });
@@ -47,6 +54,19 @@ const WheelControlUiScenarios = Object.freeze([
   Object.freeze({
     description: WheelControlUiScenarioDescription.STOP_MODE_HIDES_RESTART,
     sequence: Object.freeze([WheelControlSequenceStep.APPLY_STOP_MODE]),
+    expected: Object.freeze({
+      isStopModeClassApplied: true,
+      isRestartHidden: true,
+      expectedAriaHidden: AttributeBooleanValue.TRUE
+    })
+  }),
+  Object.freeze({
+    description:
+      WheelControlUiScenarioDescription.STOP_MODE_VISIBILITY_UPDATE_RETAINS_HIDDEN_STATE,
+    sequence: Object.freeze([
+      WheelControlSequenceStep.APPLY_STOP_MODE,
+      WheelControlSequenceStep.INVOKE_VISIBILITY_UPDATE_WHILE_STOPPED
+    ]),
     expected: Object.freeze({
       isStopModeClassApplied: true,
       isRestartHidden: true,
@@ -80,6 +100,22 @@ describe("Wheel control UI integration", () => {
         }
         if (sequenceStep === WheelControlSequenceStep.RESTORE_START_MODE) {
           setWheelControlToStartGame();
+          continue;
+        }
+        if (
+          sequenceStep ===
+          WheelControlSequenceStep.INVOKE_VISIBILITY_UPDATE_WHILE_STOPPED
+        ) {
+          const revealSectionElement = document.getElementById(
+            ControlElementId.REVEAL_SECTION
+          );
+          if (revealSectionElement) {
+            revealSectionElement.setAttribute(
+              AttributeName.ARIA_HIDDEN,
+              AttributeBooleanValue.TRUE
+            );
+          }
+          updateWheelRestartControlVisibilityFromRevealState();
         }
       }
 
