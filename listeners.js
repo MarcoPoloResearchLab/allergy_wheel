@@ -12,7 +12,7 @@ import {
 const ListenerErrorMessage = {
     MISSING_DEPENDENCIES: "createListenerBinder requires controlElementId, attributeName, and stateManager",
     MISSING_STATE_MANAGER_METHODS:
-        "createListenerBinder requires stateManager methods hasSelectedAllergen, getStopButtonMode, isAudioMuted, and toggleAudioMuted"
+        "createListenerBinder requires stateManager methods hasSelectedAllergen, getWheelControlMode, isAudioMuted, and toggleAudioMuted"
 };
 
 function createListenerBinder({ controlElementId, attributeName, documentReference = document, stateManager }) {
@@ -21,7 +21,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     }
     if (
         typeof stateManager.hasSelectedAllergen !== "function"
-        || typeof stateManager.getStopButtonMode !== "function"
+        || typeof stateManager.getWheelControlMode !== "function"
         || typeof stateManager.isAudioMuted !== "function"
         || typeof stateManager.toggleAudioMuted !== "function"
     ) {
@@ -74,18 +74,108 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
         });
     }
 
-    function wireStopButton({ onStopRequested, onShowAllergyScreen }) {
+    const ActivationKeyValueSet = new Set([
+        KeyboardKey.ENTER,
+        KeyboardKey.SPACE,
+        KeyboardKey.SPACEBAR
+    ]);
+
+    const addActivationListenersToButton = (buttonElement, activationHandler) => {
+        if (!buttonElement || typeof activationHandler !== "function") {
+            return;
+        }
+
+        const handleClick = () => {
+            activationHandler();
+        };
+
+        const handleKeyDown = (eventObject) => {
+            const pressedKey = eventObject && typeof eventObject.key === "string"
+                ? eventObject.key
+                : "";
+            if (!ActivationKeyValueSet.has(pressedKey)) {
+                return;
+            }
+            if (typeof eventObject.preventDefault === "function") {
+                eventObject.preventDefault();
+            }
+            activationHandler();
+        };
+
+        buttonElement.addEventListener(BrowserEventName.CLICK, handleClick);
+        buttonElement.addEventListener(BrowserEventName.KEY_DOWN, handleKeyDown);
+    };
+
+    const invokeRestartWorkflow = (restartCallback) => {
+        const gameOverSection = documentReference.getElementById(controlElementId.GAME_OVER_SECTION);
+        if (gameOverSection) {
+            gameOverSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+        }
+
+        const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
+        if (revealSection) {
+            revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+        }
+
+        if (typeof restartCallback === "function") {
+            restartCallback();
+        }
+    };
+
+    function wireWheelContinueButton({ onStartRequested, onStopRequested } = {}) {
         const wheelContinueButton = documentReference.getElementById(
             controlElementId.WHEEL_CONTINUE_BUTTON
         );
-        if (!wheelContinueButton) return;
-        wheelContinueButton.addEventListener(BrowserEventName.CLICK, () => {
-            if (stateManager.getStopButtonMode() === WheelControlMode.STOP) {
-                if (typeof onStopRequested === "function") onStopRequested();
-            } else if (typeof onShowAllergyScreen === "function") {
-                onShowAllergyScreen();
+        if (!wheelContinueButton) {
+            return;
+        }
+
+        const resolveWheelControlMode = () => {
+            const managerMode = stateManager.getWheelControlMode();
+            if (managerMode === WheelControlMode.STOP || managerMode === WheelControlMode.START) {
+                return managerMode;
             }
-        });
+
+            const modeAttributeName = attributeName.DATA_WHEEL_CONTROL_MODE;
+            if (modeAttributeName) {
+                const attributeModeValue = wheelContinueButton.getAttribute(modeAttributeName);
+                if (attributeModeValue === WheelControlMode.STOP || attributeModeValue === WheelControlMode.START) {
+                    return attributeModeValue;
+                }
+            }
+
+            return WheelControlMode.START;
+        };
+
+        const handleActivation = () => {
+            const currentMode = resolveWheelControlMode();
+            if (currentMode === WheelControlMode.STOP) {
+                if (typeof onStopRequested === "function") {
+                    onStopRequested();
+                }
+                return;
+            }
+            if (typeof onStartRequested === "function") {
+                onStartRequested();
+            }
+        };
+
+        addActivationListenersToButton(wheelContinueButton, handleActivation);
+    }
+
+    function wireWheelRestartButton({ onRestartRequested } = {}) {
+        const wheelRestartButton = documentReference.getElementById(
+            controlElementId.WHEEL_RESTART_BUTTON
+        );
+        if (!wheelRestartButton) {
+            return;
+        }
+
+        const handleRestartRequest = () => {
+            invokeRestartWorkflow(onRestartRequested);
+        };
+
+        addActivationListenersToButton(wheelRestartButton, handleRestartRequest);
     }
 
     function wireFullscreenButton() {
@@ -163,10 +253,7 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
     }
 
     function wireRestartButton({ onRestart }) {
-        const restartControlIdentifiers = [
-            controlElementId.RESTART_BUTTON,
-            controlElementId.WHEEL_RESTART_BUTTON
-        ];
+        const restartControlIdentifiers = [controlElementId.RESTART_BUTTON];
 
         for (const restartControlId of restartControlIdentifiers) {
             if (!restartControlId) {
@@ -176,17 +263,12 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
             if (!restartButtonElement) {
                 continue;
             }
-            restartButtonElement.addEventListener(BrowserEventName.CLICK, () => {
-                const gameOverSection = documentReference.getElementById(controlElementId.GAME_OVER_SECTION);
-                if (gameOverSection) {
-                    gameOverSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
-                }
-                const revealSection = documentReference.getElementById(controlElementId.REVEAL_SECTION);
-                if (revealSection) {
-                    revealSection.setAttribute(attributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
-                }
-                if (typeof onRestart === "function") onRestart();
-            });
+
+            const handleRestart = () => {
+                invokeRestartWorkflow(onRestart);
+            };
+
+            addActivationListenersToButton(restartButtonElement, handleRestart);
         }
     }
 
@@ -284,11 +366,12 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
 
     return {
         wireStartButton,
-        wireStopButton,
+        wireWheelContinueButton,
         wireFullscreenButton,
         wireMuteButton,
         wireSpinAgainButton,
         wireRevealBackdropDismissal,
+        wireWheelRestartButton,
         wireRestartButton,
         wireAvatarSelector
     };

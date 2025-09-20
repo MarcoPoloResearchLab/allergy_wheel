@@ -57,3 +57,7 @@ export function setWheelControlToStop() {
 export function setWheelControlToStartGame() {
     /* no-op for API symmetry */
 }
+
+export function openRestartConfirmation() {
+    /* no-op for API symmetry */
+}

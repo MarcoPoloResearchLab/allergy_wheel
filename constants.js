@@ -239,7 +239,8 @@ export const AttributeName = Object.freeze({
     ARIA_DISABLED: "aria-disabled",
     DATA_SCREEN: "data-screen",
     DATA_COUNT: "data-count",
-    DATA_BLOCKED: "data-blocked"
+    DATA_BLOCKED: "data-blocked",
+    DATA_WHEEL_CONTROL_MODE: "data-wheel-control-mode"
 });
 
 export const AttributeBooleanValue = Object.freeze({
@@ -255,9 +256,18 @@ export const BrowserEventName = Object.freeze({
     ANIMATION_END: "animationend"
 });
 
+const KeyboardKeyEnter = "Enter";
+const KeyboardKeySpace = " ";
+const KeyboardKeySpacebar = "Spacebar";
+const KeyboardKeyEscape = "Escape";
+const KeyboardKeyEsc = "Esc";
+
 export const KeyboardKey = Object.freeze({
-    ESCAPE: "Escape",
-    ESC: "Esc"
+    ENTER: KeyboardKeyEnter,
+    SPACE: KeyboardKeySpace,
+    SPACEBAR: KeyboardKeySpacebar,
+    ESCAPE: KeyboardKeyEscape,
+    ESC: KeyboardKeyEsc
 });
 
 export const ButtonText = Object.freeze({
