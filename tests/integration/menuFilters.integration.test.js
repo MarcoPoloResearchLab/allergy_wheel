@@ -1,6 +1,6 @@
 import { MenuView } from "../../js/ui/menu.js";
 import { MenuFilterController } from "../../js/ui/menuFilters.js";
-import { MenuElementId } from "../../js/constants.js";
+import { MenuElementId, MenuColumnLabel } from "../../js/constants.js";
 import { NormalizationEngine } from "../../js/utils/utils.js";
 
 const HtmlTagName = Object.freeze({
@@ -115,7 +115,7 @@ function buildMenuTableMarkup() {
     <${HtmlTagName.TABLE}>
       <${HtmlTagName.THEAD}>
         <${HtmlTagName.TR}>
-          <${HtmlTagName.TH}>Dish</${HtmlTagName.TH}>
+          <${HtmlTagName.TH}>${MenuColumnLabel.DISH}</${HtmlTagName.TH}>
           <${HtmlTagName.TH}>
             <${HtmlTagName.DIV} class="${CssClassName.HEADER_CELL}">
               <${HtmlTagName.BUTTON}
@@ -125,7 +125,7 @@ function buildMenuTableMarkup() {
                 aria-haspopup="true"
                 aria-expanded="false"
                 type="button"
-              >Ingredients</${HtmlTagName.BUTTON}>
+              >${MenuColumnLabel.INGREDIENTS}</${HtmlTagName.BUTTON}>
               <${HtmlTagName.DIV}
                 id="${MenuElementId.INGREDIENT_FILTER_PANEL}"
                 class="${CssClassName.FILTER_PANEL}"
@@ -154,7 +154,7 @@ function buildMenuTableMarkup() {
                 aria-haspopup="true"
                 aria-expanded="false"
                 type="button"
-              >Cuisine</${HtmlTagName.BUTTON}>
+              >${MenuColumnLabel.CUISINE}</${HtmlTagName.BUTTON}>
               <${HtmlTagName.DIV}
                 id="${MenuElementId.CUISINE_FILTER_PANEL}"
                 class="${CssClassName.FILTER_PANEL}"
@@ -174,7 +174,7 @@ function buildMenuTableMarkup() {
               </${HtmlTagName.DIV}>
             </${HtmlTagName.DIV}>
           </${HtmlTagName.TH}>
-          <${HtmlTagName.TH}>Story</${HtmlTagName.TH}>
+          <${HtmlTagName.TH}>${MenuColumnLabel.STORY}</${HtmlTagName.TH}>
         </${HtmlTagName.TR}>
       </${HtmlTagName.THEAD}>
       <${HtmlTagName.TBODY} id="${MenuElementId.TABLE_BODY}"></${HtmlTagName.TBODY}>
