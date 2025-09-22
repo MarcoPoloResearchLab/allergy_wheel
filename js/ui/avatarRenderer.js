@@ -8,12 +8,20 @@ import {
     GlobalClassName
 } from "../constants.js";
 
+/** @typedef {import("../types.js").AvatarDescriptor} AvatarDescriptor */
+
 const HtmlTagName = Object.freeze({
     BUTTON: "button",
     IMG: "img",
     SPAN: "span"
 });
 
+/**
+ * Resolves the active avatar descriptor from the provided catalog and selected identifier.
+ *
+ * @param {{ avatarCatalog: AvatarDescriptor[], selectedAvatarId?: string }} options
+ * @returns {AvatarDescriptor | null}
+ */
 function resolveActiveAvatarDescriptor({
     avatarCatalog,
     selectedAvatarId
@@ -26,6 +34,17 @@ function resolveActiveAvatarDescriptor({
     return descriptorMap.get(selectedAvatarId) || defaultDescriptor;
 }
 
+/**
+ * Creates the avatar image element for the toggle button.
+ *
+ * @param {{
+ *     documentReference: Document,
+ *     avatarClassNameMap: typeof AvatarClassName,
+ *     avatarMenuText: typeof AvatarMenuText,
+ *     activeDescriptor: AvatarDescriptor | null
+ * }} options
+ * @returns {HTMLImageElement}
+ */
 function createToggleImageElement({
     documentReference,
     avatarClassNameMap,
@@ -45,6 +64,17 @@ function createToggleImageElement({
     return imageElement;
 }
 
+/**
+ * Creates the label element accompanying the avatar toggle.
+ *
+ * @param {{
+ *     documentReference: Document,
+ *     avatarClassNameMap: typeof AvatarClassName,
+ *     activeDescriptor: AvatarDescriptor | null,
+ *     globalClassName: typeof GlobalClassName
+ * }} options
+ * @returns {HTMLSpanElement}
+ */
 function createToggleLabelElement({
     documentReference,
     avatarClassNameMap,
@@ -71,6 +101,19 @@ function createVisuallyHiddenPrompt({ documentReference, globalClassName, avatar
     return hiddenPromptElement;
 }
 
+/**
+ * Populates the avatar toggle button with prompt text, image, and label.
+ *
+ * @param {{
+ *     toggleButtonElement: HTMLElement,
+ *     activeDescriptor: AvatarDescriptor | null,
+ *     documentReference: Document,
+ *     avatarClassNameMap: typeof AvatarClassName,
+ *     avatarMenuText: typeof AvatarMenuText,
+ *     globalClassName: typeof GlobalClassName
+ * }} options
+ * @returns {{ imageElement: HTMLImageElement, labelElement: HTMLSpanElement }}
+ */
 function populateToggleButton({
     toggleButtonElement,
     activeDescriptor,
@@ -105,6 +148,17 @@ function populateToggleButton({
     return { imageElement, labelElement };
 }
 
+/**
+ * Builds a menu option button for a single avatar descriptor.
+ *
+ * @param {{
+ *     documentReference: Document,
+ *     avatarClassNameMap: typeof AvatarClassName,
+ *     avatarMenuText: typeof AvatarMenuText,
+ *     avatarDescriptor: AvatarDescriptor
+ * }} options
+ * @returns {HTMLButtonElement}
+ */
 function createMenuOptionButton({
     documentReference,
     avatarClassNameMap,
@@ -139,6 +193,17 @@ function createMenuOptionButton({
     return optionButtonElement;
 }
 
+/**
+ * Renders the avatar selection menu options inside the provided container element.
+ *
+ * @param {{
+ *     menuContainerElement: HTMLElement,
+ *     avatarCatalog: AvatarDescriptor[],
+ *     documentReference: Document,
+ *     avatarClassNameMap: typeof AvatarClassName,
+ *     avatarMenuText: typeof AvatarMenuText
+ * }} options
+ */
 function populateMenuContainer({
     menuContainerElement,
     avatarCatalog,
@@ -158,6 +223,21 @@ function populateMenuContainer({
     }
 }
 
+/**
+ * Renders the avatar selection UI and returns references to the key elements.
+ *
+ * @param {{
+ *     toggleButtonElement?: HTMLElement | null,
+ *     menuContainerElement?: HTMLElement | null,
+ *     selectedAvatarId?: string,
+ *     avatarCatalog?: AvatarDescriptor[],
+ *     avatarClassNameMap?: typeof AvatarClassName,
+ *     avatarMenuText?: typeof AvatarMenuText,
+ *     globalClassName?: typeof GlobalClassName,
+ *     documentReference?: Document
+ * }} [options]
+ * @returns {{ imageElement: HTMLImageElement | null, labelElement: HTMLSpanElement | null }}
+ */
 export function renderAvatarSelector({
     toggleButtonElement,
     menuContainerElement,
@@ -201,6 +281,12 @@ export function renderAvatarSelector({
     return { imageElement, labelElement };
 }
 
+/**
+ * Builds a descriptor map keyed by avatar identifier for quick lookup.
+ *
+ * @param {AvatarDescriptor[]} [avatarCatalog=AvatarCatalog] - Catalog of available avatar descriptors.
+ * @returns {Map<string, AvatarDescriptor>} Map keyed by descriptor identifier.
+ */
 export function buildAvatarDescriptorMap(avatarCatalog = AvatarCatalog) {
     const descriptorMap = new Map();
     for (const descriptor of avatarCatalog) {

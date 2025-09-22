@@ -1,6 +1,9 @@
 /* global document */
 import { AttributeBooleanValue, AttributeName, BrowserEventName, ControlElementId } from "../constants.js";
 
+/** @typedef {import("../types.js").AllergenDescriptor} AllergenDescriptor */
+/** @typedef {import("../types.js").AllergenBadgeEntry} AllergenBadgeEntry */
+
 const ElementClassName = Object.freeze({
     CHIP: "chip",
     CHIP_SELECTED: "chip--selected",
@@ -38,6 +41,13 @@ export class AllergenCard {
 
     #onAllergenSelected;
 
+    /**
+     * @param {{
+     *     listContainerElement?: HTMLElement,
+     *     badgeContainerElement?: HTMLElement,
+     *     onAllergenSelected?: (descriptor: AllergenDescriptor) => void
+     * }} [dependencies]
+     */
     constructor({ listContainerElement, badgeContainerElement, onAllergenSelected } = {}) {
         this.#listContainerElement = listContainerElement || null;
         this.#badgeContainerElement = badgeContainerElement || null;
@@ -46,6 +56,11 @@ export class AllergenCard {
             : null;
     }
 
+    /**
+     * Renders allergen chips into the configured list container.
+     *
+     * @param {AllergenDescriptor[]} allergenList - Collection of allergens available for selection.
+     */
     renderAllergens(allergenList) {
         if (!this.#listContainerElement) {
             return;
@@ -116,6 +131,11 @@ export class AllergenCard {
         }
     }
 
+    /**
+     * Updates the badge container to reflect the selected allergen(s).
+     *
+     * @param {(AllergenBadgeEntry|string)[]} allergenEntries - Badge descriptors or string labels to render.
+     */
     updateBadges(allergenEntries) {
         if (!this.#badgeContainerElement) {
             return;
@@ -191,6 +211,11 @@ export class AllergenCard {
         }
     }
 
+    /**
+     * Emits the selected allergen descriptor through the configured callback.
+     *
+     * @param {AllergenDescriptor} allergenDescriptor - Descriptor representing the chosen allergen.
+     */
     #handleAllergenSelection(allergenDescriptor) {
         if (typeof this.#onAllergenSelected !== ValueType.FUNCTION) {
             return;

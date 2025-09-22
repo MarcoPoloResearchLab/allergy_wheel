@@ -35,6 +35,10 @@ import {
     MenuElementId
 } from "../constants.js";
 
+/** @typedef {import("../types.js").AllergenDescriptor} AllergenDescriptor */
+/** @typedef {import("../types.js").AllergenBadgeEntry} AllergenBadgeEntry */
+/** @typedef {import("../types.js").AvatarDescriptor} AvatarDescriptor */
+
 const stateManager = new StateManager();
 
 const listenerBinder = createListenerBinder({
@@ -92,6 +96,11 @@ menuFilterController.initialize();
 const firstCardPresenter = new AllergenCard({
     listContainerElement: document.getElementById(FirstCardElementId.LIST_CONTAINER),
     badgeContainerElement: document.getElementById(FirstCardElementId.BADGE_CONTAINER),
+    /**
+     * Handles allergen selection from the first card presenter.
+     *
+     * @param {AllergenDescriptor} allergenDescriptor - Descriptor representing the chosen allergen.
+     */
     onAllergenSelected: (allergenDescriptor) => {
         if (!allergenDescriptor || !allergenDescriptor.token) {
             return;
@@ -106,6 +115,7 @@ const firstCardPresenter = new AllergenCard({
 
         setDocumentStartButtonBlockedState(false);
 
+        /** @type {AllergenBadgeEntry} */
         const badgeEntry = {
             label: selectedLabel,
             emoji: allergenDescriptor.emoji || ""
@@ -121,8 +131,10 @@ const firstCardPresenter = new AllergenCard({
     }
 });
 
+/** @type {Map<string, AvatarDescriptor>} */
 const avatarDescriptorMap = buildAvatarDescriptorMap(AvatarCatalog);
 
+/** @type {Map<string, string>} */
 const avatarResourceMap = new Map();
 for (const avatarDescriptor of AvatarCatalog) {
     avatarResourceMap.set(avatarDescriptor.id, avatarDescriptor.assetPath);

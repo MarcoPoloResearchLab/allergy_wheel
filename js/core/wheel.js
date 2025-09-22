@@ -1,6 +1,9 @@
 /* File: wheel.js */
 /* global window */
 
+/** @typedef {import("../types.js").WheelLabelDescriptor} WheelLabelDescriptor */
+/** @typedef {import("../types.js").WheelSpinOptions} WheelSpinOptions */
+
 const DEFAULT_SPIN_DURATION_MS = 30000;
 const DEFAULT_REVOLUTIONS = 4;
 const POINTER_TAP_DURATION_MS = 70;
@@ -165,6 +168,11 @@ export class Wheel {
         this.draw();
     }
 
+    /**
+     * Applies the provided label entries to the wheel segments.
+     *
+     * @param {(WheelLabelDescriptor|string)[]} labelEntries - Raw label descriptors or plain strings for each segment.
+     */
     setLabels(labelEntries) {
         const normalized = Array.isArray(labelEntries) ? labelEntries : [];
         this.segmentLabels = normalized
@@ -203,6 +211,11 @@ export class Wheel {
         this.draw();
     }
 
+    /**
+     * Resets the wheel state ahead of a new spin operation.
+     *
+     * @param {WheelSpinOptions} [options] - Options controlling the reset behavior.
+     */
     resetForNewSpin({ randomizeStart = true } = {}) {
         this.cancelScheduledAnimation();
         this.isSpinning = false;
@@ -406,6 +419,11 @@ export class Wheel {
         return normalizedIndex;
     }
 
+    /**
+     * Initiates a spin animation targeting the provided segment index.
+     *
+     * @param {number} [requestedIndex] - Index of the segment to stop on; defaults to a random index when omitted.
+     */
     spin(requestedIndex) {
         if (this.isSpinning || !this.segmentLabels.length) {
             return;
