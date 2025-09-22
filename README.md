@@ -43,3 +43,8 @@ the allergy result card during the reveal sequence.
 To change avatars, click the avatar button in the header to open the selector menu. Choosing any option updates the
 header image immediately, closes the menu, and persists the selection so the reveal card shows the same avatar until a
 different option is picked.
+
+## License
+
+This project is proprietary software. All rights reserved by Marco Polo Research Lab.  
+See the [LICENSE](./LICENSE) file for details.
