@@ -1029,7 +1029,7 @@ body[data-screen="menu"] #screen-menu { display: block }
     line-height: 1.5;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
     #screen-menu { padding: 18px; }
     .menu-card { padding: 18px; }
     .menu-table-wrapper { border-radius: 18px; }
