@@ -1,5 +1,30 @@
 # AGENTS.md
 
+## Spinning Allergy Wheel
+
+I want a game written in JavaScript, using CDN only (no local npm, node, etc)
+
+The game starts with the screen to select an allergy (e.g. peanuts, Italian sausage, and other food ingredients that
+children often are allergic to)
+
+After the selection a spinning wheel is present with the names of popular dishes from various cuisines. There is a stop
+button to stop the wheel.
+
+When we say start game, the allergens' selection disappears and the wheel starts spinning. there is a large red button
+that says stop; otherwise the wheel spins for 30 seconds, progressively slowing down
+
+When the wheel stops:
+
+1. there are Spin and Restart buttons on the wheel.
+2. the ingredients are revealed in a modal window. if there was an ingredient that a player was allergic to, then an
+   ambulance sound is played and a puffed face is displayed. If there are no ingredients the player is allergic to, they
+   Yum-yum sound is played.
+
+The game is full screen with bright colors and bold graphics. There is a button that sends the browser full screen,
+There is also a mute button to disable sounds.
+
+There is a menu screen that allows selecting the dishes based on the allergic
+
 ## JavaScript Coding Standards (Browser ES Modules)
 
 ### 1. Naming & Identifiers
@@ -7,7 +32,7 @@
 * No single-letter or non-descriptive names.
 * camelCase → variables & functions.
 * PascalCase → classes.
-* SCREAMING\_SNAKE\_CASE → constants.
+* SCREAMING_SNAKE_CASE → constants.
 * Handlers named by behavior (`handleSpinButtonClick`, not `onClick`).
 
 ### 2. Dead Code & Duplication
@@ -84,7 +109,8 @@
 
 * ESLint run manually (Dockerized).
 * Prettier only on explicit trigger, never autosave.
-* Core enforced rules: no-unused-vars, no-implicit-globals, no-var, prefer-const, eqeqeq, no-magic-numbers (allowlist: 0,1,-1,100,360).
+* Core enforced rules: no-unused-vars, no-implicit-globals, no-var, prefer-const, eqeqeq, no-magic-numbers (allowlist:
+  0,1,-1,100,360).
 
 ### 12. Data > Logic
 
