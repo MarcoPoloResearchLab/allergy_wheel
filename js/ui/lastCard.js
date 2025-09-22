@@ -5,7 +5,7 @@ import {
     AttributeBooleanValue,
     ButtonText,
     AvatarId
-} from "./constants.js";
+} from "../constants.js";
 
 const ElementTagName = Object.freeze({
     SPAN: "span",

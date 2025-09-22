@@ -1,5 +1,5 @@
 /* global document */
-import { AttributeBooleanValue, AttributeName, BrowserEventName, ControlElementId } from "./constants.js";
+import { AttributeBooleanValue, AttributeName, BrowserEventName, ControlElementId } from "../constants.js";
 
 const ElementClassName = Object.freeze({
     CHIP: "chip",

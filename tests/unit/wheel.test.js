@@ -1,5 +1,5 @@
 import { jest } from "@jest/globals";
-import { Wheel } from "../../wheel.js";
+import { Wheel } from "../../js/core/wheel.js";
 
 const WheelStopBehaviorDescription = Object.freeze({
   PREVENTS_DUPLICATE_COMPLETION:

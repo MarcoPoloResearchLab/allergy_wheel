@@ -1,7 +1,7 @@
-import { MenuView } from "../../menu.js";
-import { MenuFilterController } from "../../menuFilters.js";
-import { MenuElementId } from "../../constants.js";
-import { NormalizationEngine } from "../../utils.js";
+import { MenuView } from "../../js/ui/menu.js";
+import { MenuFilterController } from "../../js/ui/menuFilters.js";
+import { MenuElementId } from "../../js/constants.js";
+import { NormalizationEngine } from "../../js/utils/utils.js";
 
 const HtmlTagName = Object.freeze({
   TABLE: "table",

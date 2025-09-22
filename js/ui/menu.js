@@ -1,4 +1,4 @@
-import { ScreenName } from "./constants.js";
+import { ScreenName } from "../constants.js";
 
 const TextContent = Object.freeze({
     EMPTY: ""

@@ -1,5 +1,5 @@
 import { jest } from "@jest/globals";
-import { Wheel } from "../../wheel.js";
+import { Wheel } from "../../js/core/wheel.js";
 
 const WheelTestDescription = Object.freeze({
   RENDERS_LABELS_TO_CANVAS: "initializes wheel and renders segment labels to canvas"

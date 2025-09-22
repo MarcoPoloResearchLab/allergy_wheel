@@ -1,5 +1,5 @@
 import { jest } from "@jest/globals";
-import { createListenerBinder } from "../../listeners.js";
+import { createListenerBinder } from "../../js/utils/listeners.js";
 import {
   AttributeBooleanValue,
   AttributeName,
@@ -8,7 +8,7 @@ import {
   KeyboardKey,
   RestartConfirmationText,
   WheelControlMode
-} from "../../constants.js";
+} from "../../js/constants.js";
 
 const RestartModalScenarioDescription = Object.freeze({
   PRESENTS_DIALOG: "displays the restart confirmation modal and focuses the dialog",

@@ -3,7 +3,7 @@ import {
     AttributeName,
     AttributeBooleanValue,
     ControlElementId
-} from "./constants.js";
+} from "../constants.js";
 
 const TextContent = Object.freeze({
     EMPTY: ""

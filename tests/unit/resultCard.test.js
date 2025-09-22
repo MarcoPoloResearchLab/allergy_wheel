@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 
-import { ResultCard } from "../../lastCard.js";
-import { AvatarId, AvatarAssetPath } from "../../constants.js";
+import { ResultCard } from "../../js/ui/lastCard.js";
+import { AvatarId, AvatarAssetPath } from "../../js/constants.js";
 
 const AvatarMarkup = Object.freeze({
   SUNNY: `<circle cx="50" cy="50" data-testid="avatar-sunny" r="45"></circle>`,

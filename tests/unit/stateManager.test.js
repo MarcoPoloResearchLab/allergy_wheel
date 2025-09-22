@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
-import { StateManager, DEFAULT_INITIAL_HEARTS_COUNT } from "../../state.js";
-import { MODE_START, MODE_STOP, AvatarId } from "../../constants.js";
+import { StateManager, DEFAULT_INITIAL_HEARTS_COUNT } from "../../js/core/state.js";
+import { MODE_START, MODE_STOP, AvatarId } from "../../js/constants.js";
 
 const ErrorPattern = Object.freeze({
   INVALID_INITIAL_HEARTS: /requires a numeric initialHeartsCount/iu,
