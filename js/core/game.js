@@ -6,6 +6,15 @@ import {
     DocumentElementId
 } from "../constants.js";
 
+/** @typedef {import("../types.js").AllergenDescriptor} AllergenDescriptor */
+/** @typedef {import("../types.js").Dish} Dish */
+/** @typedef {import("../types.js").NormalizationRule} NormalizationRule */
+/** @typedef {import("../types.js").CountryDescriptor} CountryDescriptor */
+/** @typedef {import("../types.js").IngredientDescriptor} IngredientDescriptor */
+/** @typedef {import("../types.js").WheelLabelDescriptor} WheelLabelDescriptor */
+/** @typedef {import("../types.js").WheelSpinOptions} WheelSpinOptions */
+/** @typedef {import("../types.js").GameData} GameData */
+
 const WheelConfiguration = Object.freeze({
     SEGMENT_COUNT: 8,
     DEFAULT_SPIN_DURATION_MS: 30000,
@@ -139,6 +148,14 @@ function calculateAllergenSegmentTarget(heartsCount) {
     return Math.min(WheelConfiguration.SEGMENT_COUNT, clampedSegments);
 }
 
+/**
+ * Selects a set of dishes with fallback duplication when the requested count exceeds unique entries.
+ *
+ * @param {Dish[]} sourceDishes - Source dish catalog used for selection.
+ * @param {number} desiredCount - Number of dishes to return.
+ * @param {(items: Dish[], count: number) => Dish[]} pickRandomUnique - Helper that returns a random subset of dishes.
+ * @returns {Dish[]} Collection of dishes sized according to the desired count.
+ */
 function selectDishesWithFallback(sourceDishes, desiredCount, pickRandomUnique) {
     if (!Array.isArray(sourceDishes) || sourceDishes.length === 0 || desiredCount <= 0) {
         return [];
@@ -164,6 +181,12 @@ function selectDishesWithFallback(sourceDishes, desiredCount, pickRandomUnique) 
     return selectedDishes;
 }
 
+/**
+ * Formats the invariant violation message produced when a token has no associated dishes.
+ *
+ * @param {string} allergenToken - Token that failed to resolve any dishes.
+ * @returns {string} Detailed error message for logging or surfaced errors.
+ */
 function formatMissingDishesMessage(allergenToken) {
     return `${GameErrorMessage.NO_DISHES_FOR_ALLERGEN_PREFIX} '${allergenToken}'`;
 }
@@ -274,6 +297,11 @@ export class GameController {
         }
     }
 
+    /**
+     * Loads and validates the game data catalogs necessary for gameplay.
+     *
+     * @returns {Promise<GameData>} Resolved game data containing catalogs and normalization rules.
+     */
     async #loadGameData() {
         const { loadJson } = this.#dataLoader;
 
@@ -313,6 +341,11 @@ export class GameController {
         };
     }
 
+    /**
+     * Applies loaded game data to board, presenters, and derived caches.
+     *
+     * @param {GameData} param0 - Aggregated game data returned from {@link GameController.#loadGameData}.
+     */
     #prepareBoardAndState({
         allergensCatalog,
         dishesCatalog,
@@ -359,6 +392,12 @@ export class GameController {
         this.#heartsPresenter.renderHearts(initialHeartsCount, { animate: false });
     }
 
+    /**
+     * Builds a lookup map associating cuisines with their representative flags.
+     *
+     * @param {CountryDescriptor[]} countriesCatalog - Catalog entries describing cuisine to flag associations.
+     * @returns {Map<string, string>} Map keyed by normalized cuisine name with emoji values.
+     */
     #buildCuisineFlagMap(countriesCatalog) {
         const cuisineMap = new Map();
         if (Array.isArray(countriesCatalog)) {
@@ -375,6 +414,12 @@ export class GameController {
         return cuisineMap;
     }
 
+    /**
+     * Builds an ingredient emoji lookup map for quick rendering by name.
+     *
+     * @param {IngredientDescriptor[]} ingredientsCatalog - Catalog entries containing ingredient emoji metadata.
+     * @returns {Map<string, string>} Map from normalized ingredient name to emoji.
+     */
     #buildIngredientEmojiMap(ingredientsCatalog) {
         const emojiMap = new Map();
         for (const ingredientRecord of ingredientsCatalog) {
@@ -389,6 +434,11 @@ export class GameController {
         return emojiMap;
     }
 
+    /**
+     * Sends the loaded allergen catalog to the first card presenter and initializes UI state.
+     *
+     * @param {AllergenDescriptor[]} allergensCatalog - Catalog of allergens presented to the player.
+     */
     #initializeSelectionUi(allergensCatalog) {
         if (!this.#firstCardPresenter || typeof this.#firstCardPresenter.renderAllergens !== "function") {
             return;
@@ -569,12 +619,16 @@ export class GameController {
         console.error(errorObject);
     }
 
+    /**
+     * Triggers a new wheel spin using the currently selected allergen state.
+     */
     #startSpinWithFreshState() {
         if (!this.#stateManager.hasSelectedAllergen || !this.#stateManager.hasSelectedAllergen()) {
             return;
         }
 
         this.#recomputeWheelFromSelection();
+        /** @type {WheelLabelDescriptor[]} */
         const candidateLabels = this.#stateManager.getWheelCandidateLabels
             ? this.#stateManager.getWheelCandidateLabels()
             : [];
@@ -583,7 +637,9 @@ export class GameController {
         }
 
         if (this.#wheel.resetForNewSpin) {
-            this.#wheel.resetForNewSpin({ randomizeStart: true });
+            /** @type {WheelSpinOptions} */
+            const spinOptions = { randomizeStart: true };
+            this.#wheel.resetForNewSpin(spinOptions);
         }
         if (this.#wheel.setRevolutions) {
             this.#wheel.setRevolutions(chooseRandomRevolutions());
@@ -599,6 +655,9 @@ export class GameController {
         }
     }
 
+    /**
+     * Rebuilds wheel candidates and labels based on the currently selected allergen token.
+     */
     #recomputeWheelFromSelection() {
         const boardInstance = this.#stateManager.getBoard ? this.#stateManager.getBoard() : null;
         const selectedToken = this.#stateManager.getSelectedAllergenToken
@@ -670,6 +729,7 @@ export class GameController {
         shuffleArrayInPlace(combinedDishes);
 
         const limitedDishes = combinedDishes.slice(0, totalSegments);
+        /** @type {WheelLabelDescriptor[]} */
         const candidateLabels = limitedDishes
             .map((dish) => ({ label: boardInstance.getDishLabel(dish), emoji: dish.emoji || "" }))
             .filter((entry) => entry.label)
@@ -688,7 +748,13 @@ export class GameController {
         }
     }
 
+    /**
+     * Handles state transitions and UI updates once the wheel animation completes.
+     *
+     * @param {number} winnerIndex - Index of the winning segment resolved by the wheel component.
+     */
     #handleSpinResult(winnerIndex) {
+        /** @type {Dish[]} */
         const candidateDishes = this.#stateManager.getWheelCandidateDishes
             ? this.#stateManager.getWheelCandidateDishes()
             : [];
