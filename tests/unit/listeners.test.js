@@ -1,5 +1,5 @@
 import { jest } from "@jest/globals";
-import { createListenerBinder } from "../../listeners.js";
+import { createListenerBinder } from "../../js/utils/listeners.js";
 import {
   ControlElementId,
   AttributeName,
@@ -9,7 +9,7 @@ import {
   WheelControlMode,
   KeyboardKey,
   BrowserEventName
-} from "../../constants.js";
+} from "../../js/constants.js";
 
 function createStateManagerStub({ initialMuted = false, initialWheelControlMode = WheelControlMode.STOP } = {}) {
   let mutedState = Boolean(initialMuted);

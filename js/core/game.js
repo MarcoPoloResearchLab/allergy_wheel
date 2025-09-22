@@ -4,7 +4,7 @@ import {
     BrowserEventName,
     AttributeBooleanValue,
     DocumentElementId
-} from "./constants.js";
+} from "../constants.js";
 
 const WheelConfiguration = Object.freeze({
     SEGMENT_COUNT: 8,

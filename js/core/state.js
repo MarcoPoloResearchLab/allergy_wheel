@@ -1,4 +1,4 @@
-import { WheelControlMode, AvatarId } from "./constants.js";
+import { WheelControlMode, AvatarId } from "../constants.js";
 
 const DEFAULT_INITIAL_HEARTS_COUNT = 5;
 

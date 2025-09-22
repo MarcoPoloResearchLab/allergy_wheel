@@ -4,7 +4,7 @@ import {
     AttributeBooleanValue,
     BrowserEventName,
     HeartsElementId
-} from "./constants.js";
+} from "../constants.js";
 
 const ElementTagName = Object.freeze({
     SPAN: "span"

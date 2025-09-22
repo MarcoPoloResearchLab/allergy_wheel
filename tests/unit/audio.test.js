@@ -1,5 +1,5 @@
 import { jest } from "@jest/globals";
-import { AudioAssetPath } from "../../constants.js";
+import { AudioAssetPath } from "../../js/constants.js";
 
 function createMockAudioParam(initialValue = 0) {
   const history = [];
@@ -179,7 +179,7 @@ describe("playSiren", () => {
     mockContext = createMockAudioContext();
     window.AudioContext = jest.fn(() => mockContext);
     window.webkitAudioContext = undefined;
-    ({ playSiren } = await import("../../audio.js"));
+    ({ playSiren } = await import("../../js/utils/audio.js"));
   });
 
   afterEach(() => {
@@ -378,7 +378,7 @@ describe("playNomNom", () => {
       arrayBuffer: jest.fn(() => Promise.resolve(arrayBufferPayload))
     };
     global.fetch = jest.fn(() => Promise.resolve(fetchResponse));
-    ({ playNomNom, preloadNomNom } = await import("../../audio.js"));
+    ({ playNomNom, preloadNomNom } = await import("../../js/utils/audio.js"));
   });
 
   afterEach(() => {

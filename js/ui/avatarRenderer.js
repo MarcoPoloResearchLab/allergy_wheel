@@ -6,7 +6,7 @@ import {
     AvatarId,
     AvatarMenuText,
     GlobalClassName
-} from "./constants.js";
+} from "../constants.js";
 
 const HtmlTagName = Object.freeze({
     BUTTON: "button",

@@ -1,14 +1,14 @@
 import { GameController } from "./game.js";
 import { Wheel } from "./wheel.js";
-import { createListenerBinder } from "./listeners.js";
+import { createListenerBinder } from "../utils/listeners.js";
 import { StateManager } from "./state.js";
 import { Board } from "./board.js";
-import { NormalizationEngine, loadJson, pickRandomUnique } from "./utils.js";
-import { AllergenCard } from "./firstCard.js";
-import { ResultCard } from "./lastCard.js";
-import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "./hearts.js";
-import { MenuView } from "./menu.js";
-import { MenuFilterController } from "./menuFilters.js";
+import { NormalizationEngine, loadJson, pickRandomUnique } from "../utils/utils.js";
+import { AllergenCard } from "../ui/firstCard.js";
+import { ResultCard } from "../ui/lastCard.js";
+import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "../ui/hearts.js";
+import { MenuView } from "../ui/menu.js";
+import { MenuFilterController } from "../ui/menuFilters.js";
 import { NavigationController, resolveInitialNavState } from "./navigation.js";
 import {
     primeAudioOnFirstGesture as primeAudioOnFirstGestureEffect,
@@ -16,9 +16,9 @@ import {
     playSiren as playSirenEffect,
     playNomNom as playNomNomEffect,
     playWin as playWinEffect
-} from "./audio.js";
-import { openRestartConfirmation, setWheelControlToStop, setWheelControlToStartGame, showScreen } from "./ui.js";
-import { renderAvatarSelector, buildAvatarDescriptorMap } from "./avatarRenderer.js";
+} from "../utils/audio.js";
+import { openRestartConfirmation, setWheelControlToStop, setWheelControlToStartGame, showScreen } from "../ui/ui.js";
+import { renderAvatarSelector, buildAvatarDescriptorMap } from "../ui/avatarRenderer.js";
 import {
     ControlElementId,
     AttributeName,
@@ -33,7 +33,7 @@ import {
     AvatarMenuText,
     ScreenName,
     MenuElementId
-} from "./constants.js";
+} from "../constants.js";
 
 const stateManager = new StateManager();
 

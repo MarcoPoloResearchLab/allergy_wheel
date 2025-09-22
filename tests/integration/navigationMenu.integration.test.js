@@ -1,14 +1,14 @@
 import { jest } from "@jest/globals";
-import { NavigationController } from "../../navigation.js";
-import { MenuView } from "../../menu.js";
+import { NavigationController } from "../../js/core/navigation.js";
+import { MenuView } from "../../js/ui/menu.js";
 import {
   ControlElementId,
   AttributeName,
   AttributeBooleanValue,
   ScreenName,
   MenuElementId
-} from "../../constants.js";
-import { NormalizationEngine } from "../../utils.js";
+} from "../../js/constants.js";
+import { NormalizationEngine } from "../../js/utils/utils.js";
 
 const HtmlTagName = Object.freeze({
   BUTTON: "button",

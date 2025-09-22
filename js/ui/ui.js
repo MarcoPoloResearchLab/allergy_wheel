@@ -8,7 +8,7 @@ import {
     ControlElementId,
     WheelControlClassName,
     WheelControlMode
-} from "./constants.js";
+} from "../constants.js";
 
 const WheelRestartTabIndex = Object.freeze({
     ACTIVE: 0,

@@ -1,7 +1,7 @@
-import { createListenerBinder } from "../../listeners.js";
-import { StateManager } from "../../state.js";
-import { ResultCard } from "../../lastCard.js";
-import { renderAvatarSelector, buildAvatarDescriptorMap } from "../../avatarRenderer.js";
+import { createListenerBinder } from "../../js/utils/listeners.js";
+import { StateManager } from "../../js/core/state.js";
+import { ResultCard } from "../../js/ui/lastCard.js";
+import { renderAvatarSelector, buildAvatarDescriptorMap } from "../../js/ui/avatarRenderer.js";
 import {
   ControlElementId,
   AttributeName,
@@ -13,7 +13,7 @@ import {
   AvatarMenuClassName,
   AvatarMenuText,
   GlobalClassName
-} from "../../constants.js";
+} from "../../js/constants.js";
 
 const EmptyStringValue = "";
 const SvgNamespaceUri = "http://www.w3.org/2000/svg";
