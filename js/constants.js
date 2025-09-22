@@ -239,6 +239,18 @@ export const MenuFilterText = Object.freeze({
     SELECT_ALL_LABEL: "Show all"
 });
 
+const MenuColumnLabelDishText = "Dish";
+const MenuColumnLabelIngredientsText = "Ingredients";
+const MenuColumnLabelCuisineText = "Cuisine";
+const MenuColumnLabelStoryText = "Story";
+
+export const MenuColumnLabel = Object.freeze({
+    DISH: MenuColumnLabelDishText,
+    INGREDIENTS: MenuColumnLabelIngredientsText,
+    CUISINE: MenuColumnLabelCuisineText,
+    STORY: MenuColumnLabelStoryText
+});
+
 export const DocumentElementId = Object.freeze({
     LOADING: "loading",
     LOAD_ERROR: "load-error",
@@ -259,7 +271,8 @@ export const AttributeName = Object.freeze({
     DATA_SCREEN: "data-screen",
     DATA_COUNT: "data-count",
     DATA_BLOCKED: "data-blocked",
-    DATA_WHEEL_CONTROL_MODE: "data-wheel-control-mode"
+    DATA_WHEEL_CONTROL_MODE: "data-wheel-control-mode",
+    DATA_COLUMN_LABEL: "data-column-label"
 });
 
 export const AttributeBooleanValue = Object.freeze({

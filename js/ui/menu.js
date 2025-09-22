@@ -1,4 +1,4 @@
-import { ScreenName } from "../constants.js";
+import { ScreenName, MenuColumnLabel, AttributeName } from "../constants.js";
 
 /** @typedef {import("../types.js").Dish} Dish */
 /** @typedef {import("../types.js").AllergenDescriptor} AllergenDescriptor */
@@ -21,6 +21,7 @@ const ClassName = Object.freeze({
     CELL_INGREDIENTS: "menu-cell menu-cell--ingredients",
     CELL_CUISINE: "menu-cell menu-cell--cuisine",
     CELL_NARRATIVE: "menu-cell menu-cell--narrative",
+    CELL_LABEL: "menu-cell__label",
     DISH_HEADING: "menu-dish-heading",
     DISH_TITLE: "menu-dish-title",
     INGREDIENTS_CONTAINER: "ingredients menu-ingredients",
@@ -249,6 +250,7 @@ export class MenuView {
     #createDishCell(dishRecord) {
         const cellElement = this.#documentReference.createElement(HtmlTagName.TD);
         cellElement.className = ClassName.CELL_DISH;
+        this.#decorateCellWithColumnLabel(cellElement, MenuColumnLabel.DISH);
 
         const headingElement = this.#documentReference.createElement(HtmlTagName.DIV);
         headingElement.className = ClassName.DISH_HEADING;
@@ -274,6 +276,7 @@ export class MenuView {
     #createIngredientsCell(dishRecord) {
         const cellElement = this.#documentReference.createElement(HtmlTagName.TD);
         cellElement.className = ClassName.CELL_INGREDIENTS;
+        this.#decorateCellWithColumnLabel(cellElement, MenuColumnLabel.INGREDIENTS);
 
         const ingredientsContainer = this.#documentReference.createElement(HtmlTagName.DIV);
         ingredientsContainer.className = ClassName.INGREDIENTS_CONTAINER;
@@ -291,6 +294,7 @@ export class MenuView {
     #createCuisineCell(dishRecord) {
         const cellElement = this.#documentReference.createElement(HtmlTagName.TD);
         cellElement.className = ClassName.CELL_CUISINE;
+        this.#decorateCellWithColumnLabel(cellElement, MenuColumnLabel.CUISINE);
 
         const badgeElement = this.#documentReference.createElement(HtmlTagName.SPAN);
         badgeElement.className = ClassName.CUISINE_BADGE;
@@ -316,6 +320,7 @@ export class MenuView {
     #createNarrativeCell(dishRecord) {
         const cellElement = this.#documentReference.createElement(HtmlTagName.TD);
         cellElement.className = ClassName.CELL_NARRATIVE;
+        this.#decorateCellWithColumnLabel(cellElement, MenuColumnLabel.STORY);
 
         const paragraphElement = this.#documentReference.createElement(HtmlTagName.P);
         paragraphElement.className = ClassName.NARRATIVE;
@@ -323,6 +328,16 @@ export class MenuView {
 
         cellElement.appendChild(paragraphElement);
         return cellElement;
+    }
+
+    #decorateCellWithColumnLabel(cellElement, columnLabelText) {
+        const labelText = typeof columnLabelText === "string" ? columnLabelText : TextContent.EMPTY;
+        cellElement.setAttribute(AttributeName.DATA_COLUMN_LABEL, labelText);
+
+        const labelSpan = this.#documentReference.createElement(HtmlTagName.SPAN);
+        labelSpan.className = ClassName.CELL_LABEL;
+        labelSpan.textContent = labelText;
+        cellElement.appendChild(labelSpan);
     }
 
     /**
