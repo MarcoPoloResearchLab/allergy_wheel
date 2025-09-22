@@ -208,15 +208,6 @@ header h1 { margin: 0; font-size: clamp(18px, 2.2vw, 28px) }
         display: none;
     }
 
-    .menu-table tbody {
-        display: block;
-        width: 100%;
-    }
-
-    .menu-table tbody tr {
-        display: block;
-    }
-
     .menu-table tbody tr + tr {
         margin-top: 16px;
     }
