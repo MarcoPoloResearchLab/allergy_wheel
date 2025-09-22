@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
-import { GameController } from "../../game.js";
-import { createListenerBinder } from "../../listeners.js";
+import { GameController } from "../../js/core/game.js";
+import { createListenerBinder } from "../../js/utils/listeners.js";
 import {
   ControlElementId,
   AttributeName,
@@ -12,9 +12,9 @@ import {
   WheelControlClassName,
   KeyboardKey,
   WheelControlMode
-} from "../../constants.js";
-import { StateManager } from "../../state.js";
-import { setWheelControlToStartGame, setWheelControlToStop } from "../../ui.js";
+} from "../../js/constants.js";
+import { StateManager } from "../../js/core/state.js";
+import { setWheelControlToStartGame, setWheelControlToStop } from "../../js/ui/ui.js";
 
 const GameOutcomeDescription = Object.freeze({
   LOSS: "decrements hearts to zero and shows game over",

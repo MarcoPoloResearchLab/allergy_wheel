@@ -5,7 +5,7 @@ import {
     KeyboardKey,
     MenuElementId,
     MenuFilterText
-} from "./constants.js";
+} from "../constants.js";
 
 const MenuFilterType = Object.freeze({
     INGREDIENT: "ingredient",

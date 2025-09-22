@@ -5,7 +5,10 @@ import {
     AttributeBooleanValue,
     ButtonText,
     AvatarId
-} from "./constants.js";
+} from "../constants.js";
+
+/** @typedef {import("../types.js").AllergenDescriptor} AllergenDescriptor */
+/** @typedef {import("../types.js").Dish} Dish */
 
 const ElementTagName = Object.freeze({
     SPAN: "span",
@@ -116,6 +119,25 @@ export class ResultCard {
 
     #selectedAvatarId;
 
+    /**
+     * @param {{
+     *     documentReference?: Document,
+     *     revealSectionElement?: HTMLElement | null,
+     *     dishTitleElement?: HTMLElement | null,
+     *     dishCuisineElement?: HTMLElement | null,
+     *     resultBannerElement?: HTMLElement | null,
+     *     resultTextElement?: HTMLElement | null,
+     *     ingredientsContainerElement?: HTMLElement | null,
+     *     faceSvgElement?: SVGElement | HTMLElement | null,
+     *     gameOverSectionElement?: HTMLElement | null,
+     *     normalizationEngine?: import("../utils/utils.js").NormalizationEngine | null,
+     *     allergensCatalog?: AllergenDescriptor[],
+     *     cuisineToFlagMap?: Map<string, string> | Iterable<[string, string]>,
+     *     ingredientEmojiByName?: Map<string, string> | Iterable<[string, string]>,
+     *     avatarMap?: Map<string, string> | Iterable<[string, string]>,
+     *     selectedAvatarId?: string
+     * }} [dependencies]
+     */
     constructor({
         documentReference = document,
         revealSectionElement,
@@ -156,6 +178,16 @@ export class ResultCard {
         this.updateAvatarSelection(selectedAvatarId);
     }
 
+    /**
+     * Refreshes cached dependencies when new catalog data is supplied.
+     *
+     * @param {{
+     *     normalizationEngine?: import("../utils/utils.js").NormalizationEngine | null,
+     *     allergensCatalog?: AllergenDescriptor[],
+     *     cuisineToFlagMap?: Map<string, string> | Iterable<[string, string]>,
+     *     ingredientEmojiByName?: Map<string, string> | Iterable<[string, string]>
+     * }} [dependencies]
+     */
     updateDataDependencies({
         normalizationEngine,
         allergensCatalog,
@@ -177,6 +209,12 @@ export class ResultCard {
         }
     }
 
+    /**
+     * Updates the active avatar resource and re-renders the SVG when possible.
+     *
+     * @param {string | null | undefined} avatarIdentifierCandidate - Candidate avatar identifier selected by the player.
+     * @returns {{ selectedAvatarId: string, hasRenderableAvatar: boolean }} Result of the update operation.
+     */
     updateAvatarSelection(avatarIdentifierCandidate) {
         const normalizedCandidate = typeof avatarIdentifierCandidate === "string"
             ? avatarIdentifierCandidate.trim()
@@ -209,6 +247,16 @@ export class ResultCard {
         };
     }
 
+    /**
+     * Populates the reveal card UI with the provided dish details.
+     *
+     * @param {{
+     *     dish: Dish | null,
+     *     selectedAllergenToken: string | null,
+     *     selectedAllergenLabel: string
+     * }} options
+     * @returns {{ hasTriggeringIngredient: boolean }} Indicates whether the dish contains the selected allergen.
+     */
     populateRevealCard({
         dish,
         selectedAllergenToken,
@@ -412,6 +460,12 @@ export class ResultCard {
         return false;
     }
 
+    /**
+     * Constructs a lookup map from allergen token to emoji for quick ingredient decoration.
+     *
+     * @param {AllergenDescriptor[]} [allergensCatalog] - Catalog entries supplying allergen emojis.
+     * @returns {Map<string, string>} Map keyed by allergen token with emoji values.
+     */
     #buildEmojiByTokenMap(allergensCatalog) {
         const emojiMap = new Map();
         for (const allergenRecord of allergensCatalog || []) {

@@ -1,5 +1,7 @@
 /* global window */
 
+/** @typedef {import("../types.js").NormalizationRule} NormalizationRule */
+
 export async function loadJson(pathString) {
     const httpResponse = await fetch(pathString, { cache: "no-store" });
     if (!httpResponse.ok) throw new Error(`failed to load ${pathString}`);
@@ -7,6 +9,9 @@ export async function loadJson(pathString) {
 }
 
 export class NormalizationEngine {
+    /**
+     * @param {NormalizationRule[]} ruleDescriptors - Descriptors used to compile normalization regular expressions.
+     */
     constructor(ruleDescriptors) {
         this.compiledRules = [];
         if (Array.isArray(ruleDescriptors)) {
@@ -23,6 +28,12 @@ export class NormalizationEngine {
         }
     }
 
+    /**
+     * Determines the set of allergen tokens triggered by a single ingredient string.
+     *
+     * @param {string} ingredientText - Ingredient text to evaluate against the compiled rules.
+     * @returns {Set<string>} Set of allergen tokens detected within the ingredient text.
+     */
     tokensForIngredient(ingredientText) {
         const foundTokens = new Set();
         const candidateText = String(ingredientText || "");
@@ -35,6 +46,12 @@ export class NormalizationEngine {
         return foundTokens;
     }
 
+    /**
+     * Aggregates allergen tokens detected across a list of ingredient strings.
+     *
+     * @param {string[]} ingredientArray - Collection of ingredient text entries for a dish.
+     * @returns {Set<string>} Union of allergen tokens produced for the provided ingredients.
+     */
     tokensForDishIngredients(ingredientArray) {
         const union = new Set();
         for (const singleIngredient of ingredientArray || []) {

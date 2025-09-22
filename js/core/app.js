@@ -1,14 +1,14 @@
 import { GameController } from "./game.js";
 import { Wheel } from "./wheel.js";
-import { createListenerBinder } from "./listeners.js";
+import { createListenerBinder } from "../utils/listeners.js";
 import { StateManager } from "./state.js";
 import { Board } from "./board.js";
-import { NormalizationEngine, loadJson, pickRandomUnique } from "./utils.js";
-import { AllergenCard } from "./firstCard.js";
-import { ResultCard } from "./lastCard.js";
-import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "./hearts.js";
-import { MenuView } from "./menu.js";
-import { MenuFilterController } from "./menuFilters.js";
+import { NormalizationEngine, loadJson, pickRandomUnique } from "../utils/utils.js";
+import { AllergenCard } from "../ui/firstCard.js";
+import { ResultCard } from "../ui/lastCard.js";
+import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "../ui/hearts.js";
+import { MenuView } from "../ui/menu.js";
+import { MenuFilterController } from "../ui/menuFilters.js";
 import { NavigationController, resolveInitialNavState } from "./navigation.js";
 import {
     primeAudioOnFirstGesture as primeAudioOnFirstGestureEffect,
@@ -16,9 +16,9 @@ import {
     playSiren as playSirenEffect,
     playNomNom as playNomNomEffect,
     playWin as playWinEffect
-} from "./audio.js";
-import { openRestartConfirmation, setWheelControlToStop, setWheelControlToStartGame, showScreen } from "./ui.js";
-import { renderAvatarSelector, buildAvatarDescriptorMap } from "./avatarRenderer.js";
+} from "../utils/audio.js";
+import { openRestartConfirmation, setWheelControlToStop, setWheelControlToStartGame, showScreen } from "../ui/ui.js";
+import { renderAvatarSelector, buildAvatarDescriptorMap } from "../ui/avatarRenderer.js";
 import {
     ControlElementId,
     AttributeName,
@@ -33,7 +33,11 @@ import {
     AvatarMenuText,
     ScreenName,
     MenuElementId
-} from "./constants.js";
+} from "../constants.js";
+
+/** @typedef {import("../types.js").AllergenDescriptor} AllergenDescriptor */
+/** @typedef {import("../types.js").AllergenBadgeEntry} AllergenBadgeEntry */
+/** @typedef {import("../types.js").AvatarDescriptor} AvatarDescriptor */
 
 const stateManager = new StateManager();
 
@@ -92,6 +96,11 @@ menuFilterController.initialize();
 const firstCardPresenter = new AllergenCard({
     listContainerElement: document.getElementById(FirstCardElementId.LIST_CONTAINER),
     badgeContainerElement: document.getElementById(FirstCardElementId.BADGE_CONTAINER),
+    /**
+     * Handles allergen selection from the first card presenter.
+     *
+     * @param {AllergenDescriptor} allergenDescriptor - Descriptor representing the chosen allergen.
+     */
     onAllergenSelected: (allergenDescriptor) => {
         if (!allergenDescriptor || !allergenDescriptor.token) {
             return;
@@ -106,6 +115,7 @@ const firstCardPresenter = new AllergenCard({
 
         setDocumentStartButtonBlockedState(false);
 
+        /** @type {AllergenBadgeEntry} */
         const badgeEntry = {
             label: selectedLabel,
             emoji: allergenDescriptor.emoji || ""
@@ -121,8 +131,10 @@ const firstCardPresenter = new AllergenCard({
     }
 });
 
+/** @type {Map<string, AvatarDescriptor>} */
 const avatarDescriptorMap = buildAvatarDescriptorMap(AvatarCatalog);
 
+/** @type {Map<string, string>} */
 const avatarResourceMap = new Map();
 for (const avatarDescriptor of AvatarCatalog) {
     avatarResourceMap.set(avatarDescriptor.id, avatarDescriptor.assetPath);

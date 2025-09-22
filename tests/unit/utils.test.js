@@ -6,7 +6,7 @@ import {
   persistSelectedAllergen,
   restorePersistedAllergen,
   pickRandomUnique
-} from "../../utils.js";
+} from "../../js/utils/utils.js";
 
 const TokenValue = Object.freeze({
   DAIRY: "dairy",

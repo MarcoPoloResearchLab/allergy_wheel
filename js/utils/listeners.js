@@ -7,8 +7,8 @@ import {
     TitleClassName,
     ButtonText,
     AudioControlLabel
-} from "./constants.js";
-import { updateWheelRestartControlVisibilityFromRevealState } from "./ui.js";
+} from "../constants.js";
+import { updateWheelRestartControlVisibilityFromRevealState } from "../ui/ui.js";
 
 const ListenerErrorMessage = {
     MISSING_DEPENDENCIES: "createListenerBinder requires controlElementId, attributeName, and stateManager",

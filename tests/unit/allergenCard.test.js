@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { AllergenCard } from "../../firstCard.js";
+import { AllergenCard } from "../../js/ui/firstCard.js";
 import {
   AttributeBooleanValue,
   AttributeName,
   BrowserEventName,
   ControlElementId,
   FirstCardElementId,
-} from "../../constants.js";
+} from "../../js/constants.js";
 
 const CssClassName = Object.freeze({
   CHIP: "chip",

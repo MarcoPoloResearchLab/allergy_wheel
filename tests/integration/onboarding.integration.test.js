@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ControlElementId } from "../../constants.js";
+import { ControlElementId } from "../../js/constants.js";
 
 const CurrentModuleFilePath = fileURLToPath(import.meta.url);
 const IntegrationTestDirectoryPath = dirname(CurrentModuleFilePath);

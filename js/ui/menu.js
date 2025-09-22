@@ -1,4 +1,7 @@
-import { ScreenName } from "./constants.js";
+import { ScreenName } from "../constants.js";
+
+/** @typedef {import("../types.js").Dish} Dish */
+/** @typedef {import("../types.js").AllergenDescriptor} AllergenDescriptor */
 
 const TextContent = Object.freeze({
     EMPTY: ""
@@ -89,6 +92,9 @@ export class MenuView {
 
     #selectedAllergenLabel = TextContent.EMPTY;
 
+    /**
+     * @param {{ documentReference?: Document, menuTableBodyElement?: HTMLElement | null }} [dependencies]
+     */
     constructor({
         documentReference = document,
         menuTableBodyElement
@@ -97,6 +103,17 @@ export class MenuView {
         this.#menuTableBodyElement = menuTableBodyElement || null;
     }
 
+    /**
+     * Updates the menu presenter caches with the latest catalog information.
+     *
+     * @param {{
+     *     dishesCatalog?: Dish[],
+     *     normalizationEngine?: import("../utils/utils.js").NormalizationEngine | null,
+     *     ingredientEmojiByName?: Map<string, string> | Iterable<[string, string]>,
+     *     cuisineToFlagMap?: Map<string, string> | Iterable<[string, string]>,
+     *     allergensCatalog?: AllergenDescriptor[]
+     * }} [dependencies]
+     */
     updateDataDependencies({
         dishesCatalog,
         normalizationEngine,
@@ -133,6 +150,11 @@ export class MenuView {
         this.#emitFilterOptionsChange();
     }
 
+    /**
+     * Reflects the selected allergen token and label and re-renders the menu view.
+     *
+     * @param {{ token?: string | null, label?: string }} [selection]
+     */
     updateSelectedAllergen({ token, label } = {}) {
         this.#selectedAllergenToken = token || null;
         this.#selectedAllergenLabel = label || TextContent.EMPTY;
@@ -192,6 +214,7 @@ export class MenuView {
 
         this.#menuTableBodyElement.textContent = TextContent.EMPTY;
 
+        /** @type {Dish[]} */
         const dishesToRender = this.#filterDishes(this.#dishesCatalog);
 
         if (dishesToRender.length === 0) {
@@ -302,6 +325,12 @@ export class MenuView {
         return cellElement;
     }
 
+    /**
+     * Applies the active cuisine and ingredient filters to the provided dish catalog.
+     *
+     * @param {Dish[]} dishCatalog - Catalog of dishes to filter.
+     * @returns {Dish[]} Filtered list of dishes respecting the active selections.
+     */
     #filterDishes(dishCatalog) {
         const sourceCatalog = Array.isArray(dishCatalog) ? dishCatalog : [];
         const filteredDishes = [];
@@ -513,6 +542,12 @@ export class MenuView {
         return this.#cuisineToFlagMap.get(normalizedKey) || TextContent.EMPTY;
     }
 
+    /**
+     * Builds a mapping from allergen token to emoji for quick ingredient decoration.
+     *
+     * @param {AllergenDescriptor[]} [allergensCatalog] - Catalog entries containing allergen emojis.
+     * @returns {Map<string, string>} Map keyed by allergen token with emoji values.
+     */
     #buildEmojiByTokenMap(allergensCatalog) {
         const emojiMap = new Map();
         for (const allergenRecord of allergensCatalog) {
