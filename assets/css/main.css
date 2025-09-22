@@ -204,8 +204,27 @@ header h1 { margin: 0; font-size: clamp(18px, 2.2vw, 28px) }
         font-size: 16px;
     }
 
+    .menu-table {
+        display: block;
+        width: 100%;
+        background: #fffaf1;
+        box-sizing: border-box;
+    }
+
     .menu-table thead {
         display: none;
+    }
+
+    .menu-table tbody {
+        display: block;
+        width: 100%;
+        background: inherit;
+    }
+
+    .menu-table tbody tr {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .menu-table tbody tr + tr {
@@ -214,12 +233,14 @@ header h1 { margin: 0; font-size: clamp(18px, 2.2vw, 28px) }
 
     .menu-table tbody td {
         display: grid;
-        grid-template-columns: minmax(0, auto) 1fr;
+        grid-template-columns: max-content minmax(0, 1fr);
         column-gap: 12px;
         row-gap: 8px;
         align-items: flex-start;
         padding: clamp(14px, 4vw, 20px);
         border-bottom: none;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .menu-table tbody td + td {
@@ -237,13 +258,21 @@ header h1 { margin: 0; font-size: clamp(18px, 2.2vw, 28px) }
         grid-column: 1;
         line-height: 1.2;
         white-space: nowrap;
+        position: relative;
+        padding-right: 12px;
+        margin-right: 12px;
     }
 
     .menu-table tbody td > .menu-cell__label::after {
-        content: " |";
-        margin-left: 8px;
-        color: currentColor;
-        font-weight: 700;
+        content: "";
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        width: 2px;
+        height: 1.1em;
+        background: currentColor;
+        border-radius: 1px;
     }
 
     .menu-table tbody td > :not(.menu-cell__label) {
