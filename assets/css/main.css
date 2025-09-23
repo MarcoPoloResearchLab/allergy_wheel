@@ -1063,8 +1063,31 @@ body[data-screen="menu"] #screen-menu { display: block }
 
 .menu-table tbody tr:last-child td { border-bottom: none; }
 
-.menu-cell__label {
-    display: none;
+.menu-table tbody td > .menu-cell__label {
+    margin: 0;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+    .menu-table tbody td > .menu-cell__label {
+        display: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .menu-table tbody td {
+        padding: clamp(16px, 4vw, 24px) clamp(14px, 4vw, 22px);
+    }
+
+    .menu-table tbody td > .menu-cell__label {
+        display: block;
+        margin-bottom: clamp(8px, 2.8vw, 14px);
+        font-size: clamp(11px, 3vw, 12px);
+    }
 }
 
 .menu-dish-heading {
