@@ -14,6 +14,8 @@ const HtmlTagName = Object.freeze({
   P: "p"
 });
 
+ 
+
 const CssClassName = Object.freeze({
   HEADER_CELL: "menu-header-cell",
   HEADER_TOGGLE: "menu-header-toggle",
@@ -25,7 +27,14 @@ const CssClassName = Object.freeze({
   FILTER_OPTION: "menu-filter-option",
   EMPTY_ROW: "menu-row--empty",
   DATA_ROW: "menu-row--data",
-  MOBILE_HEADER_ROW: "menu-row--mobile-header"
+  MOBILE_HEADER_ROW: "menu-row--mobile-header",
+  MOBILE_FILTER_CONTAINER: "menu-mobile-filter-container"
+});
+
+const MobileViewportConfiguration = Object.freeze({
+  MAX_WIDTH: 767,
+  TARGET_WIDTH: 480,
+  QUERY: "(max-width: 767px)"
 });
 
 const FilterDataAttribute = Object.freeze({
@@ -184,6 +193,54 @@ function buildMenuTableMarkup() {
   `;
 }
 
+function configureViewportWidth(width) {
+  const originalMatchMedia = window.matchMedia;
+  const originalInnerWidthDescriptor = Object.getOwnPropertyDescriptor(window, "innerWidth");
+  const originalInnerWidth = typeof window.innerWidth === "number" ? window.innerWidth : undefined;
+
+  const createMediaQueryList = (query) => ({
+    matches:
+      query === MobileViewportConfiguration.QUERY
+      && width <= MobileViewportConfiguration.MAX_WIDTH,
+    media: query,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    dispatchEvent: () => false
+  });
+
+  window.matchMedia = (query) => createMediaQueryList(query);
+
+  Object.defineProperty(window, "innerWidth", {
+    configurable: true,
+    writable: true,
+    value: width
+  });
+
+  return () => {
+    if (typeof originalMatchMedia === "function") {
+      window.matchMedia = originalMatchMedia;
+    } else if (originalMatchMedia === undefined) {
+      delete window.matchMedia;
+    } else {
+      window.matchMedia = originalMatchMedia;
+    }
+
+    if (originalInnerWidthDescriptor) {
+      Object.defineProperty(window, "innerWidth", originalInnerWidthDescriptor);
+    } else if (typeof originalInnerWidth === "number") {
+      Object.defineProperty(window, "innerWidth", {
+        configurable: true,
+        writable: true,
+        value: originalInnerWidth
+      });
+    } else {
+      delete window.innerWidth;
+    }
+  };
+}
+
 function createInteractionHelpers() {
   const selectFilterOption = (filterType, filterValue) => {
     const toggleId =
@@ -267,14 +324,19 @@ describe("Menu filters", () => {
     const emptyRows = Array.from(
       menuTableBodyElement.querySelectorAll(`.${CssClassName.EMPTY_ROW}`)
     );
+    const bodyChildren = Array.from(menuTableBodyElement.children);
 
     expect(dataRows).toHaveLength(expectedRowCount);
 
-    if (expectedRowCount > 0) {
-      expect(headerRows).toHaveLength(expectedRowCount);
-    } else {
-      expect(headerRows).toHaveLength(0);
-    }
+    expect(headerRows).toHaveLength(0);
+
+    const unexpectedRows = bodyChildren.filter(
+      (rowElement) =>
+        !rowElement.classList.contains(CssClassName.DATA_ROW)
+        && !rowElement.classList.contains(CssClassName.EMPTY_ROW)
+    );
+
+    expect(unexpectedRows).toHaveLength(0);
 
     if (expectEmptyState) {
       expect(emptyRows).toHaveLength(1);
@@ -287,6 +349,70 @@ describe("Menu filters", () => {
       expect(
         dataRows.some((rowElement) => rowElement.textContent.includes(expectedName))
       ).toBe(true);
+    }
+  });
+});
+
+describe("MenuView responsive layout", () => {
+  test("renders only data rows inside the table body when viewport is mobile", () => {
+    document.body.innerHTML = buildMenuTableMarkup();
+
+    const restoreViewport = configureViewportWidth(MobileViewportConfiguration.TARGET_WIDTH);
+
+    try {
+      const menuTableBodyElement = document.getElementById(MenuElementId.TABLE_BODY);
+
+      const menuView = new MenuView({
+        documentReference: document,
+        menuTableBodyElement
+      });
+
+      const menuFilterController = new MenuFilterController({
+        documentReference: document,
+        menuPresenter: menuView
+      });
+
+      menuFilterController.initialize();
+
+      const normalizationEngine = new NormalizationEngine([]);
+
+      menuView.updateDataDependencies({
+        dishesCatalog: SampleDishes,
+        normalizationEngine,
+        ingredientEmojiByName: new Map(),
+        cuisineToFlagMap: new Map(),
+        allergensCatalog: []
+      });
+      menuView.renderMenu();
+
+      const dataRows = Array.from(
+        menuTableBodyElement.querySelectorAll(`.${CssClassName.DATA_ROW}`)
+      );
+      expect(dataRows).toHaveLength(SampleDishes.length);
+
+      const headerRowsWithinBody = menuTableBodyElement.querySelectorAll(
+        `.${CssClassName.MOBILE_HEADER_ROW}`
+      );
+      expect(headerRowsWithinBody).toHaveLength(0);
+
+      const unexpectedRows = Array.from(menuTableBodyElement.children).filter(
+        (rowElement) =>
+          !rowElement.classList.contains(CssClassName.DATA_ROW)
+          && !rowElement.classList.contains(CssClassName.EMPTY_ROW)
+      );
+      expect(unexpectedRows).toHaveLength(0);
+
+      const filterContainers = document.querySelectorAll(
+        `.${CssClassName.MOBILE_FILTER_CONTAINER}`
+      );
+      expect(filterContainers).toHaveLength(1);
+
+      const mobileHeaders = filterContainers[0].querySelectorAll(
+        `.${CssClassName.MOBILE_HEADER_ROW}`
+      );
+      expect(mobileHeaders).toHaveLength(1);
+    } finally {
+      restoreViewport();
     }
   });
 });

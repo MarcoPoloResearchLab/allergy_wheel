@@ -14,25 +14,18 @@ const TextContent = Object.freeze({
 });
 
 const HtmlTagName = Object.freeze({
+    TABLE: "table",
     TR: "tr",
     TD: "td",
-    TH: "th",
     DIV: "div",
     SPAN: "span",
     P: "p"
 });
 
-const HtmlAttributeName = Object.freeze({
-    SCOPE: "scope"
-});
-
-const TableHeaderScopeValue = Object.freeze({
-    COLUMN: "col"
-});
-
 const ClassName = Object.freeze({
     ROW_DATA: "menu-row menu-row--data",
     ROW_MOBILE_HEADER: "menu-row menu-row--mobile-header",
+    MOBILE_FILTER_CONTAINER: "menu-mobile-filter-container",
     MOBILE_HEADER_CELL: "menu-mobile-header-cell",
     HEADER_FILTER_CONTAINER: "menu-header-cell",
     CELL_DISH: "menu-cell menu-cell--dish",
@@ -128,6 +121,8 @@ export class MenuView {
     #ingredientFilterContainerElement = null;
 
     #cuisineFilterContainerElement = null;
+
+    #mobileFilterMountElement = null;
 
     /**
      * @param {{ documentReference?: Document, menuTableBodyElement?: HTMLElement | null }} [dependencies]
@@ -256,8 +251,11 @@ export class MenuView {
 
         const shouldInjectResponsiveFilters = this.#shouldInjectResponsiveFilterControls();
 
-        if (!shouldInjectResponsiveFilters) {
+        if (shouldInjectResponsiveFilters) {
+            this.#renderMobileFilterControls();
+        } else {
             this.#restoreDesktopFilterControls();
+            this.#teardownMobileFilterMount();
         }
 
         this.#menuTableBodyElement.textContent = TextContent.EMPTY;
@@ -268,12 +266,6 @@ export class MenuView {
         const menuBodyFragment = this.#documentReference.createDocumentFragment();
 
         if (dishesToRender.length === 0) {
-            if (shouldInjectResponsiveFilters) {
-                const mobileHeaderRow = this.#createResponsiveHeaderRow({
-                    shouldInjectFilters: true
-                });
-                menuBodyFragment.appendChild(mobileHeaderRow);
-            }
             const emptyStateRow = this.#createEmptyStateRow();
             menuBodyFragment.appendChild(emptyStateRow);
 
@@ -281,25 +273,13 @@ export class MenuView {
             return;
         }
 
-        let hasInjectedResponsiveFilters = false;
-
         for (const dishRecord of dishesToRender) {
             if (!dishRecord) {
                 continue;
             }
 
-            const shouldInjectFiltersForRow = shouldInjectResponsiveFilters && !hasInjectedResponsiveFilters;
-            const mobileHeaderRow = this.#createResponsiveHeaderRow({
-                shouldInjectFilters: shouldInjectFiltersForRow
-            });
             const dataRowElement = this.#createMenuDataRow(dishRecord);
-
-            menuBodyFragment.appendChild(mobileHeaderRow);
             menuBodyFragment.appendChild(dataRowElement);
-
-            if (shouldInjectFiltersForRow) {
-                hasInjectedResponsiveFilters = true;
-            }
         }
 
         this.#menuTableBodyElement.appendChild(menuBodyFragment);
@@ -324,8 +304,68 @@ export class MenuView {
         return rowElement;
     }
 
+    #renderMobileFilterControls() {
+        const tableElement = this.#getMenuTableElement();
+        if (!(tableElement instanceof HTMLElement)) {
+            return;
+        }
+
+        const hostElement = tableElement.parentElement instanceof HTMLElement
+            ? tableElement.parentElement
+            : null;
+
+        if (!hostElement) {
+            return;
+        }
+
+        let mountElement = this.#mobileFilterMountElement;
+        if (!(mountElement instanceof HTMLElement) || !mountElement.isConnected) {
+            const existingMount = hostElement.querySelector(`.${ClassName.MOBILE_FILTER_CONTAINER}`);
+            if (existingMount instanceof HTMLElement) {
+                mountElement = existingMount;
+            } else {
+                const mobileFilterContainer = this.#documentReference.createElement(HtmlTagName.DIV);
+                mobileFilterContainer.className = ClassName.MOBILE_FILTER_CONTAINER;
+                hostElement.insertBefore(mobileFilterContainer, tableElement);
+                mountElement = mobileFilterContainer;
+            }
+            this.#mobileFilterMountElement = mountElement;
+        }
+
+        if (!(mountElement instanceof HTMLElement)) {
+            return;
+        }
+
+        mountElement.textContent = TextContent.EMPTY;
+
+        const mobileHeaderRow = this.#createResponsiveHeaderRow({
+            shouldInjectFilters: Boolean(
+                this.#ingredientFilterContainerElement || this.#cuisineFilterContainerElement
+            )
+        });
+
+        mountElement.appendChild(mobileHeaderRow);
+    }
+
+    #teardownMobileFilterMount() {
+        if (this.#mobileFilterMountElement instanceof HTMLElement) {
+            this.#mobileFilterMountElement.textContent = TextContent.EMPTY;
+            this.#mobileFilterMountElement.remove();
+        }
+        this.#mobileFilterMountElement = null;
+    }
+
+    #getMenuTableElement() {
+        if (!this.#menuTableBodyElement) {
+            return null;
+        }
+
+        const tableElement = this.#menuTableBodyElement.closest(HtmlTagName.TABLE);
+        return tableElement instanceof HTMLElement ? tableElement : null;
+    }
+
     #createResponsiveHeaderRow({ shouldInjectFilters = false } = {}) {
-        const rowElement = this.#documentReference.createElement(HtmlTagName.TR);
+        const rowElement = this.#documentReference.createElement(HtmlTagName.DIV);
         rowElement.className = ClassName.ROW_MOBILE_HEADER;
 
         rowElement.appendChild(this.#createResponsiveHeaderCell(MenuColumnLabel.DISH));
@@ -348,12 +388,8 @@ export class MenuView {
     }
 
     #createResponsiveHeaderCell(columnLabelText, contentElement = null) {
-        const headerCellElement = this.#documentReference.createElement(HtmlTagName.TH);
+        const headerCellElement = this.#documentReference.createElement(HtmlTagName.DIV);
         headerCellElement.className = ClassName.MOBILE_HEADER_CELL;
-
-        if (HtmlAttributeName.SCOPE && TableHeaderScopeValue.COLUMN) {
-            headerCellElement.setAttribute(HtmlAttributeName.SCOPE, TableHeaderScopeValue.COLUMN);
-        }
 
         if (contentElement instanceof HTMLElement) {
             headerCellElement.textContent = TextContent.EMPTY;
