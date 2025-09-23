@@ -23,7 +23,9 @@ const CssClassName = Object.freeze({
   FILTER_CLEAR: "menu-filter-clear",
   FILTER_LIST: "menu-filter-list",
   FILTER_OPTION: "menu-filter-option",
-  EMPTY_ROW: "menu-row--empty"
+  EMPTY_ROW: "menu-row--empty",
+  DATA_ROW: "menu-row--data",
+  MOBILE_HEADER_ROW: "menu-row--mobile-header"
 });
 
 const FilterDataAttribute = Object.freeze({
@@ -88,7 +90,7 @@ const FilterInteractionScenarios = Object.freeze([
       selectCuisine("japanese");
       selectIngredient("basil");
     },
-    expectedRowCount: 1,
+    expectedRowCount: 0,
     expectedDishNames: [],
     expectEmptyState: true
   }),
@@ -256,12 +258,23 @@ describe("Menu filters", () => {
     const helpers = createInteractionHelpers();
     arrange(helpers);
 
-    const renderedRows = Array.from(menuTableBodyElement.querySelectorAll(HtmlTagName.TR));
-    expect(renderedRows).toHaveLength(expectedRowCount);
-
-    const emptyRows = renderedRows.filter((rowElement) =>
-      rowElement.classList.contains(CssClassName.EMPTY_ROW)
+    const headerRows = Array.from(
+      menuTableBodyElement.querySelectorAll(`.${CssClassName.MOBILE_HEADER_ROW}`)
     );
+    const dataRows = Array.from(
+      menuTableBodyElement.querySelectorAll(`.${CssClassName.DATA_ROW}`)
+    );
+    const emptyRows = Array.from(
+      menuTableBodyElement.querySelectorAll(`.${CssClassName.EMPTY_ROW}`)
+    );
+
+    expect(dataRows).toHaveLength(expectedRowCount);
+
+    if (expectedRowCount > 0) {
+      expect(headerRows).toHaveLength(expectedRowCount);
+    } else {
+      expect(headerRows).toHaveLength(0);
+    }
 
     if (expectEmptyState) {
       expect(emptyRows).toHaveLength(1);
@@ -270,13 +283,9 @@ describe("Menu filters", () => {
       expect(emptyRows).toHaveLength(0);
     }
 
-    const renderedDishRows = renderedRows.filter(
-      (rowElement) => !rowElement.classList.contains(CssClassName.EMPTY_ROW)
-    );
-
     for (const expectedName of expectedDishNames) {
       expect(
-        renderedDishRows.some((rowElement) => rowElement.textContent.includes(expectedName))
+        dataRows.some((rowElement) => rowElement.textContent.includes(expectedName))
       ).toBe(true);
     }
   });

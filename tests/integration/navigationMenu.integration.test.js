@@ -28,6 +28,10 @@ const MenuCellClassName = Object.freeze({
   LABEL: "menu-cell__label"
 });
 
+const MenuRowSelector = Object.freeze({
+  DATA: ".menu-row--data"
+});
+
 const NavigationScenarioDescription = Object.freeze({
   GAME_BUTTON: "clicking the game button requests the allergy screen",
   MENU_BUTTON: "clicking the menu button requests the menu screen"
@@ -248,14 +252,19 @@ describe("MenuView", () => {
       menuView.updateSelectedAllergen({});
     }
 
-    const rowElements = menuTableBodyElement.querySelectorAll("tr");
-    expect(rowElements).toHaveLength(SampleDishes.length);
+    const dataRowElements = menuTableBodyElement.querySelectorAll(MenuRowSelector.DATA);
+    expect(dataRowElements).toHaveLength(SampleDishes.length);
 
-    const firstRowText = rowElements[0].textContent;
+    const [firstDataRowElement] = dataRowElements;
+    if (!firstDataRowElement) {
+      throw new Error("Menu data row not rendered");
+    }
+
+    const firstRowText = firstDataRowElement.textContent;
     expect(firstRowText).toContain(SampleDishes[0].name);
     expect(firstRowText).toContain(SampleDishes[0].narrative);
 
-    const cuisineBadgeElement = rowElements[0].querySelector(".menu-cuisine-badge");
+    const cuisineBadgeElement = firstDataRowElement.querySelector(".menu-cuisine-badge");
     expect(cuisineBadgeElement.textContent).toContain(SampleDishes[0].cuisine);
 
     const highlightedIngredients = Array.from(
@@ -297,11 +306,11 @@ describe("MenuView", () => {
 
     menuView.updateSelectedAllergen({});
 
-    const firstRowElement = menuTableBodyElement.querySelector("tr");
+    const firstRowElement = menuTableBodyElement.querySelector(MenuRowSelector.DATA);
     expect(firstRowElement).not.toBeNull();
 
     if (!firstRowElement) {
-      throw new Error("Menu row not rendered");
+      throw new Error("Menu data row not rendered");
     }
 
     const targetCellElement = firstRowElement.querySelector(cellSelector);

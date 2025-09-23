@@ -10,13 +10,24 @@ const TextContent = Object.freeze({
 const HtmlTagName = Object.freeze({
     TR: "tr",
     TD: "td",
+    TH: "th",
     DIV: "div",
     SPAN: "span",
     P: "p"
 });
 
+const HtmlAttributeName = Object.freeze({
+    SCOPE: "scope"
+});
+
+const TableHeaderScopeValue = Object.freeze({
+    COLUMN: "col"
+});
+
 const ClassName = Object.freeze({
-    ROW: "menu-row",
+    ROW_DATA: "menu-row menu-row--data",
+    ROW_MOBILE_HEADER: "menu-row menu-row--mobile-header",
+    MOBILE_HEADER_CELL: "menu-mobile-header-cell",
     CELL_DISH: "menu-cell menu-cell--dish",
     CELL_INGREDIENTS: "menu-cell menu-cell--ingredients",
     CELL_CUISINE: "menu-cell menu-cell--cuisine",
@@ -224,20 +235,21 @@ export class MenuView {
             return;
         }
 
+        const menuBodyFragment = this.#documentReference.createDocumentFragment();
+
         for (const dishRecord of dishesToRender) {
             if (!dishRecord) {
                 continue;
             }
-            const rowElement = this.#documentReference.createElement(HtmlTagName.TR);
-            rowElement.className = ClassName.ROW;
 
-            rowElement.appendChild(this.#createDishCell(dishRecord));
-            rowElement.appendChild(this.#createIngredientsCell(dishRecord));
-            rowElement.appendChild(this.#createCuisineCell(dishRecord));
-            rowElement.appendChild(this.#createNarrativeCell(dishRecord));
+            const mobileHeaderRow = this.#createResponsiveHeaderRow();
+            const dataRowElement = this.#createMenuDataRow(dishRecord);
 
-            this.#menuTableBodyElement.appendChild(rowElement);
+            menuBodyFragment.appendChild(mobileHeaderRow);
+            menuBodyFragment.appendChild(dataRowElement);
         }
+
+        this.#menuTableBodyElement.appendChild(menuBodyFragment);
     }
 
     getSelectedAllergen() {
@@ -245,6 +257,45 @@ export class MenuView {
             token: this.#selectedAllergenToken,
             label: this.#selectedAllergenLabel
         };
+    }
+
+    #createMenuDataRow(dishRecord) {
+        const rowElement = this.#documentReference.createElement(HtmlTagName.TR);
+        rowElement.className = ClassName.ROW_DATA;
+
+        rowElement.appendChild(this.#createDishCell(dishRecord));
+        rowElement.appendChild(this.#createIngredientsCell(dishRecord));
+        rowElement.appendChild(this.#createCuisineCell(dishRecord));
+        rowElement.appendChild(this.#createNarrativeCell(dishRecord));
+
+        return rowElement;
+    }
+
+    #createResponsiveHeaderRow() {
+        const rowElement = this.#documentReference.createElement(HtmlTagName.TR);
+        rowElement.className = ClassName.ROW_MOBILE_HEADER;
+
+        rowElement.appendChild(this.#createResponsiveHeaderCell(MenuColumnLabel.DISH));
+        rowElement.appendChild(this.#createResponsiveHeaderCell(MenuColumnLabel.INGREDIENTS));
+        rowElement.appendChild(this.#createResponsiveHeaderCell(MenuColumnLabel.CUISINE));
+        rowElement.appendChild(this.#createResponsiveHeaderCell(MenuColumnLabel.STORY));
+
+        return rowElement;
+    }
+
+    #createResponsiveHeaderCell(columnLabelText) {
+        const headerCellElement = this.#documentReference.createElement(HtmlTagName.TH);
+        headerCellElement.className = ClassName.MOBILE_HEADER_CELL;
+
+        if (HtmlAttributeName.SCOPE && TableHeaderScopeValue.COLUMN) {
+            headerCellElement.setAttribute(HtmlAttributeName.SCOPE, TableHeaderScopeValue.COLUMN);
+        }
+
+        headerCellElement.textContent = typeof columnLabelText === "string"
+            ? columnLabelText
+            : TextContent.EMPTY;
+
+        return headerCellElement;
     }
 
     #createDishCell(dishRecord) {
