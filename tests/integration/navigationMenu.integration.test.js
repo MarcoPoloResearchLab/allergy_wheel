@@ -6,7 +6,8 @@ import {
   AttributeName,
   AttributeBooleanValue,
   ScreenName,
-  MenuElementId
+  MenuElementId,
+  MenuColumnLabel
 } from "../../js/constants.js";
 import { NormalizationEngine } from "../../js/utils/utils.js";
 
@@ -14,6 +15,21 @@ const HtmlTagName = Object.freeze({
   BUTTON: "button",
   TABLE: "table",
   TBODY: "tbody"
+});
+
+const MenuCellSelector = Object.freeze({
+  DISH: ".menu-cell--dish",
+  INGREDIENTS: ".menu-cell--ingredients",
+  CUISINE: ".menu-cell--cuisine",
+  STORY: ".menu-cell--narrative"
+});
+
+const MenuCellClassName = Object.freeze({
+  LABEL: "menu-cell__label"
+});
+
+const MenuRowSelector = Object.freeze({
+  DATA: ".menu-row--data"
 });
 
 const NavigationScenarioDescription = Object.freeze({
@@ -30,6 +46,13 @@ const NavigationActiveStateScenario = Object.freeze({
 const MenuRenderingScenarioDescription = Object.freeze({
   NO_SELECTION: "renders dishes without highlights when no allergen is selected",
   WITH_SELECTION: "highlights allergen ingredients when an allergen is selected"
+});
+
+const MenuColumnLabelScenarioDescription = Object.freeze({
+  DISH: "injects the dish column label before the dish content",
+  INGREDIENTS: "injects the ingredients column label before the ingredient chips",
+  CUISINE: "injects the cuisine column label before the cuisine badge",
+  STORY: "injects the story column label before the narrative paragraph"
 });
 
 const NavigationClickScenarios = Object.freeze([
@@ -76,6 +99,29 @@ const MenuRenderingScenarios = Object.freeze([
     description: MenuRenderingScenarioDescription.WITH_SELECTION,
     selectedAllergen: { token: "peanut", label: "Peanut" },
     expectedHighlightedIngredients: ["Peanuts"]
+  })
+]);
+
+const MenuColumnLabelScenarios = Object.freeze([
+  Object.freeze({
+    description: MenuColumnLabelScenarioDescription.DISH,
+    cellSelector: MenuCellSelector.DISH,
+    expectedLabel: MenuColumnLabel.DISH
+  }),
+  Object.freeze({
+    description: MenuColumnLabelScenarioDescription.INGREDIENTS,
+    cellSelector: MenuCellSelector.INGREDIENTS,
+    expectedLabel: MenuColumnLabel.INGREDIENTS
+  }),
+  Object.freeze({
+    description: MenuColumnLabelScenarioDescription.CUISINE,
+    cellSelector: MenuCellSelector.CUISINE,
+    expectedLabel: MenuColumnLabel.CUISINE
+  }),
+  Object.freeze({
+    description: MenuColumnLabelScenarioDescription.STORY,
+    cellSelector: MenuCellSelector.STORY,
+    expectedLabel: MenuColumnLabel.STORY
   })
 ]);
 
@@ -206,14 +252,19 @@ describe("MenuView", () => {
       menuView.updateSelectedAllergen({});
     }
 
-    const rowElements = menuTableBodyElement.querySelectorAll("tr");
-    expect(rowElements).toHaveLength(SampleDishes.length);
+    const dataRowElements = menuTableBodyElement.querySelectorAll(MenuRowSelector.DATA);
+    expect(dataRowElements).toHaveLength(SampleDishes.length);
 
-    const firstRowText = rowElements[0].textContent;
+    const [firstDataRowElement] = dataRowElements;
+    if (!firstDataRowElement) {
+      throw new Error("Menu data row not rendered");
+    }
+
+    const firstRowText = firstDataRowElement.textContent;
     expect(firstRowText).toContain(SampleDishes[0].name);
     expect(firstRowText).toContain(SampleDishes[0].narrative);
 
-    const cuisineBadgeElement = rowElements[0].querySelector(".menu-cuisine-badge");
+    const cuisineBadgeElement = firstDataRowElement.querySelector(".menu-cuisine-badge");
     expect(cuisineBadgeElement.textContent).toContain(SampleDishes[0].cuisine);
 
     const highlightedIngredients = Array.from(
@@ -228,5 +279,53 @@ describe("MenuView", () => {
         )
       ).toBe(true);
     }
+  });
+
+  test.each(MenuColumnLabelScenarios)("%s", ({ cellSelector, expectedLabel }) => {
+    document.body.innerHTML = `
+      <${HtmlTagName.TABLE}>
+        <${HtmlTagName.TBODY} id="${MenuElementId.TABLE_BODY}"></${HtmlTagName.TBODY}>
+      </${HtmlTagName.TABLE}>
+    `;
+
+    const menuTableBodyElement = document.getElementById(MenuElementId.TABLE_BODY);
+    const menuView = new MenuView({
+      documentReference: document,
+      menuTableBodyElement
+    });
+
+    const normalizationEngine = new NormalizationEngine(NormalizationRules);
+
+    menuView.updateDataDependencies({
+      dishesCatalog: SampleDishes,
+      normalizationEngine,
+      ingredientEmojiByName: new Map(IngredientEmojiEntries),
+      cuisineToFlagMap: new Map(CuisineFlagEntries),
+      allergensCatalog: AllergenCatalog
+    });
+
+    menuView.updateSelectedAllergen({});
+
+    const firstRowElement = menuTableBodyElement.querySelector(MenuRowSelector.DATA);
+    expect(firstRowElement).not.toBeNull();
+
+    if (!firstRowElement) {
+      throw new Error("Menu data row not rendered");
+    }
+
+    const targetCellElement = firstRowElement.querySelector(cellSelector);
+    expect(targetCellElement).not.toBeNull();
+
+    if (!targetCellElement) {
+      throw new Error(`Cell for selector ${cellSelector} not found`);
+    }
+
+    const labelElements = targetCellElement.querySelectorAll(`.${MenuCellClassName.LABEL}`);
+    expect(labelElements).toHaveLength(1);
+
+    const [labelElement] = labelElements;
+    expect(labelElement.textContent).toBe(expectedLabel);
+    expect(targetCellElement.getAttribute(AttributeName.DATA_COLUMN_LABEL)).toBe(expectedLabel);
+    expect(labelElement).toBe(targetCellElement.firstElementChild);
   });
 });

@@ -1,6 +1,6 @@
 import { MenuView } from "../../js/ui/menu.js";
 import { MenuFilterController } from "../../js/ui/menuFilters.js";
-import { MenuElementId } from "../../js/constants.js";
+import { MenuElementId, MenuColumnLabel } from "../../js/constants.js";
 import { NormalizationEngine } from "../../js/utils/utils.js";
 
 const HtmlTagName = Object.freeze({
@@ -14,6 +14,8 @@ const HtmlTagName = Object.freeze({
   P: "p"
 });
 
+ 
+
 const CssClassName = Object.freeze({
   HEADER_CELL: "menu-header-cell",
   HEADER_TOGGLE: "menu-header-toggle",
@@ -23,7 +25,16 @@ const CssClassName = Object.freeze({
   FILTER_CLEAR: "menu-filter-clear",
   FILTER_LIST: "menu-filter-list",
   FILTER_OPTION: "menu-filter-option",
-  EMPTY_ROW: "menu-row--empty"
+  EMPTY_ROW: "menu-row--empty",
+  DATA_ROW: "menu-row--data",
+  MOBILE_HEADER_ROW: "menu-row--mobile-header",
+  MOBILE_FILTER_CONTAINER: "menu-mobile-filter-container"
+});
+
+const MobileViewportConfiguration = Object.freeze({
+  MAX_WIDTH: 767,
+  TARGET_WIDTH: 480,
+  QUERY: "(max-width: 767px)"
 });
 
 const FilterDataAttribute = Object.freeze({
@@ -88,7 +99,7 @@ const FilterInteractionScenarios = Object.freeze([
       selectCuisine("japanese");
       selectIngredient("basil");
     },
-    expectedRowCount: 1,
+    expectedRowCount: 0,
     expectedDishNames: [],
     expectEmptyState: true
   }),
@@ -115,7 +126,7 @@ function buildMenuTableMarkup() {
     <${HtmlTagName.TABLE}>
       <${HtmlTagName.THEAD}>
         <${HtmlTagName.TR}>
-          <${HtmlTagName.TH}>Dish</${HtmlTagName.TH}>
+          <${HtmlTagName.TH}>${MenuColumnLabel.DISH}</${HtmlTagName.TH}>
           <${HtmlTagName.TH}>
             <${HtmlTagName.DIV} class="${CssClassName.HEADER_CELL}">
               <${HtmlTagName.BUTTON}
@@ -125,7 +136,7 @@ function buildMenuTableMarkup() {
                 aria-haspopup="true"
                 aria-expanded="false"
                 type="button"
-              >Ingredients</${HtmlTagName.BUTTON}>
+              >${MenuColumnLabel.INGREDIENTS}</${HtmlTagName.BUTTON}>
               <${HtmlTagName.DIV}
                 id="${MenuElementId.INGREDIENT_FILTER_PANEL}"
                 class="${CssClassName.FILTER_PANEL}"
@@ -154,7 +165,7 @@ function buildMenuTableMarkup() {
                 aria-haspopup="true"
                 aria-expanded="false"
                 type="button"
-              >Cuisine</${HtmlTagName.BUTTON}>
+              >${MenuColumnLabel.CUISINE}</${HtmlTagName.BUTTON}>
               <${HtmlTagName.DIV}
                 id="${MenuElementId.CUISINE_FILTER_PANEL}"
                 class="${CssClassName.FILTER_PANEL}"
@@ -174,12 +185,60 @@ function buildMenuTableMarkup() {
               </${HtmlTagName.DIV}>
             </${HtmlTagName.DIV}>
           </${HtmlTagName.TH}>
-          <${HtmlTagName.TH}>Story</${HtmlTagName.TH}>
+          <${HtmlTagName.TH}>${MenuColumnLabel.STORY}</${HtmlTagName.TH}>
         </${HtmlTagName.TR}>
       </${HtmlTagName.THEAD}>
       <${HtmlTagName.TBODY} id="${MenuElementId.TABLE_BODY}"></${HtmlTagName.TBODY}>
     </${HtmlTagName.TABLE}>
   `;
+}
+
+function configureViewportWidth(width) {
+  const originalMatchMedia = window.matchMedia;
+  const originalInnerWidthDescriptor = Object.getOwnPropertyDescriptor(window, "innerWidth");
+  const originalInnerWidth = typeof window.innerWidth === "number" ? window.innerWidth : undefined;
+
+  const createMediaQueryList = (query) => ({
+    matches:
+      query === MobileViewportConfiguration.QUERY
+      && width <= MobileViewportConfiguration.MAX_WIDTH,
+    media: query,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    dispatchEvent: () => false
+  });
+
+  window.matchMedia = (query) => createMediaQueryList(query);
+
+  Object.defineProperty(window, "innerWidth", {
+    configurable: true,
+    writable: true,
+    value: width
+  });
+
+  return () => {
+    if (typeof originalMatchMedia === "function") {
+      window.matchMedia = originalMatchMedia;
+    } else if (originalMatchMedia === undefined) {
+      delete window.matchMedia;
+    } else {
+      window.matchMedia = originalMatchMedia;
+    }
+
+    if (originalInnerWidthDescriptor) {
+      Object.defineProperty(window, "innerWidth", originalInnerWidthDescriptor);
+    } else if (typeof originalInnerWidth === "number") {
+      Object.defineProperty(window, "innerWidth", {
+        configurable: true,
+        writable: true,
+        value: originalInnerWidth
+      });
+    } else {
+      delete window.innerWidth;
+    }
+  };
 }
 
 function createInteractionHelpers() {
@@ -256,12 +315,28 @@ describe("Menu filters", () => {
     const helpers = createInteractionHelpers();
     arrange(helpers);
 
-    const renderedRows = Array.from(menuTableBodyElement.querySelectorAll(HtmlTagName.TR));
-    expect(renderedRows).toHaveLength(expectedRowCount);
-
-    const emptyRows = renderedRows.filter((rowElement) =>
-      rowElement.classList.contains(CssClassName.EMPTY_ROW)
+    const headerRows = Array.from(
+      menuTableBodyElement.querySelectorAll(`.${CssClassName.MOBILE_HEADER_ROW}`)
     );
+    const dataRows = Array.from(
+      menuTableBodyElement.querySelectorAll(`.${CssClassName.DATA_ROW}`)
+    );
+    const emptyRows = Array.from(
+      menuTableBodyElement.querySelectorAll(`.${CssClassName.EMPTY_ROW}`)
+    );
+    const bodyChildren = Array.from(menuTableBodyElement.children);
+
+    expect(dataRows).toHaveLength(expectedRowCount);
+
+    expect(headerRows).toHaveLength(0);
+
+    const unexpectedRows = bodyChildren.filter(
+      (rowElement) =>
+        !rowElement.classList.contains(CssClassName.DATA_ROW)
+        && !rowElement.classList.contains(CssClassName.EMPTY_ROW)
+    );
+
+    expect(unexpectedRows).toHaveLength(0);
 
     if (expectEmptyState) {
       expect(emptyRows).toHaveLength(1);
@@ -270,14 +345,74 @@ describe("Menu filters", () => {
       expect(emptyRows).toHaveLength(0);
     }
 
-    const renderedDishRows = renderedRows.filter(
-      (rowElement) => !rowElement.classList.contains(CssClassName.EMPTY_ROW)
-    );
-
     for (const expectedName of expectedDishNames) {
       expect(
-        renderedDishRows.some((rowElement) => rowElement.textContent.includes(expectedName))
+        dataRows.some((rowElement) => rowElement.textContent.includes(expectedName))
       ).toBe(true);
+    }
+  });
+});
+
+describe("MenuView responsive layout", () => {
+  test("renders only data rows inside the table body when viewport is mobile", () => {
+    document.body.innerHTML = buildMenuTableMarkup();
+
+    const restoreViewport = configureViewportWidth(MobileViewportConfiguration.TARGET_WIDTH);
+
+    try {
+      const menuTableBodyElement = document.getElementById(MenuElementId.TABLE_BODY);
+
+      const menuView = new MenuView({
+        documentReference: document,
+        menuTableBodyElement
+      });
+
+      const menuFilterController = new MenuFilterController({
+        documentReference: document,
+        menuPresenter: menuView
+      });
+
+      menuFilterController.initialize();
+
+      const normalizationEngine = new NormalizationEngine([]);
+
+      menuView.updateDataDependencies({
+        dishesCatalog: SampleDishes,
+        normalizationEngine,
+        ingredientEmojiByName: new Map(),
+        cuisineToFlagMap: new Map(),
+        allergensCatalog: []
+      });
+      menuView.renderMenu();
+
+      const dataRows = Array.from(
+        menuTableBodyElement.querySelectorAll(`.${CssClassName.DATA_ROW}`)
+      );
+      expect(dataRows).toHaveLength(SampleDishes.length);
+
+      const headerRowsWithinBody = menuTableBodyElement.querySelectorAll(
+        `.${CssClassName.MOBILE_HEADER_ROW}`
+      );
+      expect(headerRowsWithinBody).toHaveLength(0);
+
+      const unexpectedRows = Array.from(menuTableBodyElement.children).filter(
+        (rowElement) =>
+          !rowElement.classList.contains(CssClassName.DATA_ROW)
+          && !rowElement.classList.contains(CssClassName.EMPTY_ROW)
+      );
+      expect(unexpectedRows).toHaveLength(0);
+
+      const filterContainers = document.querySelectorAll(
+        `.${CssClassName.MOBILE_FILTER_CONTAINER}`
+      );
+      expect(filterContainers).toHaveLength(1);
+
+      const mobileHeaders = filterContainers[0].querySelectorAll(
+        `.${CssClassName.MOBILE_HEADER_ROW}`
+      );
+      expect(mobileHeaders).toHaveLength(1);
+    } finally {
+      restoreViewport();
     }
   });
 });
