@@ -13,15 +13,1354 @@
     <meta content="Marco Polo Research Lab" name="author"/>
     <link href="https://allergy.mprlab.com/" rel="canonical"/>
     <meta content="index,follow" name="robots"/>
+    <meta
+        content="Interactive allergy-learning game where kids pick food allergens, spin the wheel to win hearts, and discover dishes that match their choices."
+        name="description"
+    />
+    <meta content="Allergy Wheel – Learn Food Allergens Through Play" property="og:title"/>
+    <meta
+        content="Interactive allergy-learning game where kids pick food allergens, spin the wheel to win hearts, and discover dishes that match their choices."
+        property="og:description"
+    />
+    <meta content="https://allergy.mprlab.com/" property="og:url"/>
+    <meta content="game" property="og:type"/>
+    <meta
+        content="https://allergy.mprlab.com/assets/social/allergy-wheel-social-preview.png"
+        property="og:image"
+    />
+    <meta content="summary_large_image" name="twitter:card"/>
+    <meta content="@mprlab" name="twitter:site"/>
+    <meta content="Allergy Wheel – Learn Food Allergens Through Play" name="twitter:title"/>
+    <meta
+        content="Interactive allergy-learning game where kids pick food allergens, spin the wheel to win hearts, and discover dishes that match their choices."
+        name="twitter:description"
+    />
+    <meta
+        content="https://allergy.mprlab.com/assets/social/allergy-wheel-social-preview.png"
+        name="twitter:image"
+    />
 
     <!-- Inline PNG “allergy wheel” favicon -->
     <link href="data:image/png;base64,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" rel="icon" type="image/png"/>
     <link href="data:image/png;base64,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" rel="shortcut icon" type="image/png"/>
 
-    <title>Allergy Wheel</title>
+    <title>Allergy Wheel – Learn Food Allergens Through Play</title>
     <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/main.css">
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "EducationalGame",
+            "name": "Allergy Wheel – Learn Food Allergens Through Play",
+            "description": "Interactive allergy-learning game where kids pick food allergens, spin the wheel to win hearts, and discover dishes that match their choices.",
+            "url": "https://allergy.mprlab.com/",
+            "image": "https://allergy.mprlab.com/assets/social/allergy-wheel-social-preview.png",
+            "audience": {
+                "@type": "Audience",
+                "audienceType": "Children and families"
+            },
+            "about": [
+                {
+                    "@type": "Thing",
+                    "name": "Peanuts",
+                    "additionalType": "https://schema.org/Allergen"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tree Nuts",
+                    "additionalType": "https://schema.org/Allergen"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame",
+                    "additionalType": "https://schema.org/Allergen"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Shellfish",
+                    "additionalType": "https://schema.org/Allergen"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Milk / Dairy",
+                    "additionalType": "https://schema.org/Allergen"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Egg",
+                    "additionalType": "https://schema.org/Allergen"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Soy",
+                    "additionalType": "https://schema.org/Allergen"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Wheat / Gluten",
+                    "additionalType": "https://schema.org/Allergen"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Italian Sausage (Pork/Spices)",
+                    "additionalType": "https://schema.org/Allergen"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Fish",
+                    "additionalType": "https://schema.org/Allergen"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Pad Thai",
+                    "description": "This Thai dish features rice noodles and peanuts in Peanut Pad Thai. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "rice noodles, peanuts, egg, soy sauce, tamarind, shrimp, scallions, lime",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Margherita Pizza",
+                    "description": "This Italian dish features wheat dough and tomato in Margherita Pizza. Bakers stretch the dough, add the toppings, and bake it until the cheese bubbles. Kids love watching the cheese melt and sharing gooey slices.",
+                    "keywords": "wheat dough, tomato, mozzarella, basil, olive oil",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Italian Sausage Penne",
+                    "description": "This Italian dish features wheat penne and italian sausage in Italian Sausage Penne. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "wheat penne, italian sausage, tomato sauce, parmesan, garlic",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Falafel Wrap",
+                    "description": "This Middle Eastern dish features chickpeas and tahini in Falafel Wrap. Chefs pile the fillings onto soft bread and roll or fold it up tight. Kids love holding a bundle of goodies they can munch with their hands.",
+                    "keywords": "chickpeas, tahini, sesame, pita bread, lettuce, tomato, cucumber",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "California Roll",
+                    "description": "This Japanese dish features sushi rice and nori in California Roll. Chefs roll the rice and fillings tightly in nori and slice it into bite-size pieces. Kids think it's fun to see the pretty swirls and pick up each roll.",
+                    "keywords": "sushi rice, nori, imitation crab, mayonnaise, avocado, sesame",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Chicken Tikka Masala",
+                    "description": "This Indian dish features chicken and yogurt in Chicken Tikka Masala. Cooks simmer the sauce with the fillings until it's creamy and fragrant. Kids enjoy spooning the colorful curry over rice and soaking up the sauce.",
+                    "keywords": "chicken, yogurt, cream, spices, tomato, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "PB&J Sandwich",
+                    "description": "This American dish features peanut butter and jelly in PB&J Sandwich. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "peanut butter, jelly, wheat bread",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Shrimp Tacos",
+                    "description": "This Mexican dish features shrimp and cabbage in Shrimp Tacos. Chefs pile the fillings onto soft bread and roll or fold it up tight. Kids love holding a bundle of goodies they can munch with their hands.",
+                    "keywords": "shrimp, cabbage, crema, corn tortillas, lime",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Egg Fried Rice",
+                    "description": "This Chinese dish features rice and egg in Egg Fried Rice. Cooks simmer the rice with the mix-ins until each grain is fluffy and tasty. Kids like scooping up little mounds of rice packed with surprises.",
+                    "keywords": "rice, egg, soy sauce, peas, carrot, scallions, sesame oil",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Chicken Katsu Curry",
+                    "description": "This Japanese dish features chicken cutlet and wheat panko in Chicken Katsu Curry. Cooks simmer the sauce with the fillings until it's creamy and fragrant. Kids enjoy spooning the colorful curry over rice and soaking up the sauce.",
+                    "keywords": "chicken cutlet, wheat panko, curry sauce, rice, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Pesto Pasta",
+                    "description": "This Italian dish features wheat pasta and basil in Pesto Pasta. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "wheat pasta, basil, pine nuts, parmesan, olive oil, garlic",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Lamb Gyro Wrap",
+                    "description": "This Mediterranean dish features pita bread and lamb in Lamb Gyro Wrap. Chefs pile the fillings onto soft bread and roll or fold it up tight. Kids love holding a bundle of goodies they can munch with their hands.",
+                    "keywords": "pita bread, lamb, tzatziki, yogurt, tomato, onion",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Clam Chowder",
+                    "description": "This American dish features clams and cream in Clam Chowder. Cooks simmer everything in a cozy pot until it's warm and steamy. Kids love slurping the toasty broth with their spoons.",
+                    "keywords": "clams, cream, butter, wheat flour, potato, celery, onion",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Green Curry",
+                    "description": "This Thai dish features coconut milk and chicken in Green Curry. Cooks simmer the sauce with the fillings until it's creamy and fragrant. Kids enjoy spooning the colorful curry over rice and soaking up the sauce.",
+                    "keywords": "coconut milk, chicken, fish sauce, eggplant, basil, green curry paste",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Spicy Peanut Noodles",
+                    "description": "This Thai dish features wheat noodles and peanuts in Spicy Peanut Noodles. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat noodles, peanuts, soy sauce, chili oil",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame Udon",
+                    "description": "This Japanese dish features udon wheat noodles and sesame in Sesame Udon. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "udon wheat noodles, sesame, soy sauce, scallions",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Walnut Pesto Penne",
+                    "description": "This Italian dish features wheat penne and walnuts in Walnut Pesto Penne. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "wheat penne, walnuts, parmesan, basil",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tahini Chicken Bowl",
+                    "description": "This Middle Eastern dish features grilled chicken and tahini in Tahini Chicken Bowl. Chefs layer grains, proteins, and sauces in a bowl so every scoop has a mix. Kids enjoy mixing and matching each spoonful.",
+                    "keywords": "grilled chicken, tahini, sesame, wheat pita",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Shrimp Scampi",
+                    "description": "This Italian dish features shrimp and butter in Shrimp Scampi. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "shrimp, butter, garlic, wheat spaghetti",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Crab Cakes",
+                    "description": "This American dish features crab and egg in Crab Cakes. Cooks coat the pieces and fry them until the outside turns golden and crispy. Kids like crunching into the crisp edges and juicy middles.",
+                    "keywords": "crab, egg, wheat flour, mayonnaise",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Lobster Roll",
+                    "description": "This American dish features lobster and butter in Lobster Roll. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "lobster, butter, wheat bun",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Mussels with Fries",
+                    "description": "This Belgian dish features mussels and cream in Mussels with Fries. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "mussels, cream, butter, white wine",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Oyster Po’ Boy",
+                    "description": "This Cajun dish features oysters and wheat bread in Oyster Po’ Boy. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "oysters, wheat bread, crema, lettuce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Classic Carbonara",
+                    "description": "This Italian dish features wheat spaghetti and egg in Classic Carbonara. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "wheat spaghetti, egg, parmesan, cream",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Three Cheese Pizza",
+                    "description": "This Italian dish features wheat dough and mozzarella in Three Cheese Pizza. Bakers stretch the dough, add the toppings, and bake it until the cheese bubbles. Kids love watching the cheese melt and sharing gooey slices.",
+                    "keywords": "wheat dough, mozzarella, parmesan, milk",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Yogurt Tandoori Chicken",
+                    "description": "This Indian dish features chicken and yogurt in Yogurt Tandoori Chicken. Chefs layer grains, proteins, and sauces in a bowl so every scoop has a mix. Kids enjoy mixing and matching each spoonful.",
+                    "keywords": "chicken, yogurt, spices",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Butter Croissant",
+                    "description": "This French dish features wheat dough and butter in Butter Croissant. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "wheat dough, butter, milk",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Egg Salad Sandwich",
+                    "description": "This American dish features egg and mayonnaise in Egg Salad Sandwich. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "egg, mayonnaise, wheat bread",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tamago Nigiri",
+                    "description": "This Japanese dish features egg and rice in Tamago Nigiri. Chefs roll the rice and fillings tightly in nori and slice it into bite-size pieces. Kids think it's fun to see the pretty swirls and pick up each roll.",
+                    "keywords": "egg, rice, nori",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Soy-Glazed Salmon",
+                    "description": "This Japanese dish features salmon and soy sauce in Soy-Glazed Salmon. Cooks sear or bake the protein until it's tender and shiny with sauce. Kids like the gentle flavors and the shiny glaze on top.",
+                    "keywords": "salmon, soy sauce, sesame",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Mapo Tofu",
+                    "description": "This Chinese dish features tofu and soy sauce in Mapo Tofu. Cooks sizzle everything in a hot wok so the sauce coats each bite. Kids love the little pops of flavor in every scoop.",
+                    "keywords": "tofu, soy sauce, sesame oil, wheat starch",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Teriyaki Chicken Rice",
+                    "description": "This Japanese dish features chicken and soy sauce in Teriyaki Chicken Rice. Cooks simmer the rice with the mix-ins until each grain is fluffy and tasty. Kids like scooping up little mounds of rice packed with surprises.",
+                    "keywords": "chicken, soy sauce, sesame, rice",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tempura Udon",
+                    "description": "This Japanese dish features wheat udon and shrimp in Tempura Udon. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat udon, shrimp, soy sauce, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Beer-Battered Cod",
+                    "description": "This British dish features cod and wheat flour in Beer-Battered Cod. Cooks coat the pieces and fry them until the outside turns golden and crispy. Kids like crunching into the crisp edges and juicy middles.",
+                    "keywords": "cod, wheat flour, egg, milk",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tuna Mayo Onigiri",
+                    "description": "This Japanese dish features tuna and mayonnaise in Tuna Mayo Onigiri. Chefs roll the rice and fillings tightly in nori and slice it into bite-size pieces. Kids think it's fun to see the pretty swirls and pick up each roll.",
+                    "keywords": "tuna, mayonnaise, nori, rice",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Nori Ramen Bowl",
+                    "description": "This Japanese dish features wheat ramen and soy sauce in Nori Ramen Bowl. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat ramen, soy sauce, nori, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Fish Sauce Wings",
+                    "description": "This Vietnamese dish features chicken wings and fish sauce in Fish Sauce Wings. Cooks coat the pieces and fry them until the outside turns golden and crispy. Kids like crunching into the crisp edges and juicy middles.",
+                    "keywords": "chicken wings, fish sauce, wheat flour",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Cashew Chicken",
+                    "description": "This Chinese dish features chicken and cashews in Cashew Chicken. Cooks sizzle everything in a hot wok so the sauce coats each bite. Kids love the little pops of flavor in every scoop.",
+                    "keywords": "chicken, cashews, soy sauce, wheat starch",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Almond-Crusted Trout",
+                    "description": "This Mediterranean dish features trout and almonds in Almond-Crusted Trout. Cooks coat the pieces and fry them until the outside turns golden and crispy. Kids like crunching into the crisp edges and juicy middles.",
+                    "keywords": "trout, almonds, butter, lemon",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Pistachio Gelato",
+                    "description": "This Italian dish features milk and cream in Pistachio Gelato. Chefs churn the creamy mixture until it turns chilly and smooth. Kids love licking the frosty scoop on a warm day.",
+                    "keywords": "milk, cream, pistachios",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Hazelnut Crepes",
+                    "description": "This French dish features wheat flour and milk in Hazelnut Crepes. Cooks pour the batter on a hot pan and flip it until it's thin and golden. Kids like rolling up the soft layers and nibbling sweet bites.",
+                    "keywords": "wheat flour, milk, egg, hazelnuts",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Pine Nut Fattoush",
+                    "description": "This Levantine dish features wheat pita and pine nuts in Pine Nut Fattoush. Cooks toss the crunchy veggies and toppings in a big bowl so everything gets coated. Kids love the bright colors and the crunch in every bite.",
+                    "keywords": "wheat pita, pine nuts, sesame, olive oil",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Satay Skewers",
+                    "description": "This Thai dish features chicken and peanuts in Peanut Satay Skewers. Chefs thread the pieces onto sticks and grill them until they sizzle. Kids love nibbling food right off a stick.",
+                    "keywords": "chicken, peanuts, soy sauce, sesame oil",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame Bagel with Lox",
+                    "description": "This American dish features sesame bagel and cream cheese in Sesame Bagel with Lox. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "sesame bagel, cream cheese, salmon",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Italian Sausage Pizza",
+                    "description": "This Italian dish features wheat dough and italian sausage in Italian Sausage Pizza. Bakers stretch the dough, add the toppings, and bake it until the cheese bubbles. Kids love watching the cheese melt and sharing gooey slices.",
+                    "keywords": "wheat dough, italian sausage, mozzarella, tomato sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage Lasagna",
+                    "description": "This Italian dish features wheat pasta and italian sausage in Sausage Lasagna. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "wheat pasta, italian sausage, ricotta, parmesan",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Panko Shrimp Bento",
+                    "description": "This Japanese dish features shrimp and wheat panko in Panko Shrimp Bento. Cooks simmer the rice with the mix-ins until each grain is fluffy and tasty. Kids like scooping up little mounds of rice packed with surprises.",
+                    "keywords": "shrimp, wheat panko, soy sauce, rice",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Seafood Paella",
+                    "description": "This Spanish dish features shrimp and mussels in Seafood Paella. Cooks simmer the rice with the mix-ins until each grain is fluffy and tasty. Kids like scooping up little mounds of rice packed with surprises.",
+                    "keywords": "shrimp, mussels, squid, fish",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tuna Melt",
+                    "description": "This American dish features tuna and cheese in Tuna Melt. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "tuna, cheese, wheat bread, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Salmon Sesame Sushi",
+                    "description": "This Japanese dish features salmon and rice in Salmon Sesame Sushi. Chefs roll the rice and fillings tightly in nori and slice it into bite-size pieces. Kids think it's fun to see the pretty swirls and pick up each roll.",
+                    "keywords": "salmon, rice, nori, sesame",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Soy Beef Bowl",
+                    "description": "This Korean dish features beef and soy sauce in Soy Beef Bowl. Cooks simmer the rice with the mix-ins until each grain is fluffy and tasty. Kids like scooping up little mounds of rice packed with surprises.",
+                    "keywords": "beef, soy sauce, sesame oil, rice",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Kung Pao Shrimp",
+                    "description": "This Chinese dish features shrimp and peanuts in Kung Pao Shrimp. Cooks sizzle everything in a hot wok so the sauce coats each bite. Kids love the little pops of flavor in every scoop.",
+                    "keywords": "shrimp, peanuts, soy sauce, chili",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Green Goddess Sandwich",
+                    "description": "This American dish features wheat bread and egg in Green Goddess Sandwich. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "wheat bread, egg, cream, herbs",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Spanakopita",
+                    "description": "This Greek dish features wheat dough and feta cheese in Spanakopita. Bakers mix the dough and bake it until it's fluffy and golden. Kids love tearing into the warm, soft bread.",
+                    "keywords": "wheat dough, feta cheese, egg, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Beef Kebab with Tzatziki",
+                    "description": "This Greek dish features beef and tzatziki in Beef Kebab with Tzatziki. Chefs thread the pieces onto sticks and grill them until they sizzle. Kids love nibbling food right off a stick.",
+                    "keywords": "beef, tzatziki, yogurt, pita bread",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Butter Chicken",
+                    "description": "This Indian dish features chicken and butter in Butter Chicken. Cooks simmer the sauce with the fillings until it's creamy and fragrant. Kids enjoy spooning the colorful curry over rice and soaking up the sauce.",
+                    "keywords": "chicken, butter, cream, wheat naan",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Eggplant Parmesan",
+                    "description": "This Italian dish features eggplant and parmesan in Eggplant Parmesan. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "eggplant, parmesan, mozzarella, wheat flour",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Spaghetti alle Vongole",
+                    "description": "This Italian dish features clams and wheat spaghetti in Spaghetti alle Vongole. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "clams, wheat spaghetti, butter, garlic",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Mackerel Sushi",
+                    "description": "This Japanese dish features fish and rice in Mackerel Sushi. Chefs roll the rice and fillings tightly in nori and slice it into bite-size pieces. Kids think it's fun to see the pretty swirls and pick up each roll.",
+                    "keywords": "fish, rice, nori, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Soba with Tempura",
+                    "description": "This Japanese dish features wheat tempura and shrimp in Soba with Tempura. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat tempura, shrimp, soy sauce, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Cheeseburger",
+                    "description": "This American dish features wheat bun and beef patty in Cheeseburger. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "wheat bun, beef patty, cheese, sesame",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Fish Tacos with Crema",
+                    "description": "This Mexican dish features fish and corn tortillas in Fish Tacos with Crema. Chefs pile the fillings onto soft bread and roll or fold it up tight. Kids love holding a bundle of goodies they can munch with their hands.",
+                    "keywords": "fish, corn tortillas, crema, cabbage",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame Chicken Salad",
+                    "description": "This Fusion mash-up features chicken and sesame in Sesame Chicken Salad. Cooks toss the crunchy veggies and toppings in a big bowl so everything gets coated. Kids love the bright colors and the crunch in every bite.",
+                    "keywords": "chicken, sesame, soy sauce, wheat croutons",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Chicken Chow Mein",
+                    "description": "This Chinese dish features wheat noodles and soy sauce in Chicken Chow Mein. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat noodles, soy sauce, chicken, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Fettuccine Alfredo",
+                    "description": "This Italian dish features wheat pasta and parmesan in Fettuccine Alfredo. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "wheat pasta, parmesan, cream, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Hawaiian Pizza",
+                    "description": "This Italian-American dish features wheat dough and mozzarella in Hawaiian Pizza. Bakers stretch the dough, add the toppings, and bake it until the cheese bubbles. Kids love watching the cheese melt and sharing gooey slices.",
+                    "keywords": "wheat dough, mozzarella, ham, milk",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Buttered Toast",
+                    "description": "This American dish features wheat bread and butter in Buttered Toast. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "wheat bread, butter, milk",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame Brittle",
+                    "description": "This Candy dish features sesame and butter in Sesame Brittle. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "sesame, butter, sugar",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Baba Ganoush",
+                    "description": "This Levantine dish features eggplant and tahini in Baba Ganoush. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "eggplant, tahini, sesame, wheat pita",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Coconut Shrimp",
+                    "description": "This Caribbean dish features shrimp and wheat flour in Coconut Shrimp. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "shrimp, wheat flour, egg, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Oyster Chowder",
+                    "description": "This American dish features oysters and milk in Oyster Chowder. Cooks simmer everything in a cozy pot until it's warm and steamy. Kids love slurping the toasty broth with their spoons.",
+                    "keywords": "oysters, milk, butter, wheat flour",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Salmon Cream Pasta",
+                    "description": "This Italian dish features salmon and wheat pasta in Salmon Cream Pasta. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "salmon, wheat pasta, cream, parmesan",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tuna Casserole",
+                    "description": "This American dish features tuna and wheat pasta in Tuna Casserole. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "tuna, wheat pasta, milk, cheese",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Caramel Pork",
+                    "description": "This Vietnamese dish features pork and fish sauce in Caramel Pork. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "pork, fish sauce, wheat starch",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage Risotto",
+                    "description": "This Italian dish features italian sausage and butter in Sausage Risotto. Cooks simmer the rice with the mix-ins until each grain is fluffy and tasty. Kids like scooping up little mounds of rice packed with surprises.",
+                    "keywords": "italian sausage, butter, parmesan, rice",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage Omelette",
+                    "description": "This Diner dish features egg and italian sausage in Sausage Omelette. Cooks whisk the eggs and fold them around the tasty fillings until fluffy. Kids love how the soft eggs hide yummy surprises inside.",
+                    "keywords": "egg, italian sausage, milk, cheddar",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage Rolls",
+                    "description": "This British dish features italian sausage and wheat dough in Sausage Rolls. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "italian sausage, wheat dough, egg, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage-Stuffed Mushrooms",
+                    "description": "This Italian dish features italian sausage and parmesan in Sausage-Stuffed Mushrooms. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "italian sausage, parmesan, bread crumbs, wheat",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame-Crusted Tuna",
+                    "description": "This Japanese dish features tuna and sesame in Sesame-Crusted Tuna. Cooks coat the pieces and fry them until the outside turns golden and crispy. Kids like crunching into the crisp edges and juicy middles.",
+                    "keywords": "tuna, sesame, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Cod Brandade",
+                    "description": "This French dish features cod and cream in Cod Brandade. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "cod, cream, butter, bread",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Shrimp Étouffée",
+                    "description": "This Cajun dish features shrimp and butter in Shrimp Étouffée. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "shrimp, butter, wheat flour, stock",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Crab Rangoon",
+                    "description": "This Chinese-American dish features crab and cream cheese in Crab Rangoon. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "crab, cream cheese, wheat wrappers, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Lobster Bisque",
+                    "description": "This French dish features lobster and cream in Lobster Bisque. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "lobster, cream, butter, wheat flour",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Mussel Linguine",
+                    "description": "This Italian dish features mussels and wheat pasta in Mussel Linguine. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "mussels, wheat pasta, butter, garlic",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Oyster Omelette",
+                    "description": "This Taiwanese dish features oysters and egg in Oyster Omelette. Cooks whisk the eggs and fold them around the tasty fillings until fluffy. Kids love how the soft eggs hide yummy surprises inside.",
+                    "keywords": "oysters, egg, wheat starch, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Cheese Enchiladas",
+                    "description": "This Mexican dish features wheat tortillas and cheese in Cheese Enchiladas. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "wheat tortillas, cheese, cream, salsa",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Egg Burger",
+                    "description": "This American dish features wheat bun and beef in Egg Burger. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "wheat bun, beef, egg, cheese",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Katsudon",
+                    "description": "This Japanese dish features pork cutlet and wheat panko in Katsudon. Cooks coat the pieces and fry them until the outside turns golden and crispy. Kids like crunching into the crisp edges and juicy middles.",
+                    "keywords": "pork cutlet, wheat panko, soy sauce, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Okonomiyaki",
+                    "description": "This Japanese dish features wheat flour and egg in Okonomiyaki. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "wheat flour, egg, fish sauce, nori",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tamari Soba Salad",
+                    "description": "This Japanese dish features wheat soba and soy sauce in Tamari Soba Salad. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat soba, soy sauce, sesame, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Glazed Doughnuts",
+                    "description": "This American dish features wheat dough and milk in Glazed Doughnuts. Cooks sear or bake the protein until it's tender and shiny with sauce. Kids like the gentle flavors and the shiny glaze on top.",
+                    "keywords": "wheat dough, milk, egg, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Custard Tart",
+                    "description": "This Portuguese dish features wheat dough and milk in Custard Tart. Bakers whisk the batter and bake it until it smells sweet and delicious. Kids can't resist the sugary treat and sharing it with friends.",
+                    "keywords": "wheat dough, milk, egg, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Mac and Cheese",
+                    "description": "This American dish features wheat macaroni and milk in Mac and Cheese. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "wheat macaroni, milk, cheddar, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Butter Brownies",
+                    "description": "This Dessert treat features wheat flour and peanuts in Peanut Butter Brownies. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "wheat flour, peanuts, egg, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Walnut Brownies",
+                    "description": "This Dessert treat features wheat flour and walnuts in Walnut Brownies. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "wheat flour, walnuts, egg, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Almond Croissant",
+                    "description": "This French dish features wheat flour and almonds in Almond Croissant. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "wheat flour, almonds, butter, milk",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Pistachio Baklava",
+                    "description": "This Turkish dish features wheat dough and pistachios in Pistachio Baklava. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "wheat dough, pistachios, butter, honey",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Hazelnut Cake",
+                    "description": "This Dessert treat features wheat flour and hazelnuts in Hazelnut Cake. Bakers whisk the batter and bake it until it smells sweet and delicious. Kids can't resist the sugary treat and sharing it with friends.",
+                    "keywords": "wheat flour, hazelnuts, milk, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame Cookie",
+                    "description": "This Chinese dish features wheat flour and sesame in Sesame Cookie. Bakers whisk the batter and bake it until it smells sweet and delicious. Kids can't resist the sugary treat and sharing it with friends.",
+                    "keywords": "wheat flour, sesame, egg, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Cookie",
+                    "description": "This Chinese dish features wheat flour and peanuts in Peanut Cookie. Bakers whisk the batter and bake it until it smells sweet and delicious. Kids can't resist the sugary treat and sharing it with friends.",
+                    "keywords": "wheat flour, peanuts, egg, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tahini Cookies",
+                    "description": "This Middle Eastern dish features wheat flour and tahini in Tahini Cookies. Bakers whisk the batter and bake it until it smells sweet and delicious. Kids can't resist the sugary treat and sharing it with friends.",
+                    "keywords": "wheat flour, tahini, sesame, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Cheese Scones",
+                    "description": "This British dish features wheat flour and milk in Cheese Scones. Bakers mix the dough and bake it until it's fluffy and golden. Kids love tearing into the warm, soft bread.",
+                    "keywords": "wheat flour, milk, cheddar, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage Biscuit",
+                    "description": "This American dish features italian sausage and wheat biscuit in Sausage Biscuit. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "italian sausage, wheat biscuit, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Chicken Parmesan",
+                    "description": "This Italian dish features chicken and wheat panko in Chicken Parmesan. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "chicken, wheat panko, parmesan, mozzarella",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Garlic Bread",
+                    "description": "This Italian dish features wheat bread and butter in Garlic Bread. Bakers mix the dough and bake it until it's fluffy and golden. Kids love tearing into the warm, soft bread.",
+                    "keywords": "wheat bread, butter, parmesan",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Butter Naan",
+                    "description": "This Indian dish features wheat flour and yogurt in Butter Naan. Bakers mix the dough and bake it until it's fluffy and golden. Kids love tearing into the warm, soft bread.",
+                    "keywords": "wheat flour, yogurt, butter, milk",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Roti Canai",
+                    "description": "This Malaysian dish features wheat flour and egg in Roti Canai. Bakers mix the dough and bake it until it's fluffy and golden. Kids love tearing into the warm, soft bread.",
+                    "keywords": "wheat flour, egg, butter, condensed milk",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Chicken Korma",
+                    "description": "This Indian dish features cream and almonds in Chicken Korma. Cooks simmer the sauce with the fillings until it's creamy and fragrant. Kids enjoy spooning the colorful curry over rice and soaking up the sauce.",
+                    "keywords": "cream, almonds, yogurt, chicken",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Egg Hoppers",
+                    "description": "This Sri Lankan dish features wheat flour and egg in Egg Hoppers. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "wheat flour, egg, milk, coconut",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sushi with Peanut Sauce",
+                    "description": "This Fusion mash-up features rice and nori in Sushi with Peanut Sauce. Chefs roll the rice and fillings tightly in nori and slice it into bite-size pieces. Kids think it's fun to see the pretty swirls and pick up each roll.",
+                    "keywords": "rice, nori, peanut sauce, sesame",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Seared Cod with Butter",
+                    "description": "This French dish features cod and butter in Seared Cod with Butter. Cooks sear or bake the protein until it's tender and shiny with sauce. Kids like the gentle flavors and the shiny glaze on top.",
+                    "keywords": "cod, butter, lemon, wheat crumbs",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Salmon Alfredo",
+                    "description": "This Italian dish features salmon and wheat fettuccine in Salmon Alfredo. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "salmon, wheat fettuccine, cream, parmesan",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tuna Sandwich",
+                    "description": "This Deli dish features tuna and mayonnaise in Tuna Sandwich. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "tuna, mayonnaise, wheat bread",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Shrimp Alfredo",
+                    "description": "This Italian dish features shrimp and wheat fettuccine in Shrimp Alfredo. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "shrimp, wheat fettuccine, cream, parmesan",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Udon Stir-Fry",
+                    "description": "This Japanese dish features udon wheat noodles and peanuts in Peanut Udon Stir-Fry. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "udon wheat noodles, peanuts, soy sauce, sesame oil",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tahini Soba",
+                    "description": "This Japanese dish features wheat soba and tahini in Tahini Soba. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat soba, tahini, sesame, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tree Nut Granola Yogurt",
+                    "description": "This Breakfast bite features almonds and walnuts in Tree Nut Granola Yogurt. Chefs layer grains, proteins, and sauces in a bowl so every scoop has a mix. Kids enjoy mixing and matching each spoonful.",
+                    "keywords": "almonds, walnuts, yogurt, honey",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Wheat Berry Salad with Feta",
+                    "description": "This Mediterranean dish features wheat berries and feta in Wheat Berry Salad with Feta. Cooks toss the crunchy veggies and toppings in a big bowl so everything gets coated. Kids love the bright colors and the crunch in every bite.",
+                    "keywords": "wheat berries, feta, olive oil, lemon",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Butter Banana Toast",
+                    "description": "This Breakfast bite features wheat bread and peanuts in Peanut Butter Banana Toast. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "wheat bread, peanuts, butter, banana",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame Chili Noodles",
+                    "description": "This Chinese dish features wheat noodles and sesame in Sesame Chili Noodles. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat noodles, sesame, soy sauce, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Crab Omelette",
+                    "description": "This Thai dish features crab and egg in Crab Omelette. Cooks whisk the eggs and fold them around the tasty fillings until fluffy. Kids love how the soft eggs hide yummy surprises inside.",
+                    "keywords": "crab, egg, fish sauce, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Clam Chowder Bread Bowl",
+                    "description": "This American dish features clams and cream in Clam Chowder Bread Bowl. Cooks simmer everything in a cozy pot until it's warm and steamy. Kids love slurping the toasty broth with their spoons.",
+                    "keywords": "clams, cream, butter, wheat bread",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Prawn Curry",
+                    "description": "This Indian dish features shrimp and yogurt in Prawn Curry. Cooks simmer the sauce with the fillings until it's creamy and fragrant. Kids enjoy spooning the colorful curry over rice and soaking up the sauce.",
+                    "keywords": "shrimp, yogurt, cream, spices",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Miso Cod with Sesame",
+                    "description": "This Japanese dish features cod and soy sauce in Miso Cod with Sesame. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "cod, soy sauce, sesame, mirin",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Kung Pao Chicken (Cashew)",
+                    "description": "This Chinese dish features chicken and cashews in Kung Pao Chicken (Cashew). Cooks sizzle everything in a hot wok so the sauce coats each bite. Kids love the little pops of flavor in every scoop.",
+                    "keywords": "chicken, cashews, soy sauce, wheat starch",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Almond Shrimp",
+                    "description": "This Chinese dish features shrimp and almonds in Almond Shrimp. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "shrimp, almonds, egg, wheat flour",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Honey Walnut Prawns",
+                    "description": "This Chinese dish features shrimp and walnuts in Honey Walnut Prawns. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "shrimp, walnuts, condensed milk, wheat starch",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Sesame Noodles",
+                    "description": "This Chinese dish features wheat noodles and peanuts in Peanut Sesame Noodles. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat noodles, peanuts, sesame, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Thai Fishcakes",
+                    "description": "This Thai dish features fish and egg in Thai Fishcakes. Cooks coat the pieces and fry them until the outside turns golden and crispy. Kids like crunching into the crisp edges and juicy middles.",
+                    "keywords": "fish, egg, fish sauce, wheat flour",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Dragon Roll",
+                    "description": "This Japanese dish features shrimp and nori in Dragon Roll. Chefs roll the rice and fillings tightly in nori and slice it into bite-size pieces. Kids think it's fun to see the pretty swirls and pick up each roll.",
+                    "keywords": "shrimp, nori, rice, sesame",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sashimi Set with Soy",
+                    "description": "This Japanese dish features salmon and tuna in Sashimi Set with Soy. Chefs slice the fish into thin pieces and arrange them neatly on the plate. Kids love seeing the shiny slices and dipping them into the savory sauce.",
+                    "keywords": "salmon, tuna, soy sauce, wasabi",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Pepperoni & Sausage Pizza",
+                    "description": "This Italian dish features wheat dough and italian sausage in Pepperoni & Sausage Pizza. Bakers stretch the dough, add the toppings, and bake it until the cheese bubbles. Kids love watching the cheese melt and sharing gooey slices.",
+                    "keywords": "wheat dough, italian sausage, mozzarella, milk",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage Spinach Alfredo",
+                    "description": "This Italian dish features wheat pasta and italian sausage in Sausage Spinach Alfredo. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "wheat pasta, italian sausage, cream, parmesan",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage & Peppers Hero",
+                    "description": "This Italian-American dish features italian sausage and wheat roll in Sausage & Peppers Hero. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "italian sausage, wheat roll, butter, mozzarella",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Maki",
+                    "description": "This Fusion mash-up features rice and nori in Peanut Maki. Chefs roll the rice and fillings tightly in nori and slice it into bite-size pieces. Kids think it's fun to see the pretty swirls and pick up each roll.",
+                    "keywords": "rice, nori, peanuts, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame Crackers with Cheese",
+                    "description": "This Snack-time bite features wheat flour and sesame in Sesame Crackers with Cheese. Cooks mix the ingredients together and cook them until they smell amazing. Kids love trying the playful flavors and sharing with friends.",
+                    "keywords": "wheat flour, sesame, milk, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Turkey Club",
+                    "description": "This American dish features wheat bread and bacon in Turkey Club. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "wheat bread, bacon, mayonnaise, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Chicken Caesar Wrap",
+                    "description": "This American dish features wheat tortilla and parmesan in Chicken Caesar Wrap. Chefs pile the fillings onto soft bread and roll or fold it up tight. Kids love holding a bundle of goodies they can munch with their hands.",
+                    "keywords": "wheat tortilla, parmesan, anchovy fish sauce, chicken",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sardine Bánh Mì",
+                    "description": "This Vietnamese dish features wheat baguette and fish sauce in Sardine Bánh Mì. Cooks layer the fillings between bread and toast or grill it until melty and warm. Kids think it's fun to bite through the soft bread and crunchy layers.",
+                    "keywords": "wheat baguette, fish sauce, mayonnaise, pickles",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Chutney Dosa",
+                    "description": "This Indian dish features wheat flour and peanuts in Peanut Chutney Dosa. Cooks pour the batter on a hot pan and flip it until it's thin and golden. Kids like rolling up the soft layers and nibbling sweet bites.",
+                    "keywords": "wheat flour, peanuts, butter, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame Paneer Tikka",
+                    "description": "This Indian dish features paneer (milk) and sesame in Sesame Paneer Tikka. Chefs thread the pieces onto sticks and grill them until they sizzle. Kids love nibbling food right off a stick.",
+                    "keywords": "paneer (milk), sesame, yogurt, spices",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Fish Korma",
+                    "description": "This Indian dish features fish and cream in Fish Korma. Cooks simmer the sauce with the fillings until it's creamy and fragrant. Kids enjoy spooning the colorful curry over rice and soaking up the sauce.",
+                    "keywords": "fish, cream, almonds, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Goan Prawn Curry",
+                    "description": "This Indian dish features shrimp and yogurt in Goan Prawn Curry. Cooks simmer the sauce with the fillings until it's creamy and fragrant. Kids enjoy spooning the colorful curry over rice and soaking up the sauce.",
+                    "keywords": "shrimp, yogurt, butter, spices",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Chaat",
+                    "description": "This Indian dish features peanuts and yogurt in Peanut Chaat. Cooks toss the crunchy veggies and toppings in a big bowl so everything gets coated. Kids love the bright colors and the crunch in every bite.",
+                    "keywords": "peanuts, yogurt, sev wheat, chutney",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame Chilli Paneer",
+                    "description": "This Indo-Chinese dish features paneer (milk) and sesame in Sesame Chilli Paneer. Cooks sizzle everything in a hot wok so the sauce coats each bite. Kids love the little pops of flavor in every scoop.",
+                    "keywords": "paneer (milk), sesame, soy sauce, wheat starch",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Miso Ramen",
+                    "description": "This Japanese dish features wheat ramen and peanuts in Peanut Miso Ramen. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat ramen, peanuts, soy sauce, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame Shoyu Ramen",
+                    "description": "This Japanese dish features wheat ramen and soy sauce in Sesame Shoyu Ramen. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat ramen, soy sauce, sesame, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tonkotsu Ramen",
+                    "description": "This Japanese dish features wheat ramen and soy sauce in Tonkotsu Ramen. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat ramen, soy sauce, egg, nori",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Shrimp Ramen",
+                    "description": "This Japanese dish features wheat ramen and shrimp in Shrimp Ramen. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat ramen, shrimp, soy sauce, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage Ramen",
+                    "description": "This Fusion mash-up features wheat ramen and italian sausage in Sausage Ramen. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat ramen, italian sausage, egg, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Salmon Ramen",
+                    "description": "This Japanese dish features wheat ramen and salmon in Salmon Ramen. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat ramen, salmon, soy sauce, sesame",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tofu Ramen with Egg",
+                    "description": "This Japanese dish features wheat ramen and tofu in Tofu Ramen with Egg. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "wheat ramen, tofu, soy sauce, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Kimchi Udon",
+                    "description": "This Korean-Japanese dish features udon wheat noodles and peanuts in Peanut Kimchi Udon. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "udon wheat noodles, peanuts, soy sauce, sesame",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame Beef Udon",
+                    "description": "This Japanese dish features udon wheat noodles and beef in Sesame Beef Udon. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "udon wheat noodles, beef, sesame, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tempura Fish Udon",
+                    "description": "This Japanese dish features udon wheat noodles and fish in Tempura Fish Udon. Cooks boil the noodles and toss them with sauce or broth until they're steamy and flavorful. Kids love slurping the long noodles like a silly game.",
+                    "keywords": "udon wheat noodles, fish, wheat tempura, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Cod Katsu",
+                    "description": "This Japanese dish features cod and wheat panko in Cod Katsu. Cooks coat the pieces and fry them until the outside turns golden and crispy. Kids like crunching into the crisp edges and juicy middles.",
+                    "keywords": "cod, wheat panko, egg, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Unagi Don",
+                    "description": "This Japanese dish features fish and soy sauce in Unagi Don. Cooks simmer the rice with the mix-ins until each grain is fluffy and tasty. Kids like scooping up little mounds of rice packed with surprises.",
+                    "keywords": "fish, soy sauce, sesame, rice",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Butter Salmon Rice",
+                    "description": "This Japanese dish features salmon and butter in Butter Salmon Rice. Cooks simmer the rice with the mix-ins until each grain is fluffy and tasty. Kids like scooping up little mounds of rice packed with surprises.",
+                    "keywords": "salmon, butter, soy sauce, nori",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Egg Drop Soup",
+                    "description": "This Chinese dish features egg and soy sauce in Egg Drop Soup. Cooks simmer everything in a cozy pot until it's warm and steamy. Kids love slurping the toasty broth with their spoons.",
+                    "keywords": "egg, soy sauce, sesame oil, wheat starch",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Hot & Sour Soup",
+                    "description": "This Chinese dish features soy sauce and egg in Hot & Sour Soup. Cooks simmer everything in a cozy pot until it's warm and steamy. Kids love slurping the toasty broth with their spoons.",
+                    "keywords": "soy sauce, egg, sesame oil, wheat starch",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Wonton Soup",
+                    "description": "This Chinese dish features wheat wonton wrappers and shrimp in Wonton Soup. Cooks simmer everything in a cozy pot until it's warm and steamy. Kids love slurping the toasty broth with their spoons.",
+                    "keywords": "wheat wonton wrappers, shrimp, soy sauce, egg",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Fish Ball Noodle Soup",
+                    "description": "This Chinese dish features fish and wheat noodles in Fish Ball Noodle Soup. Cooks simmer everything in a cozy pot until it's warm and steamy. Kids love slurping the toasty broth with their spoons.",
+                    "keywords": "fish, wheat noodles, soy sauce, sesame oil",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Noodle Soup",
+                    "description": "This Chinese dish features wheat noodles and peanuts in Peanut Noodle Soup. Cooks simmer everything in a cozy pot until it's warm and steamy. Kids love slurping the toasty broth with their spoons.",
+                    "keywords": "wheat noodles, peanuts, soy sauce, sesame oil",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tahini Noodle Soup",
+                    "description": "This Chinese dish features wheat noodles and tahini in Tahini Noodle Soup. Cooks simmer everything in a cozy pot until it's warm and steamy. Kids love slurping the toasty broth with their spoons.",
+                    "keywords": "wheat noodles, tahini, sesame, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage Penne Rosé",
+                    "description": "This Italian dish features wheat penne and italian sausage in Sausage Penne Rosé. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "wheat penne, italian sausage, cream, parmesan",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage Gnocchi",
+                    "description": "This Italian dish features wheat gnocchi and italian sausage in Sausage Gnocchi. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "wheat gnocchi, italian sausage, butter, parmesan",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage Arancini",
+                    "description": "This Italian dish features rice and italian sausage in Sausage Arancini. Cooks coat the pieces and fry them until the outside turns golden and crispy. Kids like crunching into the crisp edges and juicy middles.",
+                    "keywords": "rice, italian sausage, mozzarella, wheat flour",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage Piadina",
+                    "description": "This Italian dish features wheat flatbread and italian sausage in Sausage Piadina. Chefs pile the fillings onto soft bread and roll or fold it up tight. Kids love holding a bundle of goodies they can munch with their hands.",
+                    "keywords": "wheat flatbread, italian sausage, mozzarella, milk",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Calamari Fritti",
+                    "description": "This Italian dish features squid (shellfish) and wheat flour in Calamari Fritti. Cooks coat the pieces and fry them until the outside turns golden and crispy. Kids like crunching into the crisp edges and juicy middles.",
+                    "keywords": "squid (shellfish), wheat flour, egg, butter",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Scampi Linguine",
+                    "description": "This Italian dish features shrimp and wheat pasta in Scampi Linguine. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "shrimp, wheat pasta, butter, parmesan",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sardine Spaghetti",
+                    "description": "This Italian dish features fish and wheat spaghetti in Sardine Spaghetti. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "fish, wheat spaghetti, butter, parsley",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Tuna Arugula Pizza",
+                    "description": "This Italian dish features wheat dough and tuna in Tuna Arugula Pizza. Bakers stretch the dough, add the toppings, and bake it until the cheese bubbles. Kids love watching the cheese melt and sharing gooey slices.",
+                    "keywords": "wheat dough, tuna, mozzarella, milk",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Four Cheese Ravioli",
+                    "description": "This Italian dish features wheat pasta and ricotta in Four Cheese Ravioli. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "wheat pasta, ricotta, parmesan, mozzarella",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Pesto Salmon Ravioli",
+                    "description": "This Italian dish features wheat pasta and salmon in Pesto Salmon Ravioli. Cooks boil the pasta and toss it with the sauce so every strand gets coated. Kids enjoy twirling the noodles and chasing cheesy bites.",
+                    "keywords": "wheat pasta, salmon, parmesan, pine nuts",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Butter Fish Risotto",
+                    "description": "This Italian dish features fish and butter in Butter Fish Risotto. Cooks simmer the rice with the mix-ins until each grain is fluffy and tasty. Kids like scooping up little mounds of rice packed with surprises.",
+                    "keywords": "fish, butter, parmesan, rice",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Peanut Curry Udon",
+                    "description": "This Fusion mash-up features udon wheat noodles and peanuts in Peanut Curry Udon. Cooks simmer the sauce with the fillings until it's creamy and fragrant. Kids enjoy spooning the colorful curry over rice and soaking up the sauce.",
+                    "keywords": "udon wheat noodles, peanuts, cream, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sesame Curry Udon",
+                    "description": "This Fusion mash-up features udon wheat noodles and sesame in Sesame Curry Udon. Cooks simmer the sauce with the fillings until it's creamy and fragrant. Kids enjoy spooning the colorful curry over rice and soaking up the sauce.",
+                    "keywords": "udon wheat noodles, sesame, cream, soy sauce",
+                    "additionalType": "https://schema.org/MenuItem"
+                },
+                {
+                    "@type": "Thing",
+                    "name": "Sausage Pepper Rice Bake",
+                    "description": "This Italian-American dish features italian sausage and butter in Sausage Pepper Rice Bake. Cooks simmer the rice with the mix-ins until each grain is fluffy and tasty. Kids like scooping up little mounds of rice packed with surprises.",
+                    "keywords": "italian sausage, butter, parmesan, wheat crumbs",
+                    "additionalType": "https://schema.org/MenuItem"
+                }
+            ]
+        }
+    </script>
 
 </head>
 
@@ -34,7 +1373,7 @@
             <div class="avatar-menu" id="avatar-menu" hidden></div>
         </div>
         <div class="aw-header-title-group">
-            <h1>Allergy Wheel</h1>
+            <h1>Allergy Wheel – Learn Food Allergens Through Play</h1>
         </div>
         <div class="aw-bottombar">
             <div aria-label="Select a view" class="header-nav" role="group">
@@ -78,6 +1417,28 @@
             <h2 class="title" id="allergy-title">Pick your allergens</h2>
             <p class="muted">Choose anything that might cause trouble. You can change this later.</p>
             <p class="muted">Spin the allergy wheel to win 10 hearts!</p>
+            <!-- GENERATED_ALLERGY_SUMMARY_START -->
+            <noscript class="seo-summary-wrapper">
+                <section aria-labelledby="allergy-summary-title" class="seo-summary">
+                    <h2 id="allergy-summary-title">Food Allergy Quick Reference</h2>
+                    <p>This food allergy quick reference keeps the Allergy Wheel menu aligned with real allergen data so families can plan ahead.</p>
+                    <p>The allergen education checklist below shows how many dishes may trigger each allergen in the Allergy Wheel catalog.</p>
+                    <ul class="seo-summary-list">
+                        <li><strong>🥜 Peanuts</strong> — 18 dishes in the Allergy Wheel menu trigger this allergen alert, including Peanut Pad Thai, PB&amp;J Sandwich, and Spicy Peanut Noodles.</li>
+                        <li><strong>🌰 Tree Nuts</strong> — 18 dishes in the Allergy Wheel menu trigger this allergen alert, including Pesto Pasta, Walnut Pesto Penne, and Cashew Chicken.</li>
+                        <li><strong>⚪️ Sesame</strong> — 41 dishes in the Allergy Wheel menu trigger this allergen alert, including Falafel Wrap, California Roll, and Egg Fried Rice.</li>
+                        <li><strong>🦐 Shellfish</strong> — 33 dishes in the Allergy Wheel menu trigger this allergen alert, including Peanut Pad Thai, Shrimp Tacos, and Clam Chowder.</li>
+                        <li><strong>🥛 Milk / Dairy</strong> — 106 dishes in the Allergy Wheel menu trigger this allergen alert, including Margherita Pizza, Italian Sausage Penne, and Chicken Tikka Masala.</li>
+                        <li><strong>🥚 Egg</strong> — 50 dishes in the Allergy Wheel menu trigger this allergen alert, including Peanut Pad Thai, Egg Fried Rice, and Chicken Katsu Curry.</li>
+                        <li><strong>🫘 Soy</strong> — 53 dishes in the Allergy Wheel menu trigger this allergen alert, including Peanut Pad Thai, Egg Fried Rice, and Spicy Peanut Noodles.</li>
+                        <li><strong>🌾 Wheat / Gluten</strong> — 138 dishes in the Allergy Wheel menu trigger this allergen alert, including Margherita Pizza, Italian Sausage Penne, and Falafel Wrap.</li>
+                        <li><strong>🌭 Italian Sausage (Pork/Spices)</strong> — 17 dishes in the Allergy Wheel menu trigger this allergen alert, including Italian Sausage Penne, Italian Sausage Pizza, and Sausage Lasagna.</li>
+                        <li><strong>🐟 Fish</strong> — 45 dishes in the Allergy Wheel menu trigger this allergen alert, including California Roll, Green Curry, and Tamago Nigiri.</li>
+                    </ul>
+                    <p>Review this food allergy FAQ before spinning the Allergy Wheel to stay confident about every allergen alert.</p>
+                </section>
+            </noscript>
+            <!-- GENERATED_ALLERGY_SUMMARY_END -->
             <div class="grid allergen-grid" id="allergy-list">
                 <button
                     aria-disabled="true"
