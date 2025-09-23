@@ -34,6 +34,19 @@ npm test
 The Jest harness is configured for a jsdom environment so the integration tests can verify canvas rendering and gameplay
 flows. All test files live inside the `tests/` directory and are grouped into `unit` and `integration` subdirectories.
 
+## Update the allergen summary
+
+The crawler-friendly food allergy summary that appears inside the `<noscript>` block on the main screen is generated at
+build time. Run the following command whenever entries in `data/allergens.json`, `data/dishes.json`, or related
+ingredient catalogs change:
+
+```bash
+npm run build:summary
+```
+
+The script loads the JSON catalogs, counts dishes per allergen, and refreshes the static summary so that the SEO copy
+mirrors the latest allergen education data.
+
 ## Avatar customization
 
 Players can personalize the result card by choosing from six built-in avatars: Sunny Girl, Curious Girl, Adventurous
@@ -46,5 +59,5 @@ different option is picked.
 
 ## License
 
-This project is proprietary software. All rights reserved by Marco Polo Research Lab.  
+This project is proprietary software. All rights reserved by Marco Polo Research Lab.
 See the [LICENSE](./LICENSE) file for details.
