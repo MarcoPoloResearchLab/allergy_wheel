@@ -250,6 +250,44 @@ header h1 { margin: 0; font-size: clamp(18px, 2.2vw, 28px) }
         text-align: left;
     }
 
+    .menu-row--mobile-header .menu-mobile-header-cell > .menu-header-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .menu-row--mobile-header .menu-header-toggle {
+        width: 100%;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border: 2px solid #000;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 2px 2px 0 #000;
+        font-size: clamp(12px, 3.2vw, 14px);
+    }
+
+    .menu-row--mobile-header .menu-header-toggle::after {
+        margin-left: auto;
+    }
+
+    .menu-row--mobile-header .menu-filter-panel {
+        position: static;
+        top: auto;
+        right: auto;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 16px;
+        box-shadow: none;
+        border-width: 2px;
+    }
+
+    .menu-row--mobile-header .menu-filter-panel.is-open {
+        display: flex;
+    }
+
     .menu-row--data {
         display: block;
         width: 100%;

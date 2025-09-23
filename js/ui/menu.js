@@ -1,4 +1,10 @@
-import { ScreenName, MenuColumnLabel, AttributeName } from "../constants.js";
+import {
+    ScreenName,
+    MenuColumnLabel,
+    AttributeName,
+    MenuElementId,
+    BrowserEventName
+} from "../constants.js";
 
 /** @typedef {import("../types.js").Dish} Dish */
 /** @typedef {import("../types.js").AllergenDescriptor} AllergenDescriptor */
@@ -28,6 +34,7 @@ const ClassName = Object.freeze({
     ROW_DATA: "menu-row menu-row--data",
     ROW_MOBILE_HEADER: "menu-row menu-row--mobile-header",
     MOBILE_HEADER_CELL: "menu-mobile-header-cell",
+    HEADER_FILTER_CONTAINER: "menu-header-cell",
     CELL_DISH: "menu-cell menu-cell--dish",
     CELL_INGREDIENTS: "menu-cell menu-cell--ingredients",
     CELL_CUISINE: "menu-cell menu-cell--cuisine",
@@ -51,6 +58,14 @@ const ValueType = Object.freeze({
 
 const MenuMessage = Object.freeze({
     NO_MATCHES: "No dishes match the selected filters."
+});
+
+const ViewportMediaQuery = Object.freeze({
+    MOBILE_MAX: "(max-width: 767px)"
+});
+
+const ViewportThreshold = Object.freeze({
+    MOBILE_MAX_WIDTH: 767
 });
 
 const MenuColumnCount = 4;
@@ -104,6 +119,16 @@ export class MenuView {
 
     #selectedAllergenLabel = TextContent.EMPTY;
 
+    #mobileViewportMediaQueryList = null;
+
+    #desktopIngredientHeaderCellElement = null;
+
+    #desktopCuisineHeaderCellElement = null;
+
+    #ingredientFilterContainerElement = null;
+
+    #cuisineFilterContainerElement = null;
+
     /**
      * @param {{ documentReference?: Document, menuTableBodyElement?: HTMLElement | null }} [dependencies]
      */
@@ -113,6 +138,9 @@ export class MenuView {
     } = {}) {
         this.#documentReference = documentReference;
         this.#menuTableBodyElement = menuTableBodyElement || null;
+
+        this.#cacheDesktopFilterHeaderElements();
+        this.#initializeViewportWatcher();
     }
 
     /**
@@ -224,29 +252,54 @@ export class MenuView {
             return;
         }
 
+        this.#cacheDesktopFilterHeaderElements();
+
+        const shouldInjectResponsiveFilters = this.#shouldInjectResponsiveFilterControls();
+
+        if (!shouldInjectResponsiveFilters) {
+            this.#restoreDesktopFilterControls();
+        }
+
         this.#menuTableBodyElement.textContent = TextContent.EMPTY;
 
         /** @type {Dish[]} */
         const dishesToRender = this.#filterDishes(this.#dishesCatalog);
 
+        const menuBodyFragment = this.#documentReference.createDocumentFragment();
+
         if (dishesToRender.length === 0) {
+            if (shouldInjectResponsiveFilters) {
+                const mobileHeaderRow = this.#createResponsiveHeaderRow({
+                    shouldInjectFilters: true
+                });
+                menuBodyFragment.appendChild(mobileHeaderRow);
+            }
             const emptyStateRow = this.#createEmptyStateRow();
-            this.#menuTableBodyElement.appendChild(emptyStateRow);
+            menuBodyFragment.appendChild(emptyStateRow);
+
+            this.#menuTableBodyElement.appendChild(menuBodyFragment);
             return;
         }
 
-        const menuBodyFragment = this.#documentReference.createDocumentFragment();
+        let hasInjectedResponsiveFilters = false;
 
         for (const dishRecord of dishesToRender) {
             if (!dishRecord) {
                 continue;
             }
 
-            const mobileHeaderRow = this.#createResponsiveHeaderRow();
+            const shouldInjectFiltersForRow = shouldInjectResponsiveFilters && !hasInjectedResponsiveFilters;
+            const mobileHeaderRow = this.#createResponsiveHeaderRow({
+                shouldInjectFilters: shouldInjectFiltersForRow
+            });
             const dataRowElement = this.#createMenuDataRow(dishRecord);
 
             menuBodyFragment.appendChild(mobileHeaderRow);
             menuBodyFragment.appendChild(dataRowElement);
+
+            if (shouldInjectFiltersForRow) {
+                hasInjectedResponsiveFilters = true;
+            }
         }
 
         this.#menuTableBodyElement.appendChild(menuBodyFragment);
@@ -271,19 +324,30 @@ export class MenuView {
         return rowElement;
     }
 
-    #createResponsiveHeaderRow() {
+    #createResponsiveHeaderRow({ shouldInjectFilters = false } = {}) {
         const rowElement = this.#documentReference.createElement(HtmlTagName.TR);
         rowElement.className = ClassName.ROW_MOBILE_HEADER;
 
         rowElement.appendChild(this.#createResponsiveHeaderCell(MenuColumnLabel.DISH));
-        rowElement.appendChild(this.#createResponsiveHeaderCell(MenuColumnLabel.INGREDIENTS));
-        rowElement.appendChild(this.#createResponsiveHeaderCell(MenuColumnLabel.CUISINE));
+
+        const ingredientHeaderCell = this.#createResponsiveHeaderCell(
+            MenuColumnLabel.INGREDIENTS,
+            shouldInjectFilters ? this.#ingredientFilterContainerElement : null
+        );
+        rowElement.appendChild(ingredientHeaderCell);
+
+        const cuisineHeaderCell = this.#createResponsiveHeaderCell(
+            MenuColumnLabel.CUISINE,
+            shouldInjectFilters ? this.#cuisineFilterContainerElement : null
+        );
+        rowElement.appendChild(cuisineHeaderCell);
+
         rowElement.appendChild(this.#createResponsiveHeaderCell(MenuColumnLabel.STORY));
 
         return rowElement;
     }
 
-    #createResponsiveHeaderCell(columnLabelText) {
+    #createResponsiveHeaderCell(columnLabelText, contentElement = null) {
         const headerCellElement = this.#documentReference.createElement(HtmlTagName.TH);
         headerCellElement.className = ClassName.MOBILE_HEADER_CELL;
 
@@ -291,11 +355,101 @@ export class MenuView {
             headerCellElement.setAttribute(HtmlAttributeName.SCOPE, TableHeaderScopeValue.COLUMN);
         }
 
-        headerCellElement.textContent = typeof columnLabelText === "string"
-            ? columnLabelText
-            : TextContent.EMPTY;
+        if (contentElement instanceof HTMLElement) {
+            headerCellElement.textContent = TextContent.EMPTY;
+            headerCellElement.appendChild(contentElement);
+        } else {
+            headerCellElement.textContent = typeof columnLabelText === "string"
+                ? columnLabelText
+                : TextContent.EMPTY;
+        }
 
         return headerCellElement;
+    }
+
+    #cacheDesktopFilterHeaderElements() {
+        if (!this.#ingredientFilterContainerElement) {
+            const ingredientToggleElement = this.#documentReference.getElementById(
+                MenuElementId.INGREDIENT_FILTER_TOGGLE
+            );
+            const ingredientHeaderContainer = ingredientToggleElement instanceof HTMLElement
+                ? ingredientToggleElement.closest(`.${ClassName.HEADER_FILTER_CONTAINER}`)
+                : null;
+            if (ingredientHeaderContainer instanceof HTMLElement) {
+                this.#ingredientFilterContainerElement = ingredientHeaderContainer;
+            }
+        }
+
+        if (!this.#desktopIngredientHeaderCellElement && this.#ingredientFilterContainerElement) {
+            const ingredientParentElement = this.#ingredientFilterContainerElement.parentElement;
+            if (ingredientParentElement instanceof HTMLElement) {
+                this.#desktopIngredientHeaderCellElement = ingredientParentElement;
+            }
+        }
+
+        if (!this.#cuisineFilterContainerElement) {
+            const cuisineToggleElement = this.#documentReference.getElementById(
+                MenuElementId.CUISINE_FILTER_TOGGLE
+            );
+            const cuisineHeaderContainer = cuisineToggleElement instanceof HTMLElement
+                ? cuisineToggleElement.closest(`.${ClassName.HEADER_FILTER_CONTAINER}`)
+                : null;
+            if (cuisineHeaderContainer instanceof HTMLElement) {
+                this.#cuisineFilterContainerElement = cuisineHeaderContainer;
+            }
+        }
+
+        if (!this.#desktopCuisineHeaderCellElement && this.#cuisineFilterContainerElement) {
+            const cuisineParentElement = this.#cuisineFilterContainerElement.parentElement;
+            if (cuisineParentElement instanceof HTMLElement) {
+                this.#desktopCuisineHeaderCellElement = cuisineParentElement;
+            }
+        }
+    }
+
+    #initializeViewportWatcher() {
+        const defaultView = this.#documentReference.defaultView || null;
+        if (!defaultView || typeof defaultView.matchMedia !== ValueType.FUNCTION) {
+            return;
+        }
+
+        const mobileMediaQueryList = defaultView.matchMedia(ViewportMediaQuery.MOBILE_MAX);
+        this.#mobileViewportMediaQueryList = mobileMediaQueryList;
+
+        const viewportChangeHandler = () => {
+            this.renderMenu();
+        };
+
+        if (typeof mobileMediaQueryList.addEventListener === ValueType.FUNCTION) {
+            mobileMediaQueryList.addEventListener(BrowserEventName.CHANGE, viewportChangeHandler);
+            return;
+        }
+        if (typeof mobileMediaQueryList.addListener === ValueType.FUNCTION) {
+            mobileMediaQueryList.addListener(viewportChangeHandler);
+        }
+    }
+
+    #shouldInjectResponsiveFilterControls() {
+        if (this.#mobileViewportMediaQueryList) {
+            return this.#mobileViewportMediaQueryList.matches;
+        }
+
+        const defaultView = this.#documentReference.defaultView || null;
+        if (defaultView && typeof defaultView.innerWidth === "number") {
+            return defaultView.innerWidth <= ViewportThreshold.MOBILE_MAX_WIDTH;
+        }
+
+        return false;
+    }
+
+    #restoreDesktopFilterControls() {
+        if (this.#desktopIngredientHeaderCellElement && this.#ingredientFilterContainerElement) {
+            this.#desktopIngredientHeaderCellElement.appendChild(this.#ingredientFilterContainerElement);
+        }
+
+        if (this.#desktopCuisineHeaderCellElement && this.#cuisineFilterContainerElement) {
+            this.#desktopCuisineHeaderCellElement.appendChild(this.#cuisineFilterContainerElement);
+        }
     }
 
     #createDishCell(dishRecord) {
