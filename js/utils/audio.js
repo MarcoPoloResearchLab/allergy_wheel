@@ -41,12 +41,12 @@ function ensureAudioContext() {
 function unlockAudioNow() {
     const context = ensureAudioContext();
     try {
-        const osc = context.createOscillator();
-        const gain = context.createGain();
-        gain.gain.setValueAtTime(0.0001, context.currentTime);
-        osc.connect(gain).connect(context.destination);
-        osc.start();
-        osc.stop(context.currentTime + 0.01);
+        const oscillatorNode = context.createOscillator();
+        const gainNode = context.createGain();
+        gainNode.gain.setValueAtTime(0.0001, context.currentTime);
+        oscillatorNode.connect(gainNode).connect(context.destination);
+        oscillatorNode.start();
+        oscillatorNode.stop(context.currentTime + 0.01);
         context.resume?.();
     } catch {}
 }
@@ -99,15 +99,28 @@ async function loadAudioBuffer(context, assetPath) {
     return bufferPromise;
 }
 
+/**
+ * Preloads the "nom nom" chewing sound so that later playback starts without delay.
+ *
+ * @returns {Promise<void>} A promise that resolves when the audio buffer is cached.
+ */
 export async function preloadNomNom() {
     const context = ensureAudioContext();
     await loadAudioBuffer(context, AudioAssetPath.NOM_NOM);
 }
 
 /* ---------- small helper envelopes ---------- */
-function expTo(ctx, param, value, t, min = 0.0001) {
-    const safe = Math.max(Math.abs(value), min);
-    param.exponentialRampToValueAtTime(safe, t);
+/**
+ * Applies an exponential ramp to the provided audio parameter, ensuring the value never reaches zero.
+ *
+ * @param {AudioParam} audioParam - Parameter whose value will be ramped.
+ * @param {number} targetValue - Desired value to reach.
+ * @param {number} targetTime - Time, in seconds, when the value should be reached.
+ * @param {number} [minimumValue=0.0001] - Smallest allowed absolute value to avoid invalid ramps.
+ */
+function applyExponentialRamp(audioParam, targetValue, targetTime, minimumValue = 0.0001) {
+    const safeTargetValue = Math.max(Math.abs(targetValue), minimumValue);
+    audioParam.exponentialRampToValueAtTime(safeTargetValue, targetTime);
 }
 
 async function fetchSirenArrayBuffer() {
@@ -151,6 +164,9 @@ async function loadSirenBuffer(context) {
 }
 
 /* ---------- simple tick ---------- */
+/**
+ * Plays a short percussive tick sound used while the wheel spins.
+ */
 export function playTick() {
     const context = ensureAudioContext();
     const oscillatorNode = context.createOscillator();
@@ -158,14 +174,20 @@ export function playTick() {
     oscillatorNode.type = "square";
     oscillatorNode.frequency.setValueAtTime(1200, context.currentTime);
     gainNode.gain.setValueAtTime(0.0001, context.currentTime);
-    expTo(context, gainNode.gain, 0.25, context.currentTime + 0.005);
-    expTo(context, gainNode.gain, 0.0001, context.currentTime + 0.06);
+    applyExponentialRamp(gainNode.gain, 0.25, context.currentTime + 0.005);
+    applyExponentialRamp(gainNode.gain, 0.0001, context.currentTime + 0.06);
     oscillatorNode.connect(gainNode).connect(context.destination);
     oscillatorNode.start();
     oscillatorNode.stop(context.currentTime + 0.07);
 }
 
 /* ---------- siren ---------- */
+/**
+ * Plays the looping ambulance siren audio for the provided duration.
+ *
+ * @param {number} [durationMs=1800] - Desired playback duration in milliseconds.
+ * @returns {Promise<void>} A promise that resolves when playback finishes.
+ */
 export async function playSiren(durationMs = 1800) {
     const context = ensureAudioContext();
     const sirenBuffer = await loadSirenBuffer(context);
@@ -178,7 +200,11 @@ export async function playSiren(durationMs = 1800) {
     masterGainNode.gain.setValueAtTime(SirenGainLevel.minimal, now);
     masterGainNode.connect(context.destination);
 
-    expTo(context, masterGainNode.gain, SirenGainLevel.active, now + SirenEnvelopeTiming.attackSeconds);
+    applyExponentialRamp(
+        masterGainNode.gain,
+        SirenGainLevel.active,
+        now + SirenEnvelopeTiming.attackSeconds
+    );
 
     const bufferSourceNode = context.createBufferSource();
     bufferSourceNode.buffer = sirenBuffer;
@@ -194,7 +220,7 @@ export async function playSiren(durationMs = 1800) {
     const currentGainLevel = Math.max(masterGainNode.gain.value ?? SirenGainLevel.active, SirenGainLevel.minimal);
     masterGainNode.gain.cancelScheduledValues?.(releaseStartTime);
     masterGainNode.gain.setValueAtTime(currentGainLevel, releaseStartTime);
-    expTo(context, masterGainNode.gain, SirenGainLevel.minimal, releaseEndTime);
+    applyExponentialRamp(masterGainNode.gain, SirenGainLevel.minimal, releaseEndTime);
 
     bufferSourceNode.stop(releaseEndTime);
 }
@@ -268,6 +294,13 @@ async function getNomNomBuffer(context) {
     return loadAudioBuffer(context, AudioAssetPath.NOM_NOM);
 }
 
+/**
+ * Plays the "nom nom" chewing sound. When the clip is short, multiple overlapping bites are scheduled.
+ *
+ * @param {number} [durationMs=1200] - Requested playback duration in milliseconds.
+ * @param {() => number} [randomGenerator=Math.random] - Random generator used to vary buffer offsets.
+ * @returns {Promise<void>} A promise that resolves once playback scheduling completes.
+ */
 export async function playNomNom(durationMs = 1200, randomGenerator = Math.random) {
     const context = ensureAudioContext();
     const audioBuffer = await getNomNomBuffer(context);
@@ -322,55 +355,69 @@ export async function playNomNom(durationMs = 1200, randomGenerator = Math.rando
 }
 
 /* ---------- triumphant win melody ---------- */
+/**
+ * Plays the celebratory melody and sparkle effect when the player wins.
+ */
 export function playWin() {
-    const ctx = ensureAudioContext();
-    const out = ctx.createGain();
-    out.gain.setValueAtTime(0.0001, ctx.currentTime);
-    expTo(ctx, out.gain, 0.9, ctx.currentTime + 0.05);
-    out.connect(ctx.destination);
+    const audioContext = ensureAudioContext();
+    const masterGainNode = audioContext.createGain();
+    masterGainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    applyExponentialRamp(masterGainNode.gain, 0.9, audioContext.currentTime + 0.05);
+    masterGainNode.connect(audioContext.destination);
 
     // Simple I–V–vi–IV style arpeggio in C major (C, G, A, F) + sparkle
     const notesHz = [261.63, 392.00, 440.00, 349.23];
-    const start = ctx.currentTime + 0.02;
+    const melodyStartTime = audioContext.currentTime + 0.02;
 
-    for (let i = 0; i < notesHz.length; i++) {
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.type = "triangle";
-        o.frequency.setValueAtTime(notesHz[i], start + i * 0.18);
-        g.gain.setValueAtTime(0.0001, start + i * 0.18);
-        expTo(ctx, g.gain, 0.7, start + i * 0.18 + 0.03);
-        expTo(ctx, g.gain, 0.0001, start + i * 0.18 + 0.28);
-        o.connect(g).connect(out);
-        o.start(start + i * 0.18);
-        o.stop(start + i * 0.18 + 0.3);
+    for (let noteIndex = 0; noteIndex < notesHz.length; noteIndex += 1) {
+        const oscillatorNode = audioContext.createOscillator();
+        const noteGainNode = audioContext.createGain();
+        const noteStartTime = melodyStartTime + noteIndex * 0.18;
+        oscillatorNode.type = "triangle";
+        oscillatorNode.frequency.setValueAtTime(notesHz[noteIndex], noteStartTime);
+        noteGainNode.gain.setValueAtTime(0.0001, noteStartTime);
+        applyExponentialRamp(noteGainNode.gain, 0.7, noteStartTime + 0.03);
+        applyExponentialRamp(noteGainNode.gain, 0.0001, noteStartTime + 0.28);
+        oscillatorNode.connect(noteGainNode).connect(masterGainNode);
+        oscillatorNode.start(noteStartTime);
+        oscillatorNode.stop(noteStartTime + 0.3);
     }
 
     // Sparkle noise burst at the end
-    const sparkleDelay = start + notesHz.length * 0.18 + 0.05;
-    const dur = 0.2;
-    const noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
-    const data = noiseBuf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
-    const noise = ctx.createBufferSource();
-    noise.buffer = noiseBuf;
-    const nf = ctx.createBiquadFilter();
-    nf.type = "highpass";
-    nf.frequency.setValueAtTime(3000, sparkleDelay);
-    const ng = ctx.createGain();
-    ng.gain.setValueAtTime(0.0001, sparkleDelay);
-    expTo(ctx, ng.gain, 0.4, sparkleDelay + 0.02);
-    expTo(ctx, ng.gain, 0.0001, sparkleDelay + dur);
-    noise.connect(nf).connect(ng).connect(out);
-    noise.start(sparkleDelay);
-    noise.stop(sparkleDelay + dur);
+    const sparkleDelayTime = melodyStartTime + notesHz.length * 0.18 + 0.05;
+    const sparkleDurationSeconds = 0.2;
+    const noiseBuffer = audioContext.createBuffer(
+        1,
+        Math.floor(audioContext.sampleRate * sparkleDurationSeconds),
+        audioContext.sampleRate
+    );
+    const noiseBufferData = noiseBuffer.getChannelData(0);
+    for (let sampleIndex = 0; sampleIndex < noiseBufferData.length; sampleIndex += 1) {
+        const normalizedPosition = sampleIndex / noiseBufferData.length;
+        noiseBufferData[sampleIndex] = (Math.random() * 2 - 1) * (1 - normalizedPosition);
+    }
+    const noiseSourceNode = audioContext.createBufferSource();
+    noiseSourceNode.buffer = noiseBuffer;
+    const noiseFilterNode = audioContext.createBiquadFilter();
+    noiseFilterNode.type = "highpass";
+    noiseFilterNode.frequency.setValueAtTime(3000, sparkleDelayTime);
+    const noiseGainNode = audioContext.createGain();
+    noiseGainNode.gain.setValueAtTime(0.0001, sparkleDelayTime);
+    applyExponentialRamp(noiseGainNode.gain, 0.4, sparkleDelayTime + 0.02);
+    applyExponentialRamp(noiseGainNode.gain, 0.0001, sparkleDelayTime + sparkleDurationSeconds);
+    noiseSourceNode.connect(noiseFilterNode).connect(noiseGainNode).connect(masterGainNode);
+    noiseSourceNode.start(sparkleDelayTime);
+    noiseSourceNode.stop(sparkleDelayTime + sparkleDurationSeconds);
 
     // Fade out the master gain after ~1s
-    const end = sparkleDelay + dur + 0.15;
-    expTo(ctx, out.gain, 0.0001, end);
+    const fadeOutEndTime = sparkleDelayTime + sparkleDurationSeconds + 0.15;
+    applyExponentialRamp(masterGainNode.gain, 0.0001, fadeOutEndTime);
 }
 
 /* ---------- prime on first user gesture ---------- */
+/**
+ * Unlocks the audio context after the first user interaction so Web Audio playback becomes reliable.
+ */
 export function primeAudioOnFirstGesture() {
     const onceHandler = () => {
         unlockAudioNow();
