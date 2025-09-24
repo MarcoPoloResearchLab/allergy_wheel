@@ -347,13 +347,6 @@ export class GameController {
             }
         }
 
-        if (this.#uiPresenter && typeof this.#uiPresenter.renderAllergenSummary === "function") {
-            this.#uiPresenter.renderAllergenSummary({
-                allergensCatalog,
-                dishesByAllergenToken: this.#board.dishIndexByAllergen
-            });
-        }
-
         const initialHeartsCount = this.#stateManager.getInitialHeartsCount();
         this.#stateManager.setHeartsCount(initialHeartsCount);
         this.#heartsPresenter.renderHearts(initialHeartsCount, { animate: false });

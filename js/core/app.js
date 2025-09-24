@@ -12,7 +12,6 @@ import { ResultCard } from "../ui/lastCard.js";
 import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "../ui/hearts.js";
 import { MenuView } from "../ui/menu.js";
 import { MenuFilterController } from "../ui/menuFilters.js";
-import { renderAllergenSummary } from "../ui/summary.js";
 import { NavigationController, resolveInitialNavState } from "./navigation.js";
 import {
     primeAudioOnFirstGesture as primeAudioOnFirstGestureEffect,
@@ -252,14 +251,7 @@ const uiPresenter = {
     showScreen: navAwareShowScreen,
     setWheelControlToStop,
     setWheelControlToStartGame,
-    openRestartConfirmation,
-    renderAllergenSummary: ({ allergensCatalog, dishesByAllergenToken }) => {
-        renderAllergenSummary({
-            allergensCatalog,
-            dishesByAllergenToken,
-            documentReference: document
-        });
-    }
+    openRestartConfirmation
 };
 
 const dataLoader = {

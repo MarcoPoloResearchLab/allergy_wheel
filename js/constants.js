@@ -233,16 +233,6 @@ export const FirstCardElementId = Object.freeze({
     BADGE_CONTAINER: "sel-badges"
 });
 
-export const SummaryElementId = Object.freeze({
-    WRAPPER: "allergy-summary-wrapper",
-    CONTAINER: "allergy-summary-dynamic",
-    TITLE: "allergy-summary-dynamic-title",
-    INTRO: "allergy-summary-dynamic-intro",
-    SECOND_PARAGRAPH: "allergy-summary-dynamic-secondary",
-    LIST: "allergy-summary-dynamic-list",
-    OUTRO: "allergy-summary-dynamic-outro"
-});
-
 export const ResultCardElementId = Object.freeze({
     REVEAL_SECTION: ControlElementId.REVEAL_SECTION,
     DISH_TITLE: "dish-title",
@@ -292,12 +282,6 @@ export const MenuColumnLabel = Object.freeze({
     INGREDIENTS: MenuColumnLabelIngredientsText,
     CUISINE: MenuColumnLabelCuisineText,
     STORY: MenuColumnLabelStoryText
-});
-
-export const SummaryClassName = Object.freeze({
-    WRAPPER: "seo-summary-wrapper",
-    CONTAINER: "seo-summary",
-    LIST: "seo-summary-list"
 });
 
 export const DocumentElementId = Object.freeze({
@@ -455,13 +439,4 @@ export const HeartsText = Object.freeze({
     DELTA_GAIN: "+1",
     DELTA_LOSS: "-1",
     LABEL_SUFFIX: " hearts"
-});
-
-export const SummaryText = Object.freeze({
-    TITLE: "Food Allergy Quick Reference",
-    INTRO: "This food allergy quick reference keeps the Allergy Wheel menu aligned with real allergen data so families can plan ahead.",
-    SECOND_PARAGRAPH: "The allergen education checklist below shows how many dishes may trigger each allergen in the Allergy Wheel catalog.",
-    OUTRO: "Review this food allergy FAQ before spinning the Allergy Wheel to stay confident about every allergen alert.",
-    LIST_INTRO_PHRASE: "including",
-    ZERO_DISHES_MESSAGE: "No dishes currently flag this allergen in the Allergy Wheel menu, so the food allergy catalog shows a safe lane here."
 });
