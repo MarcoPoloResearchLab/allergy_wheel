@@ -4,6 +4,12 @@ import { assert } from "./assert.js";
 
 /** @typedef {{ name: string, fn: () => void }} RegisteredTest */
 /** @typedef {{ name: string, tests: RegisteredTest[] }} RegisteredSuite */
+/** @typedef {"passed" | "failed"} CompletedTestStatus */
+/** @typedef {{ name: string, status: CompletedTestStatus, errorMessage?: string }} CompletedTest */
+/** @typedef {{ name: string, tests: CompletedTest[] }} CompletedSuite */
+/** @typedef {{ summary: { passed: number, failed: number }, suites: CompletedSuite[] }} AggregatedTestResults */
+
+const GLOBAL_RESULT_STORAGE_KEY = "__ALLERGY_WHEEL_TEST_RESULTS__";
 
 const registeredSuites = [];
 
@@ -34,6 +40,10 @@ export function defineSuite(suiteName, suiteDefinition) {
  */
 export function runSuites(resultsContainer) {
     const summary = { passed: 0, failed: 0 };
+    /** @type {CompletedSuite[]} */
+    const aggregatedSuites = [];
+    const globalScope = /** @type {Record<string, unknown>} */ (globalThis);
+    globalScope[GLOBAL_RESULT_STORAGE_KEY] = undefined;
     const summaryHeading = document.createElement("h1");
     summaryHeading.textContent = "Test Results";
     resultsContainer.appendChild(summaryHeading);
@@ -46,6 +56,8 @@ export function runSuites(resultsContainer) {
 
         const listElement = document.createElement("ul");
         suiteSection.appendChild(listElement);
+        const suiteAggregate = { name: suite.name, tests: [] };
+        aggregatedSuites.push(suiteAggregate);
 
         for (const testCase of suite.tests) {
             const listItem = document.createElement("li");
@@ -54,11 +66,17 @@ export function runSuites(resultsContainer) {
                 testCase.fn();
                 listItem.className = "pass";
                 summary.passed += 1;
+                suiteAggregate.tests.push({ name: testCase.name, status: "passed" });
             } catch (error) {
                 listItem.className = "fail";
                 const message = error instanceof Error ? error.message : String(error);
                 listItem.appendChild(document.createTextNode(` — ${message}`));
                 summary.failed += 1;
+                suiteAggregate.tests.push({
+                    name: testCase.name,
+                    status: "failed",
+                    errorMessage: message
+                });
             }
             listElement.appendChild(listItem);
         }
@@ -69,4 +87,11 @@ export function runSuites(resultsContainer) {
     const footer = document.createElement("p");
     footer.textContent = `Passed: ${summary.passed} • Failed: ${summary.failed}`;
     resultsContainer.appendChild(footer);
+
+    /** @type {AggregatedTestResults} */
+    const aggregatedResults = {
+        summary: { passed: summary.passed, failed: summary.failed },
+        suites: aggregatedSuites
+    };
+    globalScope[GLOBAL_RESULT_STORAGE_KEY] = aggregatedResults;
 }

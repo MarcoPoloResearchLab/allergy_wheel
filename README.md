@@ -13,7 +13,15 @@ An interactive allergy wheel game rendered in the browser. The project ships wit
 
 ## Browser-based tests
 
-Open `tests/index.html` in any supported browser to execute the table-driven test suites. The harness exercises the public modules (state management, menu rendering, wheel controls, and DOM utilities) using the built-in `assert*` helpers so that gameplay behavior remains covered without any Node.js tooling.
+The browser test harness is exercised automatically through a Playwright runner. To execute the same flow locally:
+
+1. Install dependencies with `npm install`.
+2. Download the Chromium runtime once with `npm run install:browsers`.
+3. Run the suites via `npm test`.
+
+The `scripts/run-browser-tests.mjs` helper spins up a static server, loads `tests/index.html` in headless Chromium, and fails the process when any suite reports a failing case. The `Browser Tests` GitHub Actions workflow runs the exact same steps for every push and pull request so that automated safeguards remain in place.
+
+You can still open `tests/index.html` manually in a supported browser for interactive debugging if desired.
 
 ## Dynamic allergen summary
 
