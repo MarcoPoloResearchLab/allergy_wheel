@@ -1,3 +1,5 @@
+// @ts-check
+
 import {
     WheelControlMode,
     BrowserEventName,
@@ -6,16 +8,27 @@ import {
     AvatarMenuClassName,
     TitleClassName,
     ButtonText,
-    AudioControlLabel
+    AudioControlLabel,
+    ListenerErrorMessage
 } from "../constants.js";
 import { updateWheelRestartControlVisibilityFromRevealState } from "../ui/ui.js";
 
-const ListenerErrorMessage = {
-    MISSING_DEPENDENCIES: "createListenerBinder requires controlElementId, attributeName, and stateManager",
-    MISSING_STATE_MANAGER_METHODS:
-        "createListenerBinder requires stateManager methods hasSelectedAllergen, getWheelControlMode, isAudioMuted, and toggleAudioMuted"
-};
-
+/**
+ * Creates helpers that wire DOM event listeners for core UI controls.
+ *
+ * @param {{
+ *     controlElementId: typeof import("../constants.js").ControlElementId,
+ *     attributeName: typeof import("../constants.js").AttributeName,
+ *     documentReference?: Document,
+ *     stateManager: {
+ *         hasSelectedAllergen: () => boolean,
+ *         getWheelControlMode: () => string,
+ *         isAudioMuted: () => boolean,
+ *         toggleAudioMuted: () => void
+ *     }
+ * }} dependencies
+ * @returns {Record<string, (options?: Record<string, unknown>) => void>} Listener binding helpers.
+ */
 function createListenerBinder({ controlElementId, attributeName, documentReference = document, stateManager }) {
     if (!controlElementId || !attributeName || !stateManager) {
         throw new Error(ListenerErrorMessage.MISSING_DEPENDENCIES);

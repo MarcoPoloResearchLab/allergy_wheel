@@ -1,9 +1,6 @@
 # Allergy Wheel
 
-An interactive allergy wheel game rendered in the browser. The project now includes automated tests powered by Jest to
-validate utility helpers, state transitions, and canvas-based integration scenarios. When players land on the quick game
-screen they are invited to pick any troublesome allergens and see a goal reminder to spin the allergy wheel to win 10
-hearts.
+An interactive allergy wheel game rendered in the browser. The project ships with automated browser tests that validate utility helpers, state transitions, and canvas-based integration scenarios. When players land on the quick game screen they are invited to pick any troublesome allergens and see a goal reminder to spin the allergy wheel to win 10 hearts.
 
 ## Browser compatibility
 
@@ -14,38 +11,13 @@ hearts.
 | Firefox | 90              | July 13, 2021      | 2.26%                      |
 | Safari  | 14              | September 16, 2020 | 14.98%                     |
 
-## Prerequisites
+## Browser-based tests
 
-- Node.js 18 or newer
-- npm (bundled with Node.js)
+Open `tests/index.html` in any supported browser to execute the table-driven test suites. The harness exercises the public modules (state management, menu rendering, wheel controls, and DOM utilities) using the built-in `assert*` helpers so that gameplay behavior remains covered without any Node.js tooling.
 
-## Install dependencies
+## Dynamic allergen summary
 
-```bash
-npm install
-```
-
-## Run the test suite
-
-```bash
-npm test
-```
-
-The Jest harness is configured for a jsdom environment so the integration tests can verify canvas rendering and gameplay
-flows. All test files live inside the `tests/` directory and are grouped into `unit` and `integration` subdirectories.
-
-## Update the allergen summary
-
-The crawler-friendly food allergy summary that appears inside the `<noscript>` block on the main screen is generated at
-build time. Run the following command whenever entries in `data/allergens.json`, `data/dishes.json`, or related
-ingredient catalogs change:
-
-```bash
-npm run build:summary
-```
-
-The script loads the JSON catalogs, counts dishes per allergen, and refreshes the static summary so that the SEO copy
-mirrors the latest allergen education data.
+The crawler-friendly food allergy summary that appears on the first screen is now rendered in the browser using the live catalogs. Whenever entries in `data/allergens.json`, `data/dishes.json`, or the ingredient mappings change, simply reload the page and the summary updates automatically. A static `<noscript>` block remains in place for SEO crawlers without JavaScript support.
 
 ## Avatar customization
 

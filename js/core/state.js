@@ -1,4 +1,6 @@
-import { WheelControlMode, AvatarId } from "../constants.js";
+// @ts-check
+
+import { WheelControlMode, AvatarId, StateManagerErrorMessage } from "../constants.js";
 
 const DEFAULT_INITIAL_HEARTS_COUNT = 5;
 
@@ -6,13 +8,11 @@ const TextValue = Object.freeze({
     EMPTY: ""
 });
 
-const StateManagerErrorMessage = Object.freeze({
-    INVALID_INITIAL_HEARTS_COUNT: "StateManager.initialize requires a numeric initialHeartsCount",
-    INVALID_HEARTS_COUNT: "StateManager.setHeartsCount requires a numeric value"
-});
-
 const ValidAvatarIdentifierSet = new Set(Object.values(AvatarId));
 
+/**
+ * Tracks transient gameplay state for the Allergy Wheel experience.
+ */
 class StateManager {
     #board;
 

@@ -1,6 +1,13 @@
+// @ts-check
+
+import { BoardErrorMessage } from "../constants.js";
+
 /** @typedef {import("../types.js").AllergenDescriptor} AllergenDescriptor */
 /** @typedef {import("../types.js").Dish} Dish */
 
+/**
+ * Builds allergen indices and resolves dish metadata for the wheel.
+ */
 export class Board {
     /**
      * @param {{
@@ -43,7 +50,7 @@ export class Board {
             if (list.length === 0) missingTokens.push(token);
         }
         if (missingTokens.length > 0) {
-            throw new Error(`Data invariant violated: no dishes found for allergen token(s): ${missingTokens.join(", ")}`);
+            throw new Error(`${BoardErrorMessage.MISSING_DISHES_PREFIX} ${missingTokens.join(", ")}`);
         }
     }
 

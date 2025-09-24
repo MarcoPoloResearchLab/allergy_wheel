@@ -1,14 +1,18 @@
+// @ts-check
+
 import { GameController } from "./game.js";
 import { Wheel } from "./wheel.js";
 import { createListenerBinder } from "../utils/listeners.js";
 import { StateManager } from "./state.js";
 import { Board } from "./board.js";
 import { NormalizationEngine, loadJson, pickRandomUnique } from "../utils/utils.js";
+import { setStartButtonBlockedState } from "../utils/startButtonState.js";
 import { AllergenCard } from "../ui/firstCard.js";
 import { ResultCard } from "../ui/lastCard.js";
 import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "../ui/hearts.js";
 import { MenuView } from "../ui/menu.js";
 import { MenuFilterController } from "../ui/menuFilters.js";
+import { renderAllergenSummary } from "../ui/summary.js";
 import { NavigationController, resolveInitialNavState } from "./navigation.js";
 import {
     primeAudioOnFirstGesture as primeAudioOnFirstGestureEffect,
@@ -56,29 +60,6 @@ const board = new Board({
     normalizationEngine: new NormalizationEngine([])
 });
 
-const setDocumentStartButtonBlockedState = (shouldBlockStartButton) => {
-    const startButtonElement = document.getElementById(ControlElementId.START_BUTTON);
-    if (!startButtonElement) {
-        return;
-    }
-
-    const blockedAttributeName = AttributeName.DATA_BLOCKED;
-    if (blockedAttributeName) {
-        startButtonElement.setAttribute(
-            blockedAttributeName,
-            shouldBlockStartButton ? AttributeBooleanValue.TRUE : AttributeBooleanValue.FALSE
-        );
-    }
-
-    const ariaDisabledAttributeName = AttributeName.ARIA_DISABLED;
-    if (ariaDisabledAttributeName) {
-        startButtonElement.setAttribute(
-            ariaDisabledAttributeName,
-            shouldBlockStartButton ? AttributeBooleanValue.TRUE : AttributeBooleanValue.FALSE
-        );
-    }
-};
-
 const menuPresenter = new MenuView({
     documentReference: document,
     menuTableBodyElement: document.getElementById(MenuElementId.TABLE_BODY)
@@ -113,7 +94,12 @@ const firstCardPresenter = new AllergenCard({
             label: selectedLabel
         });
 
-        setDocumentStartButtonBlockedState(false);
+        setStartButtonBlockedState({
+            shouldBlock: false,
+            documentReference: document,
+            controlElementIdMap: ControlElementId,
+            attributeNameMap: AttributeName
+        });
 
         /** @type {AllergenBadgeEntry} */
         const badgeEntry = {
@@ -266,7 +252,14 @@ const uiPresenter = {
     showScreen: navAwareShowScreen,
     setWheelControlToStop,
     setWheelControlToStartGame,
-    openRestartConfirmation
+    openRestartConfirmation,
+    renderAllergenSummary: ({ allergensCatalog, dishesByAllergenToken }) => {
+        renderAllergenSummary({
+            allergensCatalog,
+            dishesByAllergenToken,
+            documentReference: document
+        });
+    }
 };
 
 const dataLoader = {

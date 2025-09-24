@@ -1,8 +1,11 @@
+// @ts-check
+
 import {
     ScreenName,
     AttributeName,
     AttributeBooleanValue,
-    ControlElementId
+    ControlElementId,
+    BrowserEventName
 } from "../constants.js";
 
 const TextContent = Object.freeze({
@@ -13,6 +16,9 @@ const ValueType = Object.freeze({
     FUNCTION: typeof Function
 });
 
+/**
+ * Manages the top-level navigation buttons and synchronizes their pressed state.
+ */
 export class NavigationController {
     #documentReference;
 
@@ -81,7 +87,7 @@ export class NavigationController {
         if (!buttonElement) {
             return;
         }
-        buttonElement.addEventListener("click", () => {
+        buttonElement.addEventListener(BrowserEventName.CLICK, () => {
             this.updateActiveScreen(targetScreenName);
             if (this.#onScreenChange) {
                 this.#onScreenChange(targetScreenName);
@@ -100,6 +106,11 @@ export class NavigationController {
     }
 }
 
+/**
+ * Determines the initial navigation state based on the body's data attribute.
+ *
+ * @returns {string} Initial screen name.
+ */
 export function resolveInitialNavState() {
     const bodyElement = document.body;
     if (!bodyElement) {

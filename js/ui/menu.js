@@ -1,9 +1,12 @@
+// @ts-check
+
 import {
     ScreenName,
     MenuColumnLabel,
     AttributeName,
     MenuElementId,
-    BrowserEventName
+    BrowserEventName,
+    MenuMessage
 } from "../constants.js";
 
 /** @typedef {import("../types.js").Dish} Dish */
@@ -49,10 +52,6 @@ const ValueType = Object.freeze({
     FUNCTION: typeof Function
 });
 
-const MenuMessage = Object.freeze({
-    NO_MATCHES: "No dishes match the selected filters."
-});
-
 const ViewportMediaQuery = Object.freeze({
     MOBILE_MAX: "(max-width: 767px)"
 });
@@ -83,6 +82,9 @@ function normalizeToArray(candidate) {
     return [];
 }
 
+/**
+ * Renders the dish menu table with filtering capabilities.
+ */
 export class MenuView {
     #documentReference;
 

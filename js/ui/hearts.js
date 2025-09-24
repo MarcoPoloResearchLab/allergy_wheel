@@ -1,9 +1,12 @@
+// @ts-check
+
 /* global document */
 import {
     AttributeName,
     AttributeBooleanValue,
     BrowserEventName,
-    HeartsElementId
+    HeartsElementId,
+    HeartsText
 } from "../constants.js";
 
 const ElementTagName = Object.freeze({
@@ -26,11 +29,6 @@ const HeartsBarClassName = Object.freeze({
 
 const HeartDeltaClassName = Object.freeze({
     BASE: "heart-delta"
-});
-
-const HeartDeltaText = Object.freeze({
-    GAIN: "+1",
-    LOSS: "-1"
 });
 
 const AnimationDurationMilliseconds = Object.freeze({
@@ -59,8 +57,7 @@ const HeartSymbol = "❤️";
 
 const TextContent = Object.freeze({
     EMPTY: "",
-    ZERO: "0",
-    HEART_LABEL_SUFFIX: " hearts"
+    ZERO: "0"
 });
 
 const NumericBase = Object.freeze({
@@ -68,7 +65,7 @@ const NumericBase = Object.freeze({
 });
 
 function formatHeartsLabel(totalHearts) {
-    return `${totalHearts}${TextContent.HEART_LABEL_SUFFIX}`;
+    return `${totalHearts}${HeartsText.LABEL_SUFFIX}`;
 }
 
 function setMetadataAttributes(heartsBarElement, totalHearts, heartCountText) {
@@ -294,6 +291,12 @@ function triggerHeartsBarFeedback(heartsBarElement, feedbackClassName) {
     heartsBarElement.addEventListener(BrowserEventName.ANIMATION_END, handleAnimationEnd);
 }
 
+/**
+ * Renders the hearts bar to reflect the provided count.
+ *
+ * @param {number} count - Current heart total.
+ * @param {{ documentReference?: Document }} [options] - Optional dependencies.
+ */
 export function renderHearts(count, options = {}) {
     const { animate = false } = options;
     const heartsBarElement = document.getElementById(HeartsElementId.HEARTS_BAR);
@@ -329,6 +332,9 @@ export function renderHearts(count, options = {}) {
     setMetadataAttributes(heartsBarElement, totalHearts, heartCountText);
 }
 
+/**
+ * Animates heart gain feedback originating from the reveal card.
+ */
 export function animateHeartGainFromReveal() {
     const heartsBarElement = document.getElementById(HeartsElementId.HEARTS_BAR);
     if (!heartsBarElement) {
@@ -336,9 +342,12 @@ export function animateHeartGainFromReveal() {
     }
 
     triggerHeartsBarFeedback(heartsBarElement, HeartsBarClassName.PULSE);
-    spawnHeartDelta(heartsBarElement, HeartDeltaText.GAIN);
+    spawnHeartDelta(heartsBarElement, HeartsText.DELTA_GAIN);
 }
 
+/**
+ * Animates heart loss feedback directly on the hearts bar.
+ */
 export function animateHeartLossAtHeartsBar() {
     const heartsBarElement = document.getElementById(HeartsElementId.HEARTS_BAR);
     if (!heartsBarElement) {
@@ -346,5 +355,5 @@ export function animateHeartLossAtHeartsBar() {
     }
 
     triggerHeartsBarFeedback(heartsBarElement, HeartsBarClassName.SHAKE);
-    spawnHeartDelta(heartsBarElement, HeartDeltaText.LOSS);
+    spawnHeartDelta(heartsBarElement, HeartsText.DELTA_LOSS);
 }

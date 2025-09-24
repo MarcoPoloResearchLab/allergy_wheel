@@ -1,9 +1,42 @@
+// @ts-check
+
 /* File: constants.js */
 
 export const ScreenName = Object.freeze({
     ALLERGY: "allergy",
     WHEEL: "wheel",
     MENU: "menu"
+});
+
+
+export const WheelConfiguration = Object.freeze({
+    SEGMENT_COUNT: 8,
+    DEFAULT_SPIN_DURATION_MS: 30000,
+    WIN_CONDITION_HEARTS: 10,
+    MIN_RANDOM_SPIN_DURATION_MS: 22000,
+    MAX_RANDOM_SPIN_DURATION_MS: 34000,
+    MIN_RANDOM_REVOLUTIONS: 3,
+    MAX_RANDOM_REVOLUTIONS: 6
+});
+
+export const AllergenDistributionConfiguration = Object.freeze({
+    MIN_HEARTS_FOR_DISTRIBUTION: 1,
+    MAX_HEARTS_FOR_DISTRIBUTION: 9,
+    MIN_ALLERGEN_SEGMENTS: 1,
+    MAX_ALLERGEN_SEGMENTS: 7
+});
+
+export const WheelLabelFallback = Object.freeze({
+    NO_SELECTION: Object.freeze({ label: "No selection", emoji: "" }),
+    NO_MATCHES: Object.freeze({ label: "No matches", emoji: "" })
+});
+
+export const ButtonClassName = Object.freeze({
+    ACTION: "action",
+    START: "is-start",
+    STOP: "is-stop",
+    PRIMARY: "primary",
+    DANGER: "danger"
 });
 
 
@@ -200,6 +233,16 @@ export const FirstCardElementId = Object.freeze({
     BADGE_CONTAINER: "sel-badges"
 });
 
+export const SummaryElementId = Object.freeze({
+    WRAPPER: "allergy-summary-wrapper",
+    CONTAINER: "allergy-summary-dynamic",
+    TITLE: "allergy-summary-dynamic-title",
+    INTRO: "allergy-summary-dynamic-intro",
+    SECOND_PARAGRAPH: "allergy-summary-dynamic-secondary",
+    LIST: "allergy-summary-dynamic-list",
+    OUTRO: "allergy-summary-dynamic-outro"
+});
+
 export const ResultCardElementId = Object.freeze({
     REVEAL_SECTION: ControlElementId.REVEAL_SECTION,
     DISH_TITLE: "dish-title",
@@ -251,6 +294,12 @@ export const MenuColumnLabel = Object.freeze({
     STORY: MenuColumnLabelStoryText
 });
 
+export const SummaryClassName = Object.freeze({
+    WRAPPER: "seo-summary-wrapper",
+    CONTAINER: "seo-summary",
+    LIST: "seo-summary-list"
+});
+
 export const DocumentElementId = Object.freeze({
     LOADING: "loading",
     LOAD_ERROR: "load-error",
@@ -295,7 +344,11 @@ export const BrowserEventName = Object.freeze({
     CLICK: "click",
     KEY_DOWN: "keydown",
     CHANGE: "change",
-    ANIMATION_END: "animationend"
+    ANIMATION_END: "animationend",
+    POINTER_DOWN: "pointerdown",
+    TOUCH_START: "touchstart",
+    VISIBILITY_CHANGE: "visibilitychange",
+    RESIZE: "resize"
 });
 
 const KeyboardKeyEnter = "Enter";
@@ -323,4 +376,92 @@ export const ButtonText = Object.freeze({
 export const AudioControlLabel = Object.freeze({
     MUTE_AUDIO: "Mute audio",
     UNMUTE_AUDIO: "Unmute audio"
+});
+
+export const DataPath = Object.freeze({
+    ALLERGENS: "./data/allergens.json",
+    DISHES: "./data/dishes.json",
+    NORMALIZATION: "./data/normalization.json",
+    COUNTRIES: "./data/countries.json",
+    INGREDIENTS: "./data/ingredients.json"
+});
+
+export const DataValidationMessage = Object.freeze({
+    ALLERGENS: "allergens.json is missing or empty",
+    DISHES: "dishes.json is missing or empty",
+    NORMALIZATION: "normalization.json is missing or empty",
+    INGREDIENTS: "ingredients.json is missing or empty"
+});
+
+export const GameErrorMessage = Object.freeze({
+    MISSING_DEPENDENCIES:
+        "GameController requires wheel, board, listenerBinder, stateManager, uiPresenter, firstCardPresenter, revealCardPresenter, heartsPresenter, audioPresenter, menuPresenter, dataLoader, createNormalizationEngine, and pickRandomUnique.",
+    INVALID_DATA_LOADER: "GameController requires dataLoader.loadJson to be a function.",
+    INVALID_NORMALIZATION_FACTORY: "GameController requires createNormalizationEngine to be a function.",
+    INVALID_RANDOM_PICKER: "GameController requires pickRandomUnique to be a function.",
+    NO_DISHES_FOR_ALLERGEN_PREFIX: "Invariant broken: no dishes for allergen token"
+});
+
+export const BoardErrorMessage = Object.freeze({
+    MISSING_DISHES_PREFIX: "Data invariant violated: no dishes found for allergen token(s):"
+});
+
+export const ListenerErrorMessage = Object.freeze({
+    MISSING_DEPENDENCIES:
+        "createListenerBinder requires controlElementId, attributeName, and stateManager",
+    MISSING_STATE_MANAGER_METHODS:
+        "createListenerBinder requires stateManager methods hasSelectedAllergen, getWheelControlMode, isAudioMuted, and toggleAudioMuted"
+});
+
+export const StateManagerErrorMessage = Object.freeze({
+    INVALID_INITIAL_HEARTS_COUNT: "StateManager.initialize requires a numeric initialHeartsCount",
+    INVALID_HEARTS_COUNT: "StateManager.setHeartsCount requires a numeric value"
+});
+
+export const AudioErrorMessage = Object.freeze({
+    ASSET_LOAD_FAILURE: "Unable to load audio asset",
+    ASSET_DECODE_FAILURE: "Unable to decode audio asset",
+    SIREN_ASSET_LOAD_FAILURE: "Unable to load siren audio asset.",
+    SIREN_DECODE_FAILURE: "Unable to decode siren audio asset.",
+    FETCH_UNSUPPORTED: "Audio asset loading requires fetch support."
+});
+
+export const WheelErrorMessage = Object.freeze({
+    MISSING_CANVAS: "Wheel requires a canvas element with a 2d context",
+    MISSING_CONTEXT: "Wheel could not acquire a 2d drawing context"
+});
+
+export const StorageKey = Object.freeze({
+    SELECTED_ALLERGEN_TOKEN: "allergyWheel.selectedAllergenToken",
+    SELECTED_ALLERGEN_LABEL: "allergyWheel.selectedAllergenLabel"
+});
+
+export const MenuMessage = Object.freeze({
+    NO_MATCHES: "No dishes match the selected filters."
+});
+
+export const LoadJsonErrorMessage = Object.freeze({
+    PREFIX: "failed to load"
+});
+
+export const ResultCardText = Object.freeze({
+    WIN_TITLE: "You Win! 🏆",
+    WIN_MESSAGE: "Amazing! You collected 10 hearts!",
+    SAFE_TO_EAT: "Safe to eat. Yummy!",
+    RESULT_BAD_PREFIX: "Contains your allergen: "
+});
+
+export const HeartsText = Object.freeze({
+    DELTA_GAIN: "+1",
+    DELTA_LOSS: "-1",
+    LABEL_SUFFIX: " hearts"
+});
+
+export const SummaryText = Object.freeze({
+    TITLE: "Food Allergy Quick Reference",
+    INTRO: "This food allergy quick reference keeps the Allergy Wheel menu aligned with real allergen data so families can plan ahead.",
+    SECOND_PARAGRAPH: "The allergen education checklist below shows how many dishes may trigger each allergen in the Allergy Wheel catalog.",
+    OUTRO: "Review this food allergy FAQ before spinning the Allergy Wheel to stay confident about every allergen alert.",
+    LIST_INTRO_PHRASE: "including",
+    ZERO_DISHES_MESSAGE: "No dishes currently flag this allergen in the Allergy Wheel menu, so the food allergy catalog shows a safe lane here."
 });

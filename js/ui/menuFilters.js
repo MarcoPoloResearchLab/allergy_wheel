@@ -1,3 +1,5 @@
+// @ts-check
+
 import {
     AttributeBooleanValue,
     AttributeName,
@@ -47,6 +49,9 @@ function isKeyboardEscape(keyValue) {
     return keyValue === KeyboardKey.ESCAPE || keyValue === KeyboardKey.ESC;
 }
 
+/**
+ * Manages the interactive allergen and cuisine filter controls.
+ */
 export class MenuFilterController {
     #documentReference;
 

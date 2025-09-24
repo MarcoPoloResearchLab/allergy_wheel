@@ -1,3 +1,5 @@
+// @ts-check
+
 /* global document */
 import {
     ScreenName,
@@ -50,6 +52,11 @@ function applyWheelRestartSegmentVisibility(wheelRestartButtonElement, shouldHid
     wheelRestartButtonElement.setAttribute("tabindex", String(targetTabIndex));
 }
 
+/**
+ * Synchronizes the wheel restart control with the reveal modal visibility state.
+ *
+ * @returns {boolean} True when the control was found and updated.
+ */
 export function updateWheelRestartControlVisibilityFromRevealState() {
     const wheelRestartButtonElement = document.getElementById(ControlElementId.WHEEL_RESTART_BUTTON);
     if (!wheelRestartButtonElement) {
@@ -74,6 +81,11 @@ const ScreenElementEntries = Object.freeze([
     Object.freeze([ScreenName.MENU, ScreenElementId.MENU])
 ]);
 
+/**
+ * Displays the requested screen and hides others via aria attributes.
+ *
+ * @param {string} screenName - Target screen identifier.
+ */
 export function showScreen(screenName) {
     const bodyElement = document.body;
     if (!bodyElement) {
@@ -111,6 +123,9 @@ export function showScreen(screenName) {
     }
 }
 
+/**
+ * Applies the stop state styling to the wheel control cluster.
+ */
 export function setWheelControlToStop() {
     const wheelControlElement = document.getElementById(ControlElementId.WHEEL_CONTROL_CONTAINER);
     const wheelControlModeAttributeName = AttributeName.DATA_WHEEL_CONTROL_MODE;
@@ -127,6 +142,9 @@ export function setWheelControlToStop() {
     applyWheelRestartSegmentVisibility(wheelRestartButtonElement, true);
 }
 
+/**
+ * Restores the start state styling to the wheel control cluster.
+ */
 export function setWheelControlToStartGame() {
     const wheelControlElement = document.getElementById(ControlElementId.WHEEL_CONTROL_CONTAINER);
     const wheelControlModeAttributeName = AttributeName.DATA_WHEEL_CONTROL_MODE;
@@ -142,6 +160,9 @@ export function setWheelControlToStartGame() {
     updateWheelRestartControlVisibilityFromRevealState();
 }
 
+/**
+ * Placeholder for restart confirmation presentation.
+ */
 export function openRestartConfirmation() {
     /* no-op for API symmetry */
 }

@@ -1,10 +1,13 @@
+// @ts-check
+
 /* global document */
 import {
     ResultCardElementId,
     AttributeName,
     AttributeBooleanValue,
     ButtonText,
-    AvatarId
+    AvatarId,
+    ResultCardText
 } from "../constants.js";
 
 /** @typedef {import("../types.js").AllergenDescriptor} AllergenDescriptor */
@@ -29,11 +32,7 @@ const Selector = Object.freeze({
 
 const TextContent = Object.freeze({
     EMPTY: "",
-    SPACE: " ",
-    WIN_TITLE: "You Win! 🏆",
-    WIN_MESSAGE: "Amazing! You collected 10 hearts!",
-    SAFE_TO_EAT: "Safe to eat. Yummy!",
-    RESULT_BAD_PREFIX: "Contains your allergen: "
+    SPACE: " "
 });
 
 const ValueType = Object.freeze({
@@ -84,6 +83,9 @@ function ensureSet(candidateIterable) {
     return new Set();
 }
 
+/**
+ * Renders the final result card and winning screen.
+ */
 export class ResultCard {
     #documentReference;
 
@@ -351,7 +353,7 @@ export class ResultCard {
             if (hasTriggeringIngredient) {
                 this.#resultBannerElement.classList.remove(ClassName.OK);
                 this.#resultBannerElement.classList.add(ClassName.BAD);
-                this.#resultTextElement.textContent = `${TextContent.RESULT_BAD_PREFIX}${selectedAllergenLabel}`;
+                this.#resultTextElement.textContent = `${ResultCardText.RESULT_BAD_PREFIX}${selectedAllergenLabel}`;
                 if (this.#faceSvgElement) {
                     this.#renderSelectedAvatar();
                     this.#faceSvgElement.hidden = false;
@@ -359,7 +361,7 @@ export class ResultCard {
             } else {
                 this.#resultBannerElement.classList.remove(ClassName.BAD);
                 this.#resultBannerElement.classList.add(ClassName.OK);
-                this.#resultTextElement.textContent = TextContent.SAFE_TO_EAT;
+                this.#resultTextElement.textContent = ResultCardText.SAFE_TO_EAT;
                 if (this.#faceSvgElement) {
                     this.#faceSvgElement.hidden = true;
                 }
@@ -387,14 +389,14 @@ export class ResultCard {
             return { restartButton: null, isDisplayed: false };
         }
 
-        this.#dishTitleElement.textContent = TextContent.WIN_TITLE;
+        this.#dishTitleElement.textContent = ResultCardText.WIN_TITLE;
         if (this.#dishCuisineElement) {
             this.#dishCuisineElement.textContent = TextContent.EMPTY;
         }
 
         this.#resultBannerElement.classList.remove(ClassName.BAD);
         this.#resultBannerElement.classList.add(ClassName.OK);
-        this.#resultTextElement.textContent = TextContent.WIN_MESSAGE;
+        this.#resultTextElement.textContent = ResultCardText.WIN_MESSAGE;
         if (this.#faceSvgElement) {
             this.#faceSvgElement.hidden = true;
         }
