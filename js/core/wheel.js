@@ -1,5 +1,9 @@
+// @ts-check
+
 /* File: wheel.js */
 /* global window */
+
+import { BrowserEventName, WheelErrorMessage } from "../constants.js";
 
 /** @typedef {import("../types.js").WheelLabelDescriptor} WheelLabelDescriptor */
 /** @typedef {import("../types.js").WheelSpinOptions} WheelSpinOptions */
@@ -77,6 +81,9 @@ function easeOutCubic(t) {
     return 1 - Math.pow(1 - clamped, 3);
 }
 
+/**
+ * Renders and animates the Allergy Wheel canvas.
+ */
 export class Wheel {
     constructor({ windowReference = (typeof window !== "undefined" ? window : globalThis) } = {}) {
         this.windowReference = windowReference;
@@ -128,13 +135,13 @@ export class Wheel {
 
     initialize(canvasElement) {
         if (!canvasElement || typeof canvasElement.getContext !== "function") {
-            throw new Error("Wheel requires a canvas element with a 2d context");
+            throw new Error(WheelErrorMessage.MISSING_CANVAS);
         }
 
         this.canvasElement = canvasElement;
         this.drawingContext = canvasElement.getContext("2d");
         if (!this.drawingContext) {
-            throw new Error("Wheel could not acquire a 2d drawing context");
+            throw new Error(WheelErrorMessage.MISSING_CONTEXT);
         }
 
         if (this.resizeObserver) {
@@ -155,7 +162,7 @@ export class Wheel {
         }
 
         if (!this.windowResizeListenerAttached && typeof this.windowReference.addEventListener === "function") {
-            this.windowReference.addEventListener("resize", this.boundWindowResizeHandler);
+            this.windowReference.addEventListener(BrowserEventName.RESIZE, this.boundWindowResizeHandler);
             this.windowResizeListenerAttached = true;
         }
 

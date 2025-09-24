@@ -1,3 +1,5 @@
+// @ts-check
+
 /* global document */
 import { AttributeBooleanValue, AttributeName, BrowserEventName, ControlElementId } from "../constants.js";
 

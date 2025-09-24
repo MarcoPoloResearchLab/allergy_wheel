@@ -1,3 +1,5 @@
+// @ts-check
+
 /**
  * Re-exported typedefs for tooling compatibility.
  * This module mirrors the declarations in {@link ./types.d.js} so that

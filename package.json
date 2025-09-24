@@ -2,13 +2,13 @@
   "name": "allergy_wheel",
   "version": "1.0.0",
   "description": "Interactive allergy wheel game",
+  "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
-    "build:summary": "node scripts/build-summary.mjs"
+    "install:browsers": "playwright install chromium",
+    "test": "node scripts/run-browser-tests.mjs"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0"
+    "playwright": "^1.55.1"
   }
 }

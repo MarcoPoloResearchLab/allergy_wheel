@@ -1,12 +1,12 @@
-import { AudioAssetPath } from "../constants.js";
+// @ts-check
+
+import { AudioAssetPath, AudioErrorMessage, BrowserEventName } from "../constants.js";
 
 // audio.js — web audio effects and buffered playback resources
 
 let sharedAudioContext;
 let cachedSirenBufferPromise;
 
-const AudioAssetLoadErrorMessage = "Unable to load audio asset";
-const AudioAssetDecodeErrorMessage = "Unable to decode audio asset";
 const RandomValueMaximum = 0.999999;
 
 const AudioBufferCache = new Map();
@@ -24,9 +24,13 @@ const SirenEnvelopeTiming = Object.freeze({
 
 const SirenLoopToleranceSeconds = 0.001;
 
-const SirenAssetLoadErrorMessage = "Unable to load siren audio asset.";
-const SirenAudioDecodingErrorMessage = "Unable to decode siren audio asset.";
-const AudioAssetFetchUnsupportedMessage = "Audio asset loading requires fetch support.";
+const AudioUnlockEventNames = Object.freeze([
+    BrowserEventName.POINTER_DOWN,
+    BrowserEventName.TOUCH_START,
+    BrowserEventName.CLICK,
+    BrowserEventName.KEY_DOWN
+]);
+
 
 function ensureAudioContext() {
     if (!sharedAudioContext) {
@@ -54,7 +58,7 @@ function unlockAudioNow() {
 async function fetchAudioAssetData(assetPath) {
     const response = await fetch(assetPath);
     if (!response.ok) {
-        throw new Error(`${AudioAssetLoadErrorMessage}: ${response.status}`);
+        throw new Error(`${AudioErrorMessage.ASSET_LOAD_FAILURE}: ${response.status}`);
     }
     return response.arrayBuffer();
 }
@@ -71,7 +75,7 @@ async function decodeAudioDataAsync(context, audioData) {
                 resolve(buffer);
             },
             (error) => {
-                reject(error || new Error(AudioAssetDecodeErrorMessage));
+                reject(error || new Error(AudioErrorMessage.ASSET_DECODE_FAILURE));
             }
         );
     });
@@ -125,18 +129,18 @@ function applyExponentialRamp(audioParam, targetValue, targetTime, minimumValue 
 
 async function fetchSirenArrayBuffer() {
     if (typeof fetch !== "function") {
-        throw new Error(AudioAssetFetchUnsupportedMessage);
+        throw new Error(AudioErrorMessage.FETCH_UNSUPPORTED);
     }
     const response = await fetch(AudioAssetPath.SIREN);
     if (!response?.ok) {
-        throw new Error(SirenAssetLoadErrorMessage);
+        throw new Error(AudioErrorMessage.SIREN_ASSET_LOAD_FAILURE);
     }
     return response.arrayBuffer();
 }
 
 async function decodeSirenArrayBuffer(context, arrayBuffer) {
     if (!context?.decodeAudioData) {
-        throw new Error(SirenAudioDecodingErrorMessage);
+        throw new Error(AudioErrorMessage.SIREN_DECODE_FAILURE);
     }
     if (context.decodeAudioData.length >= 2) {
         return new Promise((resolve, reject) => {
@@ -422,14 +426,14 @@ export function primeAudioOnFirstGesture() {
     const onceHandler = () => {
         unlockAudioNow();
         preloadNomNom().catch(() => {});
-        ["pointerdown", "touchstart", "click", "keydown"].forEach((type) =>
-            window.removeEventListener(type, onceHandler, true)
+        AudioUnlockEventNames.forEach((eventName) =>
+            window.removeEventListener(eventName, onceHandler, true)
         );
     };
-    ["pointerdown", "touchstart", "click", "keydown"].forEach((type) =>
-        window.addEventListener(type, onceHandler, { once: true, capture: true })
+    AudioUnlockEventNames.forEach((eventName) =>
+        window.addEventListener(eventName, onceHandler, { once: true, capture: true })
     );
-    document.addEventListener("visibilitychange", () => {
+    document.addEventListener(BrowserEventName.VISIBILITY_CHANGE, () => {
         if (document.visibilityState === "visible") {
             try { ensureAudioContext().resume?.(); } catch {}
         }

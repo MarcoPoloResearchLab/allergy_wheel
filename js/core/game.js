@@ -1,10 +1,20 @@
+// @ts-check
+
 import {
     ScreenName,
     WheelControlMode,
     BrowserEventName,
     AttributeBooleanValue,
-    DocumentElementId
+    DocumentElementId,
+    WheelConfiguration,
+    AllergenDistributionConfiguration,
+    WheelLabelFallback,
+    ButtonClassName,
+    GameErrorMessage,
+    DataPath,
+    DataValidationMessage
 } from "../constants.js";
+import { setStartButtonBlockedState } from "../utils/startButtonState.js";
 
 /** @typedef {import("../types.js").AllergenDescriptor} AllergenDescriptor */
 /** @typedef {import("../types.js").Dish} Dish */
@@ -14,59 +24,6 @@ import {
 /** @typedef {import("../types.js").WheelLabelDescriptor} WheelLabelDescriptor */
 /** @typedef {import("../types.js").WheelSpinOptions} WheelSpinOptions */
 /** @typedef {import("../types.js").GameData} GameData */
-
-const WheelConfiguration = Object.freeze({
-    SEGMENT_COUNT: 8,
-    DEFAULT_SPIN_DURATION_MS: 30000,
-    WIN_CONDITION_HEARTS: 10,
-    MIN_RANDOM_SPIN_DURATION_MS: 22000,
-    MAX_RANDOM_SPIN_DURATION_MS: 34000,
-    MIN_RANDOM_REVOLUTIONS: 3,
-    MAX_RANDOM_REVOLUTIONS: 6
-});
-
-const AllergenDistributionConfiguration = Object.freeze({
-    MIN_HEARTS_FOR_DISTRIBUTION: 1,
-    MAX_HEARTS_FOR_DISTRIBUTION: 9,
-    MIN_ALLERGEN_SEGMENTS: 1,
-    MAX_ALLERGEN_SEGMENTS: 7
-});
-
-const WheelLabelFallback = Object.freeze({
-    NO_SELECTION: { label: "No selection", emoji: "" },
-    NO_MATCHES: { label: "No matches", emoji: "" }
-});
-
-const ButtonClassName = Object.freeze({
-    ACTION: "action",
-    START: "is-start",
-    STOP: "is-stop",
-    PRIMARY: "primary",
-    DANGER: "danger"
-});
-
-const GameErrorMessage = Object.freeze({
-    MISSING_DEPENDENCIES: "GameController requires wheel, board, listenerBinder, stateManager, uiPresenter, firstCardPresenter, revealCardPresenter, heartsPresenter, audioPresenter, menuPresenter, dataLoader, createNormalizationEngine, and pickRandomUnique.",
-    INVALID_DATA_LOADER: "GameController requires dataLoader.loadJson to be a function.",
-    INVALID_NORMALIZATION_FACTORY: "GameController requires createNormalizationEngine to be a function.",
-    INVALID_RANDOM_PICKER: "GameController requires pickRandomUnique to be a function.",
-    NO_DISHES_FOR_ALLERGEN_PREFIX: "Invariant broken: no dishes for allergen token"
-});
-
-const DataPath = Object.freeze({
-    ALLERGENS: "./data/allergens.json",
-    DISHES: "./data/dishes.json",
-    NORMALIZATION: "./data/normalization.json",
-    COUNTRIES: "./data/countries.json",
-    INGREDIENTS: "./data/ingredients.json"
-});
-
-const DataValidationMessage = Object.freeze({
-    ALLERGENS: "allergens.json is missing or empty",
-    DISHES: "dishes.json is missing or empty",
-    NORMALIZATION: "normalization.json is missing or empty",
-    INGREDIENTS: "ingredients.json is missing or empty"
-});
 
 function clampNumberWithinRange(value, minimum, maximum) {
     const normalizedMinimum = typeof minimum === "number" ? minimum : value;
@@ -191,6 +148,9 @@ function formatMissingDishesMessage(allergenToken) {
     return `${GameErrorMessage.NO_DISHES_FOR_ALLERGEN_PREFIX} '${allergenToken}'`;
 }
 
+/**
+ * Coordinates the Allergy Wheel game loop and orchestrates UI updates.
+ */
 export class GameController {
     #documentReference;
 
@@ -453,26 +413,12 @@ export class GameController {
     }
 
     #setStartButtonBlockedState(shouldBlockStartButton) {
-        const startButtonElement = this.#documentReference.getElementById(this.#controlElementIdMap.START_BUTTON);
-        if (!startButtonElement) {
-            return;
-        }
-
-        const blockedAttributeName = this.#attributeNameMap.DATA_BLOCKED;
-        if (blockedAttributeName) {
-            startButtonElement.setAttribute(
-                blockedAttributeName,
-                shouldBlockStartButton ? AttributeBooleanValue.TRUE : AttributeBooleanValue.FALSE
-            );
-        }
-
-        const ariaDisabledAttributeName = this.#attributeNameMap.ARIA_DISABLED;
-        if (ariaDisabledAttributeName) {
-            startButtonElement.setAttribute(
-                ariaDisabledAttributeName,
-                shouldBlockStartButton ? AttributeBooleanValue.TRUE : AttributeBooleanValue.FALSE
-            );
-        }
+        setStartButtonBlockedState({
+            shouldBlock: shouldBlockStartButton,
+            documentReference: this.#documentReference,
+            controlElementIdMap: this.#controlElementIdMap,
+            attributeNameMap: this.#attributeNameMap
+        });
     }
 
     #configureWheel() {

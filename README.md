@@ -1,9 +1,6 @@
 # Allergy Wheel
 
-An interactive allergy wheel game rendered in the browser. The project now includes automated tests powered by Jest to
-validate utility helpers, state transitions, and canvas-based integration scenarios. When players land on the quick game
-screen they are invited to pick any troublesome allergens and see a goal reminder to spin the allergy wheel to win 10
-hearts.
+An interactive allergy wheel game rendered in the browser. The project ships with automated browser tests that validate utility helpers, state transitions, and canvas-based integration scenarios. When players land on the quick game screen they are invited to pick any troublesome allergens and see a goal reminder to spin the allergy wheel to win 10 hearts.
 
 ## Browser compatibility
 
@@ -14,38 +11,21 @@ hearts.
 | Firefox | 90              | July 13, 2021      | 2.26%                      |
 | Safari  | 14              | September 16, 2020 | 14.98%                     |
 
-## Prerequisites
+## Browser-based tests
 
-- Node.js 18 or newer
-- npm (bundled with Node.js)
+The browser test harness is exercised automatically through a Playwright runner. To execute the same flow locally:
 
-## Install dependencies
+1. Install dependencies with `npm install`.
+2. Download the Chromium runtime once with `npm run install:browsers`.
+3. Run the suites via `npm test`.
 
-```bash
-npm install
-```
+The `scripts/run-browser-tests.mjs` helper spins up a static server, loads `tests/index.html` in headless Chromium, and fails the process when any suite reports a failing case. The `Browser Tests` GitHub Actions workflow runs the exact same steps for every push and pull request so that automated safeguards remain in place.
 
-## Run the test suite
+You can still open `tests/index.html` manually in a supported browser for interactive debugging if desired.
 
-```bash
-npm test
-```
+## Dynamic allergen summary
 
-The Jest harness is configured for a jsdom environment so the integration tests can verify canvas rendering and gameplay
-flows. All test files live inside the `tests/` directory and are grouped into `unit` and `integration` subdirectories.
-
-## Update the allergen summary
-
-The crawler-friendly food allergy summary that appears inside the `<noscript>` block on the main screen is generated at
-build time. Run the following command whenever entries in `data/allergens.json`, `data/dishes.json`, or related
-ingredient catalogs change:
-
-```bash
-npm run build:summary
-```
-
-The script loads the JSON catalogs, counts dishes per allergen, and refreshes the static summary so that the SEO copy
-mirrors the latest allergen education data.
+The crawler-friendly food allergy summary that appears on the first screen is now rendered in the browser using the live catalogs. Whenever entries in `data/allergens.json`, `data/dishes.json`, or the ingredient mappings change, simply reload the page and the summary updates automatically. A static `<noscript>` block remains in place for SEO crawlers without JavaScript support.
 
 ## Avatar customization
 
