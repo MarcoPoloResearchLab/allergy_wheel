@@ -53,13 +53,13 @@ header {
 }
 
 header h1 { margin: 0; font-size: clamp(18px, 2.2vw, 28px) }
-.header-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.header-left { display: flex; align-items: center; gap: 14px; flex-wrap: nowrap; }
 .aw-header-title-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .header-right { display: flex; align-items: center; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
 .aw-header-controls { display: flex; align-items: center; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
 .aw-hearts-container { display: flex; align-items: center; }
 .header-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.aw-bottombar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.aw-bottombar { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; align-self: center; }
 .header-nav .ghost { min-width: 80px; text-align: center; }
 
 .avatar-menu-wrapper { position: relative; z-index: 70; }
@@ -80,6 +80,7 @@ header h1 { margin: 0; font-size: clamp(18px, 2.2vw, 28px) }
         grid-area: header-left;
         align-items: flex-start;
         min-width: 0;
+        flex-wrap: wrap;
     }
 
     .aw-header-title-group {
@@ -187,6 +188,8 @@ header h1 { margin: 0; font-size: clamp(18px, 2.2vw, 28px) }
         justify-content: center;
         align-items: center;
         gap: 12px;
+        flex-wrap: wrap;
+        align-self: stretch;
         z-index: 55;
     }
 
