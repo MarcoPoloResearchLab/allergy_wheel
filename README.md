@@ -1,6 +1,8 @@
 # Allergy Wheel
 
-An interactive allergy wheel game rendered in the browser. The project ships with automated browser tests that validate utility helpers, state transitions, and canvas-based integration scenarios. When players land on the quick game screen they are invited to pick any troublesome allergens and see a goal reminder to spin the allergy wheel to win 10 hearts.
+An interactive allergy wheel game rendered in the browser. The project ships with automated browser tests that validate
+utility helpers, state transitions, and canvas-based integration scenarios. When players land on the quick game screen
+they are invited to pick any troublesome allergens and see a goal reminder to spin the allergy wheel to win 10 hearts.
 
 ## Browser compatibility
 
@@ -19,13 +21,18 @@ The browser test harness is exercised automatically through a Playwright runner.
 2. Download the Chromium runtime once with `npm run install:browsers`.
 3. Run the suites via `npm test`.
 
-The `scripts/run-browser-tests.mjs` helper spins up a static server, loads `tests/index.html` in headless Chromium, and fails the process when any suite reports a failing case. The `Browser Tests` GitHub Actions workflow runs the exact same steps for every push and pull request so that automated safeguards remain in place.
+The `scripts/run-browser-tests.mjs` helper spins up a static server, loads `tests/index.html` in headless Chromium, and
+fails the process when any suite reports a failing case. The `Browser Tests` GitHub Actions workflow runs the exact same
+steps for every push and pull request so that automated safeguards remain in place.
 
 You can still open `tests/index.html` manually in a supported browser for interactive debugging if desired.
 
 ## Dynamic allergen summary
 
-The crawler-friendly food allergy summary that appears on the first screen is now rendered in the browser using the live catalogs. Whenever entries in `data/allergens.json`, `data/dishes.json`, or the ingredient mappings change, simply reload the page and the summary updates automatically. A static `<noscript>` block remains in place for SEO crawlers without JavaScript support.
+The crawler-friendly food allergy summary that appears on the first screen is now rendered in the browser using the live
+catalogs. Whenever entries in `data/allergens.json`, `data/dishes.json`, or the ingredient mappings change, simply
+reload the page and the summary updates automatically. A static `<noscript>` block remains in place for SEO crawlers
+without JavaScript support.
 
 ## Avatar customization
 
