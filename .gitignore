@@ -8,3 +8,7 @@ node_modules/
 qodana.yaml
 tools/
 bin/
+
+# BEGIN MPRLAB-GOVERNANCE
+/.mprlab/*-PLAN.md
+# END MPRLAB-GOVERNANCE
