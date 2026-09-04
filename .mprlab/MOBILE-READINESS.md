@@ -50,18 +50,19 @@ Offline play requires a complete resource inventory and a cache or package desig
 
 | Issue | Source evidence | Required outcome |
 | --- | --- | --- |
-| B001 | The workflow accepts pushes to `main`. The default branch is `master`. | Run browser CI for the actual default branch. |
-| B002 | Listener tests replace the page body. The visible result container disappears. | Keep the browser test report visible. |
-| I001 | The README and test runner require Node. Root instructions prohibit Node tooling. | Establish one test contract after P001. |
+| B001 | The local correction selects `master` and retains the pull request trigger. | Verify remote execution after an authorized push. |
+| B002 | The local correction keeps listener fixtures in a separate container. | Completed locally with 15 passed browser tests. |
 | I001 | The tests use isolated helpers and a state-manager stub. | Add coverage through the real game page and components. |
-| I001 | The repository has no `Makefile`. | Supply the validation commands required by Governor. |
+| I004 | Docker-based Make commands provide local startup and validation. | Completed locally with passing integration tests and final CI. |
 | I002 | Pages uses `master`. The selected deployment manifest is absent. | Prepare the Governor contract for `gh-pages` publication. |
 | I003 | `js/utils/listeners.js` imports from `js/ui/ui.js`. | Connect components through the composition root. |
 | P001 | No mobile package or store configuration exists. | Decide the first mobile delivery path and toolchain. |
 | P002 | The current page loads external measurement services. | Define the child audience and data policy before mobile implementation. |
 
-The existing browser harness reported 14 passed tests and zero failed tests in the Codex browser.
-The result came from `__ALLERGY_WHEEL_TEST_RESULTS__` after the tests removed the visible page body.
+The initial browser harness reported 14 passed tests and zero failed tests in the Codex browser.
+That result came from `__ALLERGY_WHEEL_TEST_RESULTS__` after the tests removed the visible page body.
+The B002 correction added a report regression that failed before the fixture change.
+After the correction, the visible report and machine-readable result both showed 15 passed tests and zero failed tests.
 This evidence covers the existing test cases only.
 It does not establish full game, offline, or mobile device acceptance.
 
@@ -85,7 +86,7 @@ P001 must record these decisions:
 - First supported platforms and device versions.
 - PWA, store packages, or both for the first release.
 - Website installation steps and the need for direct file downloads.
-- Permission to use Node tooling for tests or mobile packaging under the existing CDN-only rule.
+- The mobile packaging toolchain under the CDN-only game rule.
 - Required offline behavior, including the first installed launch.
 
 P002 must record these decisions:
@@ -101,9 +102,9 @@ Capacitor remains a candidate until P001 resolves the toolchain rule.
 
 ## Execution Sequence
 
-1. Correct B001 and B002 with focused validation.
+1. Verify B001 on GitHub after an authorized push. The B001 and B002 local corrections passed focused validation.
 2. Complete P001 and P002 with the owner decisions.
-3. Complete I001 to establish real game tests and repeatable validation commands.
+3. Complete I001 to establish real game tests with the commands from I004.
 4. Complete I003 under those tests.
 5. Prepare I002 for the selected production contract.
 6. Implement F001 for the selected mobile delivery path.
@@ -123,3 +124,12 @@ Record application CI and device acceptance separately when those checks occur.
 The Governor check and mechanical language check passed after the preparation changes.
 The language review covers new repository-specific prose and the changed root instructions.
 The remaining root prose and generated Governor templates retain their existing language.
+
+The B001 and B002 checks passed in the working tree based on `5ecf1e5`.
+The final `make ci` command failed because the repository has no `ci` target.
+I004 owns that command gap.
+The local command integration test failed before implementation because `up` and `down` were absent.
+The new Docker-based commands passed the startup, HTTP response, repeated startup, and shutdown checks.
+The final local `make ci` command passed with 37 source files validated and 15 browser tests passed.
+The Governor check passed with frontend and Docker guidance.
+GitHub Actions now uses the same command. Remote execution requires an authorized push.

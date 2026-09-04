@@ -8,7 +8,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
-- [ ] [B001] (P1) Run browser CI for the default branch
+- [x] [B001] (P1) Run browser CI for the default branch
   Goal:
   Browser CI must run when the default branch receives a push.
 
@@ -30,7 +30,13 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Verify that the workflow accepts the default branch and pull requests.
   - After an authorized push, record the matching GitHub Actions run.
 
-- [ ] [B002] (P2) Keep the browser test report visible
+  Resolution:
+  On September 4, 2026, the local correction changed the push branch from `main` to `master`.
+  The branch check failed before the correction and passed after it.
+  The pull request trigger remains present.
+  Remote execution remains unverified until an authorized push.
+
+- [x] [B002] (P2) Keep the browser test report visible
   Goal:
   The manual browser harness must show its test results.
 
@@ -53,30 +59,33 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Confirm the new integration test fails before the correction.
   - Confirm the report and machine-readable totals agree after the correction.
 
+  Resolution:
+  On September 4, 2026, the listener tests received a dedicated fixture container.
+  The new report regression failed before the correction with 14 passed tests and one failed test.
+  After the correction, all 15 browser tests passed.
+  The visible report and machine-readable result both contained 15 passed tests and zero failed tests.
+  Fixture cleanup left no button controls in the document.
+  The final `make ci` command failed because the repository has no `ci` target.
+  I004 owns that command gap.
+
 ## Improvements
 
-- [!] [I001] (P1) {P001} Establish the game validation contract
+- [ ] [I001] (P1) Establish real game integration coverage
   Goal:
   Agents need repeatable validation through the real game page.
-
-  Blocked: P001 must resolve the Node tooling rule before changes to the test runner.
 
   Requirements:
   - Keep the selected toolchain consistent with root instructions and the README.
   - Add integration tests through `index.html` with real game components and catalogs.
   - Cover allergen selection, Stop, automatic stop, result reveal, restart, mute, and navigation.
   - Replace isolated tests and repository-component stubs with public behavior coverage.
-  - Add repository-native `make test` and `make ci` targets.
-  - Include the Governor check in the documented validation sequence.
 
   Evidence:
-  `package.json` and the README require Node tooling.
-  Root instructions prohibit that tooling.
   The current tests include isolated helpers and a state-manager stub.
-  A `Makefile` is absent.
+  I004 provides Docker-based validation commands without a host Node installation.
 
   Deliverables:
-  - Supply the selected test runner and validation commands.
+  - Extend the existing runner with real game integration tests.
   - Record browser coverage and its limitations.
   - Update the contributor instructions.
 
@@ -135,6 +144,43 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Add characterization coverage before the refactor if the affected behavior lacks coverage.
   - Run the affected game integration tests before and after the refactor.
   - Verify that component imports meet the root contract.
+
+- [x] [I004] (P1) Add local startup and validation commands
+  Goal:
+  Contributors can start, stop, and validate the game through Make.
+
+  Requirements:
+  - Supply `make up`, `make down`, `make test`, and `make ci`.
+  - Keep Node and npm test tools inside Docker.
+  - Serve the game on the local host with current source files.
+  - Keep local commands separate from production publication.
+  - Run the same validation command in GitHub Actions.
+  - Document prerequisites and the separate Governor check.
+
+  Evidence:
+  The initial `make ci` call failed because its target was absent.
+  The new local command integration test failed because `up` and `down` were absent.
+
+  Deliverables:
+  - Supply the Makefile, local Compose configuration, and test image.
+  - Add integration coverage for startup and shutdown.
+  - Align the root instructions, README, and CI workflow.
+
+  Validation:
+  - Verify HTTP responses contain the current game source and catalogs.
+  - Verify repeated startup preserves the running container.
+  - Verify shutdown removes the test project and stops HTTP responses.
+  - Verify repeated shutdown succeeds.
+  - Run the Governor check and final `make ci`.
+
+  Resolution:
+  On September 4, 2026, the final local `make ci` command passed.
+  It validated 37 JavaScript and JSON files and passed all 15 browser tests.
+  The local command integration test passed startup, current source, repeated startup, shutdown, and repeated shutdown.
+  The test removed its temporary container and network.
+  The Governor check passed with the frontend and Docker guides.
+  GitHub Actions now selects `make ci` for `master` pushes and pull requests.
+  Remote execution remains unverified until an authorized push.
 
 ## Maintenance
 
@@ -366,12 +412,12 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 - [ ] [P001] (P1) Select the mobile delivery path and toolchain
   Goal:
-  A recorded decision must resolve the first release scope and the existing tooling conflict.
+  A recorded decision must resolve the first release scope and the mobile packaging toolchain.
 
   Requirements:
   - Read `.mprlab/MOBILE-READINESS.md` and the current source before the decision.
   - Compare PWA installation, native store packages, and direct downloads for the required platforms.
-  - Resolve whether the CDN-only rule permits tools for tests or mobile packaging.
+  - Resolve which mobile packaging tools the CDN-only game can use.
   - Record the supported platforms, device versions, and required offline behavior.
   - Record the selected path and the reasons for it.
   - Keep this issue limited to analysis and decisions.
@@ -382,7 +428,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
   Deliverables:
   - Update the current requirements with the owner decisions.
-  - Update I001, F001, and F002 with executable acceptance criteria.
+  - Update F001 and F002 with executable acceptance criteria.
 
   Validation:
   - Confirm each implementation requirement has a source requirement or an owner decision.
