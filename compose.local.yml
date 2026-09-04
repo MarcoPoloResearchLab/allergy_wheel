@@ -1,0 +1,21 @@
+services:
+  web:
+    image: python:3.13-alpine@sha256:7415fbc3c9e4979cc717d92377ab2bc7b2b4a2af1ac03cc52b5f3f88efedaf3a
+    init: true
+    read_only: true
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
+    command: ["python", "-m", "http.server", "8000", "--bind", "0.0.0.0", "--directory", "/site"]
+    ports:
+      - "127.0.0.1:${LOCAL_PORT:-8765}:8000"
+    volumes:
+      - ./index.html:/site/index.html:ro
+      - ./assets:/site/assets:ro
+      - ./data:/site/data:ro
+      - ./js:/site/js:ro
+      - ./tests:/site/tests:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/index.html', timeout=2).close()"]
+      interval: 1s
+      timeout: 3s
+      retries: 20
