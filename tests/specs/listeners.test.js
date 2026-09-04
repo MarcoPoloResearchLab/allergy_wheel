@@ -14,6 +14,9 @@ import {
     WheelControlMode
 } from "../../js/constants.js";
 
+const listenerFixtureContainer = document.createElement("div");
+document.body.appendChild(listenerFixtureContainer);
+
 function createStateManagerStub({
     initialMuted = false,
     initialWheelControlMode = WheelControlMode.STOP
@@ -48,7 +51,7 @@ function dispatchKeydownEvent(targetElement, keyValue) {
 }
 
 function renderRestartModalSkeleton() {
-    document.body.innerHTML = `
+    listenerFixtureContainer.innerHTML = `
         <section
             id="${ControlElementId.REVEAL_SECTION}"
             aria-hidden="${AttributeBooleanValue.FALSE}"
@@ -119,7 +122,7 @@ defineSuite("Listener binder", (test) => {
             expectedText,
             expectedLabel
         } of cases) {
-            document.body.innerHTML = `
+            listenerFixtureContainer.innerHTML = `
                 <button id="${ControlElementId.MUTE_BUTTON}" aria-pressed="false"></button>
             `;
             const stateManager = createStateManagerStub({ initialMuted });
@@ -152,12 +155,12 @@ defineSuite("Listener binder", (test) => {
                 `aria-label mismatch: ${description}`
             );
 
-            document.body.innerHTML = "";
+            listenerFixtureContainer.innerHTML = "";
         }
     });
 
     test("wireMuteButton toggles state and notifies listeners", () => {
-        document.body.innerHTML = `
+        listenerFixtureContainer.innerHTML = `
             <button id="${ControlElementId.MUTE_BUTTON}" aria-pressed="false"></button>
         `;
         const stateManager = createStateManagerStub({ initialMuted: false });
@@ -222,7 +225,7 @@ defineSuite("Listener binder", (test) => {
             "aria-label should describe mute action"
         );
 
-        document.body.innerHTML = "";
+        listenerFixtureContainer.innerHTML = "";
     });
 
     test("wireWheelContinueButton routes events based on control mode", () => {
@@ -291,7 +294,7 @@ defineSuite("Listener binder", (test) => {
         ];
 
         for (const testCase of cases) {
-            document.body.innerHTML = `
+            listenerFixtureContainer.innerHTML = `
                 <button id="${ControlElementId.WHEEL_CONTINUE_BUTTON}" type="button"></button>
             `;
             const stateManager = createStateManagerStub({
@@ -338,7 +341,7 @@ defineSuite("Listener binder", (test) => {
                 `start request mismatch: ${testCase.description}`
             );
 
-            document.body.innerHTML = "";
+            listenerFixtureContainer.innerHTML = "";
         }
     });
 
@@ -417,7 +420,7 @@ defineSuite("Listener binder", (test) => {
                 `game over section visibility mismatch: ${description}`
             );
 
-            document.body.innerHTML = "";
+            listenerFixtureContainer.innerHTML = "";
         }
     });
 
@@ -485,6 +488,6 @@ defineSuite("Listener binder", (test) => {
             "game over section should hide after restart"
         );
 
-        document.body.innerHTML = "";
+        listenerFixtureContainer.innerHTML = "";
     });
 });
