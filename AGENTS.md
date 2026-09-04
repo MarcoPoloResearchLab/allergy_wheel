@@ -2,7 +2,9 @@
 
 ## Spinning Allergy Wheel
 
-Write the game in JavaScript. Use CDN dependencies only. Do not use local npm or Node tooling.
+Write the game in JavaScript. Use CDN dependencies for the browser game.
+Run test tooling inside Docker through the repository Make targets.
+The host requires no npm or Node installation.
 
 The game starts with the screen to select an allergy (e.g. peanuts, Italian sausage, and other food ingredients that
 children often are allergic to)
@@ -56,7 +58,8 @@ There is a menu screen that allows selecting the dishes based on the allergic
 
 ### 5. Dependencies & Organization
 
-* Use CDN-hosted dependencies only. Do not use npm, bundlers, or Node tooling.
+* Use CDN-hosted dependencies for the browser game. Keep the game free of npm and bundlers.
+* Run the existing Node and Playwright test tools only inside the test container.
 * Layout:
 
   ```
@@ -138,9 +141,11 @@ Do not import one game component into another game component.
 Shared constants, types, and general utilities can be imports.
 Keep the wheel, audio, and UI behavior under their public APIs.
 
-The existing Node test runner conflicts with the dependency rule above.
-P001 records the required toolchain decision.
-I001 records the test migration and validation commands.
+I004 provides Docker-based local startup and validation commands.
+Use `make up` and `make down` for the local game.
+Use `make test` for focused browser validation and `make ci` for final validation.
+P001 records the remaining mobile packaging decisions.
+I001 records the migration to real game integration coverage.
 
 <!-- BEGIN MPRLAB-GOVERNANCE -->
 ## MPR Lab Governance
@@ -157,6 +162,7 @@ Read these files before editing:
 - `.mprlab/ISSUES.md`: active issue tracker.
 - `.mprlab/AGENTS.GIT.md`: Git and pull request workflow.
 - `.mprlab/AGENTS.FRONTEND.md`: browser frontend guidance.
+- `.mprlab/AGENTS.DOCKER.md`: Docker and container guidance.
 
 File permission modes are outside agent scope.
 Never examine, validate, compare, require, change, or record a file permission mode.
