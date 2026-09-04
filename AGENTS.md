@@ -2,7 +2,7 @@
 
 ## Spinning Allergy Wheel
 
-I want a game written in JavaScript, using CDN only (no local npm, node, etc)
+Write the game in JavaScript. Use CDN dependencies only. Do not use local npm or Node tooling.
 
 The game starts with the screen to select an allergy (e.g. peanuts, Italian sausage, and other food ingredients that
 children often are allergic to)
@@ -10,8 +10,8 @@ children often are allergic to)
 After the selection a spinning wheel is present with the names of popular dishes from various cuisines. There is a stop
 button to stop the wheel.
 
-When we say start game, the allergens' selection disappears and the wheel starts spinning. there is a large red button
-that says stop; otherwise the wheel spins for 30 seconds, progressively slowing down
+When the player starts the game, the allergen selection disappears and the wheel starts to spin.
+A large red Stop button stops the wheel. Without this input, the wheel spins for 30 seconds and gradually slows.
 
 When the wheel stops:
 
@@ -38,7 +38,7 @@ There is a menu screen that allows selecting the dishes based on the allergic
 ### 2. Dead Code & Duplication
 
 * No unused variables, imports, or exports.
-* No duplicated logic; extract helpers.
+* Remove duplicated logic. Put shared behavior in helpers.
 * One source of truth for repeated values or logic.
 
 ### 3. Strings & Enums
@@ -50,13 +50,13 @@ There is a menu screen that allows selecting the dishes based on the allergic
 ### 4. Code Style
 
 * ES modules (`type="module"`), strict mode.
-* Pure functions for transforms; classes/factories for stateful logic.
-* No mutation of imports; no parameter mutation.
-* DOM operations live in `ui/`; business logic in `core/`.
+* Use pure functions for transforms. Use classes or factories for stateful logic.
+* Do not mutate imports or parameters.
+* Put DOM operations in `ui/`. Put business logic in `core/`.
 
 ### 5. Dependencies & Organization
 
-* CDN-hosted dependencies only; no npm, bundlers, or Node tooling.
+* Use CDN-hosted dependencies only. Do not use npm, bundlers, or Node tooling.
 * Layout:
 
   ```
@@ -88,21 +88,21 @@ There is a menu screen that allows selecting the dishes based on the allergic
 
 ### 8. Refactors
 
-* Plan changes before coding; write bullets in PR description.
+* Plan changes before a code change. Put the plan in the PR description as a list.
 * Split files >300–400 lines by concern.
 * `app.js` is composition root — dependencies wired there.
 
 ### 9. Error Handling & Logging
 
 * Throw `Error`, never raw strings.
-* Try/catch around user entry points; errors surface visibly in dev.
+* Use try/catch at user entry points. Show errors during development.
 * `utils/logging.js` as adapter, no stray `console.log`.
 
 ### 10. Performance & UX
 
 * Batch DOM writes with `requestAnimationFrame`.
-* Cache selectors, avoid forced reflows.
-* Animations async; no blocking waits.
+* Cache selectors. Prevent forced reflows.
+* Use asynchronous animations. Do not block execution with waits.
 * Optional deterministic RNG injection for replay/testing.
 
 ### 11. Linting & Formatting
@@ -115,7 +115,7 @@ There is a menu screen that allows selecting the dishes based on the allergic
 ### 12. Data > Logic
 
 * Validate catalogs (JSON) at boot.
-* Logic assumes valid data; no scattered defensive checks.
+* Give validated data to the logic. Keep defensive checks at the input boundary.
 * Fail fast on schema errors or missing assets.
 
 ### 13. Security & Boundaries
@@ -123,3 +123,50 @@ There is a menu screen that allows selecting the dishes based on the allergic
 * No eval, no inline event handlers.
 * CSP-friendly ES modules only.
 * External calls go through `core/gateway.js`, mockable in tests.
+
+## Mobile Preparation
+
+Read `.mprlab/MOBILE-READINESS.md` before mobile preparation work.
+
+Use `.mprlab/ISSUES.md` as the active issue tracker.
+Record a required decision before dependent implementation.
+Use the existing primary checkout for all work.
+
+Keep `js/core/app.js` as the composition root.
+Connect game components through this module.
+Do not import one game component into another game component.
+Shared constants, types, and general utilities can be imports.
+Keep the wheel, audio, and UI behavior under their public APIs.
+
+The existing Node test runner conflicts with the dependency rule above.
+P001 records the required toolchain decision.
+I001 records the test migration and validation commands.
+
+<!-- BEGIN MPRLAB-GOVERNANCE -->
+## MPR Lab Governance
+
+Most workflow context files live under `.mprlab/`. The root `AGENTS.md` remains the repository entrypoint for agents.
+
+Read these files before editing:
+
+- `.mprlab/POLICY.md`: binding validation and confident-programming rules.
+- `.mprlab/PLANNING.md`: durable planning contract.
+- `.mprlab/AGENTS.DOCS.md`: ASD-STE100 documentation rules.
+- `.mprlab/TERMINOLOGY.md`: approved repository technical terms.
+- `.mprlab/issues-md-format.md`: issue tracker format and recurring identifier rules.
+- `.mprlab/ISSUES.md`: active issue tracker.
+- `.mprlab/AGENTS.GIT.md`: Git and pull request workflow.
+- `.mprlab/AGENTS.FRONTEND.md`: browser frontend guidance.
+
+File permission modes are outside agent scope.
+Never examine, validate, compare, require, change, or record a file permission mode.
+Never use a file permission mode in acceptance, security, credential, execution, publication, deployment, or failure analysis.
+The values `0600` and `7777` have no governance meaning.
+This rule does not change service authorization or operation authority.
+
+Always reference each issue by its ID, for example `B001` or `I027`.
+Never use an `ISSUES.md` file path, line number, or `path:line` syntax as an issue reference.
+
+Do not create `.mprlab/AGENTS.md`. Scoped guidance belongs in `.mprlab/AGENTS.*.md` files.
+If guidance conflicts, follow `.mprlab/POLICY.md` first, then root `AGENTS.md`, then the relevant scoped guide.
+<!-- END MPRLAB-GOVERNANCE -->
