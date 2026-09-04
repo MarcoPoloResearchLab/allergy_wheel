@@ -1,8 +1,9 @@
 # Allergy Wheel
 
 An interactive allergy wheel game rendered in the browser. The project ships with automated browser tests that validate
-utility helpers, state transitions, and canvas-based integration scenarios. When players land on the quick game screen
-they are invited to pick any troublesome allergens and see a goal reminder to spin the allergy wheel to win 10 hearts.
+utility helpers, state transitions, and canvas-based integration scenarios.
+On the quick game screen, players select their allergens.
+A reminder shows the goal: spin the allergy wheel to win 10 hearts.
 
 ## Browser compatibility
 
@@ -13,23 +14,55 @@ they are invited to pick any troublesome allergens and see a goal reminder to sp
 | Firefox | 90              | July 13, 2021      | 2.26%                      |
 | Safari  | 14              | September 16, 2020 | 14.98%                     |
 
+## Local development
+
+Install Docker with Docker Compose v2 or later, Make, Bash, curl, and shasum.
+Start the Docker engine before these commands.
+The host requires no Node or npm installation.
+The first validation run downloads the test image and its locked dependencies.
+
+| Command | Result |
+| --- | --- |
+| `make up` | Start the game at <http://127.0.0.1:8765>. |
+| `make down` | Stop and remove the local game container and its network. |
+| `make test` | Run the browser tests inside Docker. |
+| `make test-local` | Verify startup, file responses, repeated startup, and shutdown. |
+| `make check` | Validate JavaScript and JSON syntax, Compose configuration, and whitespace. |
+| `make ci` | Run all checks and both test commands. |
+
+Use `make up LOCAL_PORT=8766` to select a different port.
+The service binds to the local host only and mounts game files as read-only files.
+Edit the source, then reload the browser to see changes.
+The default Compose project is `allergy-wheel-local`.
+If you set `COMPOSE_PROJECT_NAME`, use the same value for startup and shutdown.
+The local command test uses a separate temporary project and an assigned port.
+Its cleanup preserves the default local game and other projects.
+
 ## Browser-based tests
 
-The browser test harness is exercised automatically through a Playwright runner. To execute the same flow locally:
+Run `make test` for the browser harness.
+The test image contains Node, locked npm dependencies, and a matching Playwright browser.
+Keep the Playwright image version and package lock version in agreement when updating dependencies.
 
-1. Install dependencies with `npm install`.
-2. Download the Chromium runtime once with `npm run install:browsers`.
-3. Run the suites via `npm test`.
+The `scripts/run-browser-tests.mjs` helper starts a static server and loads `tests/index.html` in headless Chromium.
+The helper reports a failure if a suite contains a failed test.
+The `Browser Tests` GitHub Actions workflow runs `make ci` for pushes to `master` and for pull requests.
 
-The `scripts/run-browser-tests.mjs` helper spins up a static server, loads `tests/index.html` in headless Chromium, and
-fails the process when any suite reports a failing case. The `Browser Tests` GitHub Actions workflow runs the exact same
-steps for every push and pull request so that automated safeguards remain in place.
+The listener tests keep their fixtures in a separate container.
+Fixture cleanup preserves the report container and its completed results.
+The report integration suite runs last to verify this boundary.
+The visible report and the machine-readable result contain the same test totals.
 
-You can still open `tests/index.html` manually in a supported browser for interactive debugging if desired.
+After `make up`, open <http://127.0.0.1:8765/tests/index.html> to inspect the report.
+The existing suites do not cover every game flow. I001 tracks the remaining integration coverage.
+
+For governed changes, run the installed Governor normalizer with `--repo` set to this checkout and `--check`.
+Then run `make ci` once after all changes are completed.
+The application CI command does not require the local Governor skill installation.
 
 ## Dynamic allergen summary
 
-The crawler-friendly food allergy summary that appears on the first screen is now rendered in the browser using the live
+The crawler-friendly food allergy summary that appears on the first screen is now rendered in the browser with the live
 catalogs. Whenever entries in `data/allergens.json`, `data/dishes.json`, or the ingredient mappings change, simply
 reload the page and the summary updates automatically. A static `<noscript>` block remains in place for SEO crawlers
 without JavaScript support.
@@ -41,8 +74,8 @@ Boy, Creative Boy, T-Rex, and Triceratops. The currently selected avatar is disp
 the allergy result card during the reveal sequence.
 
 To change avatars, click the avatar button in the header to open the selector menu. Choosing any option updates the
-header image immediately, closes the menu, and persists the selection so the reveal card shows the same avatar until a
-different option is picked.
+header image immediately and closes the menu.
+The saved selection keeps the same avatar on the reveal card until the player selects another option.
 
 ## License
 
