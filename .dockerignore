@@ -2,6 +2,10 @@
 !package.json
 !package-lock.json
 !index.html
+!privacy.html
+!CNAME
+!robots.txt
+!sitemap.xml
 !assets/
 !assets/**
 !data/
@@ -12,6 +16,13 @@
 !scripts/**
 !tests/
 !tests/**
+!mobile/
+!mobile/**
+mobile/generated
+mobile/android
+mobile/ios
+mobile/dist
+mobile/.expo
 **/.DS_Store
 **/.env
 **/.env.*
