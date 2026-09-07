@@ -4,6 +4,8 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, resolve } from "node:path";
 import { chromium } from "playwright";
+import { runGameFlow } from "../tests/game-flow.mjs";
+import { runStoreFlow } from "../tests/store-flow.mjs";
 
 const HttpStatusCode = Object.freeze({
     OK: 200,
@@ -308,6 +310,8 @@ async function runBrowserTestSuite() {
         console.info(
             `Passed: ${evaluationResult.summary.passed} • Failed: ${evaluationResult.summary.failed}`
         );
+        await runGameFlow(browser, `http://127.0.0.1:${port}/index.html`);
+        await runStoreFlow(browser, `http://127.0.0.1:${port}/index.html`);
     } finally {
         await browser.close();
         await stopStaticServer(server);
