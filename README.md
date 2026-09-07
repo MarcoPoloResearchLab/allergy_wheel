@@ -109,6 +109,11 @@ Do not edit generated `mobile/android` or `mobile/ios` files.
 The mobile build does not use a development server, Expo account, or EAS.
 
 The parent area separates optional analytics, feedback, and online fonts from game play.
+The feedback action stays pending until LoopAware supplies its launcher and contact form.
+A script download alone does not establish readiness.
+A script error or a 10-second initialization timeout shows a failure and permits another attempt.
+The packaged mobile tests cover configuration responses of 403 and 404 with the actual widget script.
+They also verify delayed readiness and a successful retry without a feedback submission.
 Its provider scripts use a separate document origin.
 The mobile privacy page is `privacy.html`.
 P002 retains provider configuration and store policy verification before submission.
