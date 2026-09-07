@@ -79,7 +79,8 @@ There is a menu screen that allows selecting the dishes based on the allergic
 
 * Tests run in browser: `tests/index.html`.
 * Table-driven cases, iterate array of inputs/outputs.
-* Black-box only: test public APIs and DOM, not internals.
+* Use black-box integration tests for public APIs and DOM behavior.
+* Use focused unit tests for complex internal logic when useful.
 * Provide `assertEqual`, `assertDeepEqual`, `assertThrows` in `tests/assert.js`.
 
 ### 7. Documentation
@@ -150,19 +151,19 @@ I001 records the migration to real game integration coverage.
 <!-- BEGIN MPRLAB-GOVERNANCE -->
 ## MPR Lab Governance
 
-Most workflow context files live under `.mprlab/`. The root `AGENTS.md` remains the repository entrypoint for agents.
+Root `AGENTS.md` is the agent entrypoint. Shared rules live under `.mprlab/`.
 
-Read these files before editing:
+Read `.mprlab/POLICY.md` for every task.
+Read the following files only when their condition applies.
+Read each selected guide in full before its first applicable action.
 
-- `.mprlab/POLICY.md`: binding validation and confident-programming rules.
-- `.mprlab/PLANNING.md`: durable planning contract.
-- `.mprlab/AGENTS.DOCS.md`: ASD-STE100 documentation rules.
-- `.mprlab/TERMINOLOGY.md`: approved repository technical terms.
-- `.mprlab/issues-md-format.md`: issue tracker format and recurring identifier rules.
-- `.mprlab/ISSUES.md`: active issue tracker.
-- `.mprlab/AGENTS.GIT.md`: Git and pull request workflow.
-- `.mprlab/AGENTS.FRONTEND.md`: browser frontend guidance.
-- `.mprlab/AGENTS.DOCKER.md`: Docker and container guidance.
+- Before edits: `.mprlab/PLANNING.md`.
+- For technical prose: `.mprlab/AGENTS.DOCS.md` and `.mprlab/TERMINOLOGY.md`.
+- For issue work: the selected issue and its dependencies in `.mprlab/ISSUES.md`.
+- For tracker edits: `.mprlab/issues-md-format.md`.
+- For Git operations: `.mprlab/AGENTS.GIT.md`.
+- For browser changes: `.mprlab/AGENTS.FRONTEND.md`.
+- For container changes: `.mprlab/AGENTS.DOCKER.md`.
 
 File permission modes are outside agent scope.
 Never examine, validate, compare, require, change, or record a file permission mode.
@@ -174,5 +175,5 @@ Always reference each issue by its ID, for example `B001` or `I027`.
 Never use an `ISSUES.md` file path, line number, or `path:line` syntax as an issue reference.
 
 Do not create `.mprlab/AGENTS.md`. Scoped guidance belongs in `.mprlab/AGENTS.*.md` files.
-If guidance conflicts, follow `.mprlab/POLICY.md` first, then root `AGENTS.md`, then the relevant scoped guide.
+If guidance conflicts, obey `.mprlab/POLICY.md` first, then root `AGENTS.md`, then the applicable scoped guide.
 <!-- END MPRLAB-GOVERNANCE -->
