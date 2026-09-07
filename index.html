@@ -120,9 +120,10 @@
 <main id="screen-allergy">
     <div class="card">
         <div class="card__body">
-            <h2 class="title" id="allergy-title">Pick your allergens</h2>
-            <p class="muted">Choose anything that might cause trouble. You can change this later.</p>
-            <p class="muted">Spin the allergy wheel to win 10 hearts!</p>
+            <hgroup class="allergen-introduction">
+                <h2 class="title" id="allergy-title">Pick your allergens</h2>
+                <p class="muted">Choose anything that might cause trouble. You can change this later.</p>
+            </hgroup>
             <div class="grid allergen-grid" id="allergy-list">
                 <button
                     aria-disabled="true"
@@ -168,7 +169,10 @@
             </div>
         </div>
     </div>
-    <div class="status">Allergens: <span id="sel-badges"></span></div>
+    <div class="status">
+        <p class="wheel-instruction muted">Spin the allergy wheel to win 10 hearts!</p>
+        Allergens: <span id="sel-badges"></span>
+    </div>
     <div
         aria-hidden="true"
         class="restart-modal"

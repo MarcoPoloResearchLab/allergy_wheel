@@ -46,13 +46,13 @@
     "assets/icon.png": "5e939272a30ce30b4bc18c391fe7226812cb905be1f24d1e29b57a23f2b7cabe",
     "constants.js": "e6590b2feb1b7c4d3d46cec6b55d6ab35c9a322001420e1cf317ba816786b249",
     "generated/analytics.json": "9e212270c91777867b09273d60e01e2ac6845074408807ba36a04a7b2e520dfa",
-    "generated/game.json": "fd169faafeb07f0ef38ae89d7a8b327ff278a25e81d48ad701dc1b458a2d3697",
+    "generated/game.json": "3b19db3af23b24a8774de1210021f7a6373dd6c6beefd69698708cc64a8aca90",
     "generated/parents.json": "a198a419e938d8d782f4d6d48977ff363431a31c63fd170e236a72de66b7bd7d",
-    "generated/resources.json": "b19e824abbf85521fe50ecaceaab026d98a2260696bbebdf9fb6bb4a3e7d9001",
+    "generated/resources.json": "af91fe743630a58e5bc75cd9892d2bc2e3407f9d94785c5e69064a5b70f99e9f",
     "index.js": "8b71fb58723cdf961ecd2d8a44bca4ceef89b98863e9217842c7a6c9a117a426",
     "ios/.gitignore": "f8042134be9ad24176d8d630255be93f8a0223925ae88c34b603c8989baa8345",
     "ios/.xcode.env": "3c02dca07775b31ce4e77dfb3bb660d7c6e577474d65a6216f1ea9bef54e1ca6",
-    "ios/AllergyWheel.xcodeproj/project.pbxproj": "b1d03aa4dfc859a71e8bae36216813bb8d967f78e041d073cc171445e08688d3",
+    "ios/AllergyWheel.xcodeproj/project.pbxproj": "54d83a1ea39209a9c3a81eadfef8856d566b6797f75de0c09c5a664516e6f2c3",
     "ios/AllergyWheel.xcodeproj/xcshareddata/xcschemes/AllergyWheel.xcscheme": "9644140c79ac4c640b153dc0d0a58bbfba2155d4da467a532385e227f69cfe3e",
     "ios/AllergyWheel.xcworkspace/contents.xcworkspacedata": "570d866bb6bad7290b23fe9889911e2a92376e52586ec0e618ed0400a36540d9",
     "ios/AllergyWheel/AllergyWheel-Bridging-Header.h": "4a625b53abd4333ca454a4161ba62ab1b0cb44e8a4581326c0bcfe03dc26dd5c",
@@ -76,6 +76,6 @@
     "plugins/withOfflineBuild.cjs": "b8237653570a6cc239de0543ecb8c746f887fd579b1cb36473c3c6e826dbb00b",
     "plugins/withStoreRelease.cjs": "81317e1a6f3adeedbdc65eb2ea1a6ba0bdd0abb099d1bb51c497521efed8a149",
     "scripts/verify-native-release.mjs": "62a08fcd79406265d4cffc203569c3146aadb84f8066d687305b80c850824db6",
-    "source-preparation.json": "19e65525bdedb277a66691e33b57008786e806ec5bf26606bc5e0b95e76c3c1e"
+    "source-preparation.json": "dba6b90978ff4aef3a62958c19bb865406c994a4be619dec0e585ce5335594ec"
   }
 }
