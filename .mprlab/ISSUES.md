@@ -819,7 +819,9 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Preparation records 76 native inputs. Signed artifacts and final screenshots remain incomplete.
   The owner confirmed that no physical Apple device is available.
   Simulator controls rejected interaction after a state refresh, so native interaction acceptance remains incomplete.
-  The gateway candidate changes remain uncommitted and require committed-source validation.
+  Application preparation is in pull request #134. Its source commit is `5c8c8402b3cc7ad0e0edaa3e5f1e6ad07fde7d1a`.
+  Gateway candidate changes are committed as `856c40a`. Full gateway CI passed against that commit.
+  Gateway pull request #363 contains the Apple candidate submission support. Both pull requests are ready for review.
 
 ## Planning
 
@@ -929,8 +931,9 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Remove beer and wine references from the catalog and use child-friendly recipes.
   Recalculate store ratings after the catalog changes.
   Apple saved the recalculated 4+ rating after the catalog revision and browser test.
-  Google Play still disables younger age groups until its IARC questionnaire is completed.
-  IARC terms acceptance remains pending. The previously saved Google Play age groups require revision.
+  Google Play saved the completed IARC questionnaire after the owner authorized its agreement.
+  Its ratings include Everyone and PEGI 3. Younger age groups are selected in the incomplete audience form.
+  The compliance certification requires the remaining provider and native privacy evidence.
   The parent controls and selected services remain the same.
 
   Evidence:
@@ -958,9 +961,9 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Confirm the inventory includes requests from external scripts and local storage.
   - Confirm that the design and proposed store declarations describe the same behavior.
   Implementation Contract:
-  On September 7, 2026, optional services moved into a separate parent document in the mobile design.
-  The game starts no external service and retains its preferences locally.
-  Each service requires the parent gate and a separate action for that visit.
+  The game starts fonts, Google Analytics, and LoopAware analytics automatically.
+  The game retains its preferences locally and excludes allergens and results from analytics data.
+  Feedback requires the parent gate and a separate action in the parent document.
   Google Analytics defaults deny analytics storage and advertisement storage.
   Google signals and advertisement personalization are disabled.
 
@@ -995,3 +998,11 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   B005 restored the LoopAware configuration for the website and native parent origins.
   The real form opened in Chromium and WebKit only after the required parent action.
   No feedback was submitted. Native request captures and deployed retention verification remain incomplete.
+
+  Provider Policy Review:
+  On September 7, 2026, the signed-in LoopAware dashboard showed no visits for the new Allergy Wheel site.
+  The Admin and Traffic sections contained no retention control.
+  The published privacy policy retains data while the account is active and specifies deletion within 30 days after a request.
+  That policy says LoopAware does not knowingly collect personal information from children under 13.
+  Verify the automatic analytics payload and permitted child use before the Google audience certification.
+  The policy establishes the stated procedure. Actual retention and deletion behavior still require verification.

@@ -357,3 +357,14 @@ The owner confirmed that no physical Apple device is available.
 Simulator controls rejected interaction after a state refresh. Native interaction and final screenshot capture remain incomplete.
 Signed releases still require source review and committed-source validation of the application and gateway.
 The public privacy page still requires the revised source. P002 and F001 remain open.
+
+Application preparation is in [pull request #134](https://github.com/MarcoPoloResearchLab/allergy_wheel/pull/134).
+Apple candidate submission support is in [gateway pull request #363](https://github.com/MarcoPoloResearchLab/mprlab-gateway/pull/363).
+Full gateway CI passed against source commit `856c40a17803438e966aaecfa9da4debcff63173`.
+Both pull requests are ready for review. Source review, signed releases, and store acceptance remain separate requirements.
+The signed-in LoopAware dashboard showed no visits for the new Allergy Wheel site on September 7, 2026.
+The Admin and Traffic sections contained no retention control.
+The [LoopAware privacy policy](https://loopaware.mprlab.com/privacy/) specifies retention while the account is active and deletion within 30 days after a request.
+It says LoopAware does not knowingly collect personal information from children under 13.
+P002 must verify the automatic analytics payload and permitted child use before the Google audience certification.
+This policy review does not verify actual retention or deletion behavior.
