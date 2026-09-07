@@ -11,7 +11,6 @@ import {
     AudioControlLabel,
     ListenerErrorMessage
 } from "../constants.js";
-import { updateWheelRestartControlVisibilityFromRevealState } from "../ui/ui.js";
 
 /**
  * Creates helpers that wire DOM event listeners for core UI controls.
@@ -20,6 +19,7 @@ import { updateWheelRestartControlVisibilityFromRevealState } from "../ui/ui.js"
  *     controlElementId: typeof import("../constants.js").ControlElementId,
  *     attributeName: typeof import("../constants.js").AttributeName,
  *     documentReference?: Document,
+ *     updateWheelRestartControlVisibilityFromRevealState: () => void,
  *     stateManager: {
  *         hasSelectedAllergen: () => boolean,
  *         getWheelControlMode: () => string,
@@ -29,7 +29,7 @@ import { updateWheelRestartControlVisibilityFromRevealState } from "../ui/ui.js"
  * }} dependencies
  * @returns {Record<string, (options?: Record<string, unknown>) => void>} Listener binding helpers.
  */
-function createListenerBinder({ controlElementId, attributeName, documentReference = document, stateManager }) {
+function createListenerBinder({ controlElementId, attributeName, documentReference = document, stateManager, updateWheelRestartControlVisibilityFromRevealState }) {
     if (!controlElementId || !attributeName || !stateManager) {
         throw new Error(ListenerErrorMessage.MISSING_DEPENDENCIES);
     }

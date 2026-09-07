@@ -1,5 +1,28 @@
 // @ts-check
 
+export const StorePlatform = Object.freeze({ ANDROID: 'android', IOS: 'ios' });
+export const StoreConfiguration = Object.freeze({ PATH: './data/mobile-stores.json', ELEMENT_ID: 'mobile-installation' });
+export const StoreText = Object.freeze({ PRIVACY: 'Mobile privacy and support', PRIVACY_PATH: './privacy.html', TITLE: 'Play on your phone or tablet', ANDROID: 'Get it on Google Play', IOS: 'Download on the App Store', INVALID: 'Invalid mobile store catalog.' });
+export const RuntimeSurface = Object.freeze({ WEB: 'web', MOBILE: 'mobile' });
+export const LifecycleEvent = 'allergy-wheel:lifecycle';
+export const LifecycleState = Object.freeze({ ACTIVE: 'active', BACKGROUND: 'background', INACTIVE: 'inactive' });
+export const ParentText = Object.freeze({
+    TITLE: 'For parents', ANSWER: 'Answer', CONTINUE: 'Continue', QUESTION: 'To continue, multiply',
+    INCORRECT: 'Please ask an adult to answer the question.',
+    ANALYTICS: 'Enable analytics for this visit', FEEDBACK: 'Open LoopAware feedback', FONTS: 'Load online fonts',
+    READY: 'The online service is ready.', UNAVAILABLE: 'Internet is unavailable or the service could not load. The game still works offline.',
+    PRIVACY: 'Allergy Wheel is free, with no ads, purchases, or account requirement. Game rounds stay on your device. The selected allergen is stored locally. Online services are optional in this parent area. If you enable analytics, Google Analytics and LoopAware receive data about this parent visit, including network and device information. We do not send the selected allergen or game results. LoopAware feedback sends the contact details, message, and sentiment you choose to submit. Online fonts connect to Google. Closing this area ends the online session. For support or a data deletion request, contact support@mprlab.com. This educational game does not determine whether food is safe to eat.',
+    CONSENT: 'Only an adult should use these services. Each button connects to the named service for this visit. You can return to the game without using them.'
+});
+export const ParentService = Object.freeze({
+    GOOGLE_TAG: 'https://www.googletagmanager.com/gtag/js?id=G-5CDP19RY2Z',
+    GOOGLE_ID: 'G-5CDP19RY2Z',
+    LOOP_ANALYTICS: 'https://loopaware.mprlab.com/pixel.js?site_id=de929d14-c425-4a4e-89fe-3d5fbc6e6a93',
+    LOOP_FEEDBACK: 'https://loopaware.mprlab.com/widget.js?site_id=de929d14-c425-4a4e-89fe-3d5fbc6e6a93',
+    FONTS: 'https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap',
+    PAGE: 'https://allergy.mprlab.com/mobile/parents/'
+});
+
 /* File: constants.js */
 
 export const ScreenName = Object.freeze({
