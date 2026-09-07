@@ -51,8 +51,8 @@ Give each term one meaning. Use the same term for the same concept in all docume
 - `GitHub Pages`: The GitHub service that hosts a static website from a repository branch.
 - `issue`: One tracked unit of work.
 - `issue tracker`: A file or system that contains issues.
-- `integration test`: A test that uses a public entry point and the real repository-owned components on its code path.
-- `inverted test pyramid`: The MPR Lab test strategy with integration tests as the primary layer and no unit-test layer.
+- `integration test`: A test of real product logic and component interactions through a public entry point, with controlled dependencies when necessary.
+- `inverted test pyramid`: The MPR Lab test strategy with integration tests as the primary layer and focused unit tests where useful.
 - `language checker`: A tool that finds specified language errors.
 - `language review`: An agent-owned examination of text against language rules and terminology.
 - `manifest`: A source-controlled file that declares resources or configuration.
@@ -89,6 +89,8 @@ Give each term one meaning. Use the same term for the same concept in all docume
 - `validation`: Evidence that a change obeys its current contract.
 - `worktree`: A Git checkout that has its own working directory.
 - `website hostname`: The hostname that identifies a public static website.
+
+- `dependency injection`: A design that supplies a component's dependencies from outside that component.
 
 ## Repository Technical Nouns
 
