@@ -1,14 +1,67 @@
 // @ts-check
-import { ParentText } from '../constants.js';
+import { ParentText, FeedbackConfiguration } from '../constants.js';
 
-/** Load a parent-selected external resource and expose connection failures. */
-export function loadParentScript(url) {
-    return new Promise((resolveLoad, rejectLoad) => {
-        const element = document.createElement('script');
-        element.src = url;
+/** Start a script request and retain its element for initialization cleanup. */
+function startParentScript(url) {
+    const element = document.createElement('script');
+    element.src = url;
+    const loaded = new Promise((resolveLoad, rejectLoad) => {
         element.onload = () => resolveLoad();
         element.onerror = () => { element.remove(); rejectLoad(new Error(ParentText.UNAVAILABLE)); };
         document.head.append(element);
+    });
+    return { element, loaded };
+}
+
+/** Load a parent-selected script and expose download failures. */
+export function loadParentScript(url) {
+    return startParentScript(url).loaded;
+}
+
+/** Confirm the provider created its launcher and feedback form. */
+function feedbackControlsExist() {
+    const bubble = document.getElementById(FeedbackConfiguration.BUBBLE_ID);
+    const panel = document.getElementById(FeedbackConfiguration.PANEL_ID);
+    const contact = document.getElementById(FeedbackConfiguration.CONTACT_ID);
+    return Boolean(bubble && panel && contact && panel.contains(contact));
+}
+
+/** Wait for usable LoopAware controls, including its asynchronous configuration request. */
+export function loadParentFeedback(url) {
+    if (feedbackControlsExist()) return Promise.resolve();
+    return new Promise((resolveReady, rejectReady) => {
+        let scriptLoaded = false;
+        let settled = false;
+        const observer = new MutationObserver(handleWidgetMutation);
+        const timer = window.setTimeout(() => finish(new Error(ParentText.UNAVAILABLE)), FeedbackConfiguration.INITIALIZATION_TIMEOUT_MS);
+        observer.observe(document.body, { childList: true, subtree: true });
+        const request = startParentScript(url);
+        request.loaded.then(() => {
+            scriptLoaded = true;
+            handleWidgetMutation();
+        }, finish);
+
+        function handleWidgetMutation() {
+            if (scriptLoaded && feedbackControlsExist()) finish();
+        }
+
+        function finish(error) {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(timer);
+            observer.disconnect();
+            if (error) {
+                request.element.remove();
+                // A render error can leave a launcher without a usable panel.
+                if (!feedbackControlsExist()) {
+                    document.getElementById(FeedbackConfiguration.BUBBLE_ID)?.remove();
+                    document.getElementById(FeedbackConfiguration.PANEL_ID)?.remove();
+                }
+                rejectReady(error);
+            } else {
+                resolveReady();
+            }
+        }
     });
 }
 
@@ -53,6 +106,7 @@ export function renderParentPanel(gateway) {
         button.textContent = text;
         button.addEventListener('click', async () => {
             button.disabled = true;
+            status.textContent = ParentText.LOADING;
             try { await action(); status.textContent = ParentText.READY; }
             catch { status.textContent = ParentText.UNAVAILABLE; button.disabled = false; }
         });

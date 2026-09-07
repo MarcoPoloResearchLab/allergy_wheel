@@ -10,9 +10,13 @@ export const ParentText = Object.freeze({
     TITLE: 'For parents', ANSWER: 'Answer', CONTINUE: 'Continue', QUESTION: 'To continue, multiply',
     INCORRECT: 'Please ask an adult to answer the question.',
     ANALYTICS: 'Enable analytics for this visit', FEEDBACK: 'Open LoopAware feedback', FONTS: 'Load online fonts',
-    READY: 'The online service is ready.', UNAVAILABLE: 'Internet is unavailable or the service could not load. The game still works offline.',
+    LOADING: 'The online service is starting.', READY: 'The online service is ready.', UNAVAILABLE: 'Internet is unavailable or the service could not load. The game still works offline.',
     PRIVACY: 'Allergy Wheel is free, with no ads, purchases, or account requirement. Game rounds stay on your device. The selected allergen is stored locally. Online services are optional in this parent area. If you enable analytics, Google Analytics and LoopAware receive data about this parent visit, including network and device information. We do not send the selected allergen or game results. LoopAware feedback sends the contact details, message, and sentiment you choose to submit. Online fonts connect to Google. Closing this area ends the online session. For support or a data deletion request, contact support@mprlab.com. This educational game does not determine whether food is safe to eat.',
     CONSENT: 'Only an adult should use these services. Each button connects to the named service for this visit. You can return to the game without using them.'
+});
+export const FeedbackConfiguration = Object.freeze({
+    BUBBLE_ID: 'mp-feedback-bubble', PANEL_ID: 'mp-feedback-panel', CONTACT_ID: 'mp-feedback-contact',
+    INITIALIZATION_TIMEOUT_MS: 10_000
 });
 export const ParentService = Object.freeze({
     GOOGLE_TAG: 'https://www.googletagmanager.com/gtag/js?id=G-5CDP19RY2Z',

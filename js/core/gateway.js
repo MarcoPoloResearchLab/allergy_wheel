@@ -2,7 +2,7 @@
 import { ParentService } from '../constants.js';
 
 /** Own external service destinations; the caller supplies DOM resource adapters. */
-export function createParentGateway({ loadScript, loadStylesheet, globalScope = globalThis }) {
+export function createParentGateway({ loadScript, loadStylesheet, loadFeedback, globalScope = globalThis }) {
     return Object.freeze({
         async enableAnalytics() {
             globalScope.dataLayer = [];
@@ -12,7 +12,7 @@ export function createParentGateway({ loadScript, loadStylesheet, globalScope = 
             globalScope.gtag('config', ParentService.GOOGLE_ID, { page_location: ParentService.PAGE, page_title: 'Allergy Wheel parents', allow_google_signals: false, allow_ad_personalization_signals: false });
             await Promise.all([loadScript(ParentService.GOOGLE_TAG), loadScript(ParentService.LOOP_ANALYTICS)]);
         },
-        openFeedback: () => loadScript(ParentService.LOOP_FEEDBACK),
+        openFeedback: () => loadFeedback(ParentService.LOOP_FEEDBACK),
         loadFonts: () => loadStylesheet(ParentService.FONTS)
     });
 }
