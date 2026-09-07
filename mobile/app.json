@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Allergy Wheel",
+    "slug": "allergy-wheel",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "light",
+    "platforms": ["ios", "android"],
+    "plugins": ["./plugins/withOfflineBuild.cjs", "expo-system-ui"],
+    "ios": {
+      "bundleIdentifier": "com.mprlab.allergywheel",
+      "supportsTablet": true,
+      "requireFullScreen": false,
+      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
+    },
+    "android": {
+      "package": "com.mprlab.allergywheel",
+      "blockedPermissions": ["android.permission.RECORD_AUDIO", "com.google.android.gms.permission.AD_ID"]
+    }
+  }
+}

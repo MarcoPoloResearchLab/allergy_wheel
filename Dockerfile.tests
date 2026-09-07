@@ -4,11 +4,15 @@ WORKDIR /workspace
 COPY package.json package-lock.json ./
 RUN npm ci
 
-COPY index.html ./
+COPY mobile/package.json mobile/package-lock.json ./mobile/
+RUN cd mobile && npm ci
+
+COPY index.html privacy.html CNAME robots.txt sitemap.xml ./
 COPY assets ./assets
 COPY data ./data
 COPY js ./js
 COPY scripts ./scripts
 COPY tests ./tests
+COPY mobile ./mobile
 
 CMD ["npm", "test"]

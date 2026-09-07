@@ -10,6 +10,7 @@ services:
       - "127.0.0.1:${LOCAL_PORT:-8765}:8000"
     volumes:
       - ./index.html:/site/index.html:ro
+      - ./privacy.html:/site/privacy.html:ro
       - ./assets:/site/assets:ro
       - ./data:/site/data:ro
       - ./js:/site/js:ro

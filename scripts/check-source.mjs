@@ -8,20 +8,21 @@ async function collectFiles(directory) {
     const entries = await readdir(directory, { withFileTypes: true });
     const nestedFiles = await Promise.all(entries.map(async (entry) => {
         const entryPath = join(directory, entry.name);
+        if (["node_modules", "generated", "android", "ios", ".expo"].includes(entry.name)) return [];
         return entry.isDirectory() ? collectFiles(entryPath) : [entryPath];
     }));
     return nestedFiles.flat();
 }
 
 const sourceFiles = (await Promise.all(
-    ["js", "scripts", "tests", "data"].map(collectFiles)
+    ["js", "scripts", "tests", "data", "mobile"].map(collectFiles)
 )).flat();
 sourceFiles.push("package.json", "package-lock.json");
 
 let checkedFiles = 0;
 for (const filePath of sourceFiles) {
     const extension = extname(filePath);
-    if (extension === ".js" || extension === ".mjs") {
+    if (extension === ".js" || extension === ".mjs" || extension === ".cjs") {
         execFileSync(process.execPath, ["--check", filePath], { stdio: "inherit" });
         checkedFiles += 1;
     } else if (extension === ".json") {

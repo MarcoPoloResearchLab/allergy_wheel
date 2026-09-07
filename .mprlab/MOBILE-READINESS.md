@@ -1,135 +1,228 @@
 # Allergy Wheel Mobile Preparation
 
-## Goal
+## Current Result
 
-The requested outcome is a mobile game that an end user can obtain from the Allergy Wheel website.
-The repository preparation gives agents a source review, an issue sequence, and explicit open decisions.
+The September 7, 2026 implementation supplies an Expo mobile shell for the existing JavaScript game.
+The local Android development APK and iOS simulator application contain the game resources.
+Store publication did not occur.
+F001 retains native device and store artifact acceptance.
+F002 retains verification of public store destinations.
 
-## Source Record
+## Confirmed Decisions
 
-The review date is September 4, 2026.
-The source commit is `682aad44ca4e66a5f0f31e49e26b6a11336969bd`.
+P001 and P002 record the owner decisions.
 
-- Repository: <https://github.com/MarcoPoloResearchLab/allergy_wheel>.
-- Primary checkout: `/Users/tyemirov/Development/allergy_wheel`.
-- Default branch: `master`.
-- Public website: <https://allergy.mprlab.com/>.
-- GitHub Pages source: `master`, repository root.
-- GitHub Pages status from the API: `built`.
-- Public website response: HTTP 200.
-
-The checkout was clean immediately after the clone.
-The preparation adds local governance files and documentation.
-
-## Current Architecture
-
-| File or directory | Current responsibility |
+| Subject | Contract |
 | --- | --- |
-| `index.html` | Page structure, external scripts, and the game entry point |
-| `js/core/app.js` | Component creation and connections |
-| `js/core/game.js` | Game flow and round control |
-| `js/core/wheel.js` | Canvas wheel and spin control |
-| `js/core/board.js` | Dish indexes and allergen lookup |
-| `js/core/state.js` | Game state |
-| `js/core/navigation.js` | Screen navigation |
-| `js/ui/` | Screens, cards, avatars, and hearts |
-| `js/utils/audio.js` | Sound loading and playback |
-| `data/` | Dish, allergen, ingredient, country, and normalization catalogs |
-| `assets/` | Styles, avatars, icons, sounds, and social artwork |
-| `tests/index.html` | Existing browser harness entry point |
+| Platforms | Android and iOS phones and tablets |
+| Minimum OS | Android 7.0, API 24, and iOS 16.4, from the generated Expo SDK 57 projects |
+| Distribution | Google Play and the Apple App Store |
+| Website | Verified store links when available, with OS detection |
+| Toolchain | Expo SDK 57, React Native 0.86, and React Native WebView |
+| Audience | Ages 6 and older |
+| Countries | All countries, subject to store availability and applicable requirements |
+| Price | No charges, advertisements, or in-app purchases |
+| Account | Complete game access without an account |
+| Services | Google Analytics, LoopAware analytics and feedback, and external fonts |
+| Support | `support@mprlab.com` |
+| Offline play | Complete game resources available from the first installed launch |
 
-The game uses browser ES modules and local JSON catalogs.
-The wheel and audio modules expose public APIs.
-The source has no native mobile project, PWA manifest, or service worker.
+The source review inspected Hecate and LoopAware `mobile/package.json` and StillPuzzle `package.json`.
+Each project uses Expo SDK 57 and React Native 0.86.
+The selected dependency lock uses Expo 57.0.20 and React Native 0.86.3.
+The selected adapter uses React Native WebView 13.16.1.
+PWA installation and website APK downloads are outside the selected delivery path.
 
-`index.html` loads Google Analytics, LoopAware, and a Google Fonts stylesheet.
-The application already has local avatar and audio files.
-Offline play requires a complete resource inventory and a cache or package design.
+## Architecture
 
-## Readiness Findings
+| Source | Responsibility |
+| --- | --- |
+| `js/core/app.js` | Connect the game, wheel, state, audio, UI, and native lifecycle adapter |
+| `js/core/game.js` | Control rounds through supplied component APIs |
+| `js/core/wheel.js` | Render and stop the wheel |
+| `js/utils/audio.js` | Load local sounds and control the shared audio context |
+| `js/core/stores.js` | Validate store destinations and order available links |
+| `js/ui/storeLinks.js` | Render installation links and the mobile privacy link |
+| `js/core/parentsApp.js` | Connect the parent UI and external gateway |
+| `js/core/gateway.js` | Own parent service URLs and Google Analytics settings |
+| `mobile/App.js` | Display the game and a separate parent WebView |
+| `mobile/plugins/withOfflineBuild.cjs` | Generate native bundle configuration |
+| `scripts/build-mobile-game.mjs` | Package the browser sources and local resources |
 
-| Issue | Source evidence | Required outcome |
+The game components retain their public APIs.
+The listener binder receives its UI operation from the composition root.
+It does not import another game component.
+
+The browser uses the existing JavaScript ES modules and CDN dependencies.
+The mobile build uses esbuild to create a separate JavaScript bundle.
+It embeds catalogs, images, styles, and audio in the generated HTML.
+It does not change browser resource paths.
+The resource record contains SHA-256 values for the game document and packaged files.
+
+The game WebView loads the packaged document without a development server.
+The native shell handles safe areas and device orientation.
+It removes the browser Full Screen button because the native game already fills the available screen.
+Native background events suspend audio through its public API.
+Return events resume the audio context.
+
+Generated native projects, bundles, dependency directories, and artifacts remain outside Git.
+Expo CLI generates native projects during `make mobile-prepare`.
+The native build scripts use Gradle, CocoaPods, Xcode, and the React Native bundler.
+They do not use Expo or EAS for artifact production.
+
+## Data Contract
+
+The mobile game does not load external services.
+The parent document loads each service only after the parent gate and a separate service selection.
+The parent gate uses a multiplication question.
+This gate is a product control. It does not establish legal parental consent or store acceptance.
+
+The native parent document uses the separate origin `https://allergy-wheel-parents.invalid/`.
+This origin identifies an embedded document. It is not a hosted website or a network dependency.
+Parent scripts cannot read storage from the game origin.
+Android parent DOM storage and third-party cookies are disabled.
+iOS uses an incognito WebView with a separate data store.
+Closing the parent area destroys its document.
+A new visit requires the gate and service choices again.
+
+| Surface | Data and behavior |
+| --- | --- |
+| Local game | The selected allergen token and label stay in device storage. Catalog and audio requests use packaged data URLs. |
+| Google Analytics | An explicit parent action loads the existing property. Consent defaults deny analytics storage and all advertisement storage. Google signals and advertisement personalization are disabled. |
+| LoopAware analytics | The parent action loads `pixel.js`. Its source sends a visit identifier, page, device, locale, timezone, and display data. The server receives IP data and can receive edge location data. |
+| LoopAware feedback | A separate parent action loads `widget.js`. Submission contains contact details, a message or sentiment, site ID, and source URL. |
+| External fonts | A separate parent action loads Google Fonts for the parent document. The game uses the system sans-serif font offline. |
+| Support | User correspondence to `support@mprlab.com` can contain contact details and message text. |
+| Website | The existing Google Analytics, LoopAware widget, and external fonts remain on the browser game. The mobile privacy page starts no external service. |
+
+The LoopAware pixel source uses a local visitor ID when browser storage is available.
+It creates a visit ID when storage is unavailable.
+The native parent adapter disables persistent DOM storage on Android.
+The source review does not prove the deployed retention configuration or all requests from Google scripts.
+
+The public mobile privacy page source is `privacy.html`.
+Its intended URL is `https://allergy.mprlab.com/privacy.html` after authorized website publication.
+The same privacy text appears inside the mobile parent area.
+It describes local preferences, optional services, feedback, support, and the food-safety limit of the game.
+P002 retains provider retention, deletion, store declarations, and runtime data verification before store submission.
+
+## Official Policy Review
+
+The official policy review date is September 7, 2026.
+This review identifies requirements. It does not establish global compliance or store acceptance.
+
+Apple restricts third-party analytics in Kids Category apps.
+Its limited exception excludes information that can identify children or their devices.
+External links require a parental gate in that category.
+Apple requires an accessible privacy policy in the app and store metadata.
+See [Apple guidelines 1.3 and 5.1.1](https://developer.apple.com/app-store/review/guidelines/).
+
+Google Play Families requirements apply when the selected audience includes children.
+These requirements cover data disclosures, identifiers, and APIs or SDKs used with children.
+See [Google Play Families policies](https://support.google.com/googleplay/android-developer/answer/9893335?hl=en).
+The selected ages 6+ do not establish a store rating or category.
+
+Google describes Analytics collection in its [data practices](https://support.google.com/analytics/answer/6004245?hl=en).
+Google Fonts requests contain IP addresses and request headers.
+See [Google Fonts data practices](https://fonts.googleblog.com/2022/11/your-privacy-and-google-fonts.html).
+
+## Website Publication
+
+I002 supplies a versionless manifest with a `github_pages` resource.
+`Dockerfile.pages` exports only the website and its local resources.
+The manifest selects `gh-pages`, the existing repository, and `allergy.mprlab.com`.
+The September 7 GitHub API check still reported `master` as the live Pages source.
+No live Pages setting changed during implementation.
+
+After an explicit publication request:
+
+1. Run the Governor check.
+2. Run `make ci` on the final source.
+3. Use the authorized source commit for `make release` through the sibling MPR gateway.
+4. Run `make publish` to publish the sealed artifact.
+5. Run `make deploy` to apply the selected Pages resource.
+6. Verify the public website, domain, and `/.mprlab-release.json` against the publication receipt.
+
+The lifecycle owns the release marker.
+The local Pages test does not create a release marker or prove public publication.
+The current manifest declares only the website.
+Signed mobile store artifacts require the mobile lifecycle contract before a store release.
+
+## Local Validation
+
+`make ci` runs source checks, real browser flows, offline mobile flows, dependency checks, the Pages artifact test, and local server tests.
+Browser tools and package checks run inside Docker.
+The mobile tests exercise real game components at phone and tablet sizes.
+They cover first launch, manual and automatic stop, results, audio lifecycle, parent controls, and external service failure.
+The browser flow also covers restart, mute, and navigation.
+The parent integration test uses controlled provider scripts.
+It proves the local service boundary and storage isolation between document origins.
+It does not prove live provider connectivity or native WebView behavior.
+
+The new mobile test first failed because the package builder was absent.
+The installation test first failed because store links were absent.
+The privacy link test first failed because its link was absent.
+The native Full Screen test first failed because the browser control remained visible.
+The audio lifecycle test first failed because the audio context remained active.
+Each focused test passed after the corresponding change.
+The real game characterization passed before and after the component refactor.
+
+The Android development APK built and opened on a physical Android 9 tablet.
+The device accessibility command returned `null root node`, so automated interaction acceptance did not complete.
+The tablet later returned to another application. Further interaction stopped.
+The iOS simulator application built, installed, and displayed the game.
+Neither observation proves first-launch offline behavior on a real supported iPhone or complete physical-device acceptance.
+
+## Final Validation On September 7, 2026
+
+The final validation used commit `8152c5d57c4b1bd77f60bdfb4d2cd90a633dd961`.
+The checkout was clean during CI and both native builds.
+Version 1.0.0 identifies both development artifacts.
+The new receipts replace the earlier receipts from uncommitted source.
+
+| Validation | Result | Evidence boundary |
 | --- | --- | --- |
-| B001 | The local correction selects `master` and retains the pull request trigger. | Verify remote execution after an authorized push. |
-| B002 | The local correction keeps listener fixtures in a separate container. | Completed locally with 15 passed browser tests. |
-| I001 | The tests use isolated helpers and a state-manager stub. | Add coverage through the real game page and components. |
-| I004 | Docker-based Make commands provide local startup and validation. | Completed locally with passing integration tests and final CI. |
-| I002 | Pages uses `master`. The selected deployment manifest is absent. | Prepare the Governor contract for `gh-pages` publication. |
-| I003 | `js/utils/listeners.js` imports from `js/ui/ui.js`. | Connect components through the composition root. |
-| P001 | No mobile package or store configuration exists. | Decide the first mobile delivery path and toolchain. |
-| P002 | The current page loads external measurement services. | Define the child audience and data policy before mobile implementation. |
+| `make ci` | Passed | 62 JavaScript and JSON files, 10 harness cases, and real browser flows |
+| Offline mobile flows | Passed | Chromium at phone and tablet sizes, including audio lifecycle during a spin |
+| Parent service boundaries | Passed | Controlled provider scripts, separate document origins, and new consent for each visit |
+| Store and privacy flows | Passed | Android, iPhone, iPadOS, unknown OS, partial availability, and absent destinations |
+| Expo dependency compatibility | Passed | The locked mobile dependencies agree with the selected Expo version |
+| Runtime dependency audit | Passed | Zero reported vulnerabilities |
+| Pages artifact and local server | Passed | Current source files, startup, repeated startup, shutdown, and repeated shutdown |
+| `make mobile-android` | Passed | Development APK, package `com.mprlab.allergywheel`, minimum API 24, target API 36 |
+| `make mobile-ios` | Passed | Simulator application, bundle `com.mprlab.allergywheel`, minimum iOS 16.4 |
+| `make test-ios-simulator` | Passed | Installation, launch, and visible game in the iOS 26.5 simulator |
+| Artifact receipts | Passed | Android APK digest and all 69 recorded iOS file digests match the artifacts |
 
-The initial browser harness reported 14 passed tests and zero failed tests in the Codex browser.
-That result came from `__ALLERGY_WHEEL_TEST_RESULTS__` after the tests removed the visible page body.
-The B002 correction added a report regression that failed before the fixture change.
-After the correction, the visible report and machine-readable result both showed 15 passed tests and zero failed tests.
-This evidence covers the existing test cases only.
-It does not establish full game, offline, or mobile device acceptance.
+The local logs and result record are in `artifacts/validation`.
+The iOS startup image is `artifacts/validation/ios-startup.png`.
+These generated files remain outside Git.
 
-A manual check of the real game page completed one round with Peanuts selected and audio muted.
-The Stop button revealed Unagi Don, displayed its ingredients, and increased the heart count from five to six.
-The page then showed the Spin Again control.
-Audio playback, automatic stop, offline play, and physical mobile devices remain outside this check.
+The Android APK SHA-256 is `142ddbb69a856939edd636d54e1fabe6d00d4d1258ae602bdf8b00fa89781e5c`.
+The iOS JavaScript bundle SHA-256 is `92e3309c82bb7c92732de3f8d62a47453645b7f47b83ddaade7731eb381fd204`.
+The latter identifies `main.jsbundle`, not the complete iOS application.
+The iOS receipt records each application file separately.
 
-## Confirmed Requirements
+This validation did not repeat physical-device interaction tests or live provider requests.
+The earlier physical Android launch result remains limited to that earlier artifact.
+Hosted CI, signed store artifacts, store installation, and public publication remain unverified.
+The Governor and mechanical documentation checks passed for the final validation record.
+The language review covers the changed prose only.
 
-1. Prepare an installable mobile game.
-2. Provide access to the game from the website.
-3. Keep the JavaScript game and its component boundaries.
-4. Preserve the primary checkout and its repository instructions.
-5. Use MPR Lab Governor for agent guidance, issue records, and validation rules.
+## Remaining Acceptance
 
-## Open Decisions
+F001 remains open for these concrete results:
 
-P001 must record these decisions:
+- Signed Android AAB and iOS IPA artifacts from the shared mobile lifecycle.
+- Complete real-device rounds, audio, mute, rotation, background return, and first-launch offline checks on both platforms.
+- Native parent service request and storage verification.
+- Final app icons, store screenshots, privacy declarations, and the completed P002 provider review.
 
-- First supported platforms and device versions.
-- PWA, store packages, or both for the first release.
-- Website installation steps and the need for direct file downloads.
-- The mobile packaging toolchain under the CDN-only game rule.
-- Required offline behavior, including the first installed launch.
+F002 remains open until verified store destinations are available.
+Both entries in `data/mobile-stores.json` remain `null`.
+The website hides the installation section in that state.
+A verified destination enables only its own link.
+OS detection changes the order and preserves the other available link.
 
-P002 must record these decisions:
-
-- Child age group and release countries.
-- Price, advertising, accounts, and measurement policy.
-- Treatment of Google Analytics, LoopAware, and external fonts in each delivery surface.
-- Parent information, support, and external-link behavior.
-
-The earlier proposal included ages 6–8, free access, offline play, and no accounts, ads, or analytics.
-Those values remain proposals until the owner selects them.
-Capacitor remains a candidate until P001 resolves the toolchain rule.
-
-## Execution Sequence
-
-1. Verify B001 on GitHub after an authorized push. The B001 and B002 local corrections passed focused validation.
-2. Complete P001 and P002 with the owner decisions.
-3. Complete I001 to establish real game tests with the commands from I004.
-4. Complete I003 under those tests.
-5. Prepare I002 for the selected production contract.
-6. Implement F001 for the selected mobile delivery path.
-7. Implement F002 with the verified installation destinations.
-
-Use one issue and one temporary execution plan for each implementation task.
-Add mobile Governor guidance when a native mobile project exists.
-Keep deployment and store publication subject to an explicit owner request.
-
-## Preparation Validation
-
-Run the Governor check and `git diff --check` after the final documentation change.
-Run the language checker on the changed technical documents.
-Validate issue identifiers and dependencies across the active tracker and any archive.
-Record application CI and device acceptance separately when those checks occur.
-
-The Governor check and mechanical language check passed after the preparation changes.
-The language review covers new repository-specific prose and the changed root instructions.
-The remaining root prose and generated Governor templates retain their existing language.
-
-The B001 and B002 checks passed in the working tree based on `5ecf1e5`.
-The final `make ci` command failed because the repository has no `ci` target.
-I004 owns that command gap.
-The local command integration test failed before implementation because `up` and `down` were absent.
-The new Docker-based commands passed the startup, HTTP response, repeated startup, and shutdown checks.
-The final local `make ci` command passed with 37 source files validated and 15 browser tests passed.
-The Governor check passed with frontend and Docker guidance.
-GitHub Actions now uses the same command. Remote execution requires an authorized push.
+No product decision remains for the owner.
+Store publication and website deployment require an explicit request.

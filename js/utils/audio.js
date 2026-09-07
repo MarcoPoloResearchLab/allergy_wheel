@@ -5,7 +5,20 @@ import { AudioAssetPath, AudioErrorMessage, BrowserEventName } from "../constant
 // audio.js — web audio effects and buffered playback resources
 
 let sharedAudioContext;
+let audioSuspendedByLifecycle = false;
 let cachedSirenBufferPromise;
+
+/** Suspend the current audio context when the native app leaves the foreground. */
+export async function suspendAudio() {
+    audioSuspendedByLifecycle = true;
+    if (sharedAudioContext) await sharedAudioContext.suspend();
+}
+
+/** Resume an existing audio context when the native app returns. */
+export async function resumeAudio() {
+    audioSuspendedByLifecycle = false;
+    if (sharedAudioContext) await sharedAudioContext.resume();
+}
 
 const RandomValueMaximum = 0.999999;
 
@@ -37,12 +50,13 @@ function ensureAudioContext() {
         sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
     try {
-        sharedAudioContext.resume?.();
+        if (!audioSuspendedByLifecycle) sharedAudioContext.resume?.();
     } catch {}
     return sharedAudioContext;
 }
 
 function unlockAudioNow() {
+    if (audioSuspendedByLifecycle) return;
     const context = ensureAudioContext();
     try {
         const oscillatorNode = context.createOscillator();
@@ -172,6 +186,7 @@ async function loadSirenBuffer(context) {
  * Plays a short percussive tick sound used while the wheel spins.
  */
 export function playTick() {
+    if (audioSuspendedByLifecycle) return;
     const context = ensureAudioContext();
     const oscillatorNode = context.createOscillator();
     const gainNode = context.createGain();
@@ -193,6 +208,7 @@ export function playTick() {
  * @returns {Promise<void>} A promise that resolves when playback finishes.
  */
 export async function playSiren(durationMs = 1800) {
+    if (audioSuspendedByLifecycle) return;
     const context = ensureAudioContext();
     const sirenBuffer = await loadSirenBuffer(context);
 
@@ -306,6 +322,7 @@ async function getNomNomBuffer(context) {
  * @returns {Promise<void>} A promise that resolves once playback scheduling completes.
  */
 export async function playNomNom(durationMs = 1200, randomGenerator = Math.random) {
+    if (audioSuspendedByLifecycle) return;
     const context = ensureAudioContext();
     const audioBuffer = await getNomNomBuffer(context);
 
@@ -363,6 +380,7 @@ export async function playNomNom(durationMs = 1200, randomGenerator = Math.rando
  * Plays the celebratory melody and sparkle effect when the player wins.
  */
 export function playWin() {
+    if (audioSuspendedByLifecycle) return;
     const audioContext = ensureAudioContext();
     const masterGainNode = audioContext.createGain();
     masterGainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
@@ -435,7 +453,7 @@ export function primeAudioOnFirstGesture() {
     );
     document.addEventListener(BrowserEventName.VISIBILITY_CHANGE, () => {
         if (document.visibilityState === "visible") {
-            try { ensureAudioContext().resume?.(); } catch {}
+            if (!audioSuspendedByLifecycle) ensureAudioContext();
         }
     });
 }

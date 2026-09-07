@@ -2,6 +2,12 @@
 
 .idea/
 node_modules/
+mobile/generated/
+mobile/android/
+mobile/ios/
+mobile/dist/
+mobile/.expo/
+artifacts/
 # Managed by gix gitignore workflow
 .env
 .env.*

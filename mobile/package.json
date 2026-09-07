@@ -1,0 +1,24 @@
+{
+  "name": "allergy-wheel-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "prepare:native": "expo prebuild --no-install --platform all",
+    "check:expo": "expo install --check",
+    "export": "expo export --platform all"
+  },
+  "dependencies": {
+    "expo": "~57.0.20",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-webview": "13.16.1",
+    "expo-system-ui": "~57.0.3"
+  },
+  "devDependencies": {
+    "@react-native-community/cli": "20.2.0",
+    "@react-native/metro-config": "0.86.3"
+  },
+  "overrides": { "uuid": "11.1.1" }
+}

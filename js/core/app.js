@@ -1,6 +1,12 @@
 // @ts-check
 
 import { GameController } from "./game.js";
+import { validateStoreCatalog, orderStoreLinks } from './stores.js';
+import { runtimeSurface } from './runtime.js';
+import { renderStoreLinks } from '../ui/storeLinks.js';
+import { reportError } from '../utils/logging.js';
+import { bindMobileLifecycle } from '../ui/lifecycle.js';
+import { RuntimeSurface, StoreConfiguration } from '../constants.js';
 import { Wheel } from "./wheel.js";
 import { createListenerBinder } from "../utils/listeners.js";
 import { StateManager } from "./state.js";
@@ -14,13 +20,15 @@ import { MenuView } from "../ui/menu.js";
 import { MenuFilterController } from "../ui/menuFilters.js";
 import { NavigationController, resolveInitialNavState } from "./navigation.js";
 import {
+    suspendAudio,
+    resumeAudio,
     primeAudioOnFirstGesture as primeAudioOnFirstGestureEffect,
     playTick as playTickEffect,
     playSiren as playSirenEffect,
     playNomNom as playNomNomEffect,
     playWin as playWinEffect
 } from "../utils/audio.js";
-import { openRestartConfirmation, setWheelControlToStop, setWheelControlToStartGame, showScreen } from "../ui/ui.js";
+import { openRestartConfirmation, setWheelControlToStop, setWheelControlToStartGame, showScreen, updateWheelRestartControlVisibilityFromRevealState } from "../ui/ui.js";
 import { renderAvatarSelector, buildAvatarDescriptorMap } from "../ui/avatarRenderer.js";
 import {
     ControlElementId,
@@ -44,11 +52,21 @@ import {
 
 const stateManager = new StateManager();
 
+if (runtimeSurface === RuntimeSurface.WEB) {
+    loadJson(StoreConfiguration.PATH)
+        .then(validateStoreCatalog)
+        .then((catalog) => renderStoreLinks(orderStoreLinks(catalog, navigator)))
+        .catch((error) => reportError(StoreConfiguration.PATH, error));
+} else {
+    bindMobileLifecycle({ suspendAudio, resumeAudio, reportError });
+}
+
 const listenerBinder = createListenerBinder({
     controlElementId: ControlElementId,
     attributeName: AttributeName,
     documentReference: document,
-    stateManager
+    stateManager,
+    updateWheelRestartControlVisibilityFromRevealState
 });
 
 const wheel = new Wheel();
