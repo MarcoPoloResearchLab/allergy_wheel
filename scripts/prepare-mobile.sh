@@ -8,6 +8,7 @@ docker cp "$mobile_repository/mobile/package.json" "$mobile_container:/native/pa
 docker cp "$mobile_repository/mobile/package-lock.json" "$mobile_container:/native/package-lock.json"
 docker cp "$mobile_repository/mobile/app.json" "$mobile_container:/native/app.json"
 docker cp "$mobile_repository/mobile/plugins" "$mobile_container:/native/plugins"
+docker cp "$mobile_repository/mobile/assets" "$mobile_container:/native/assets"
 docker start --attach "$mobile_container"
 mobile_exit_code=$(docker inspect --format '{{.State.ExitCode}}' "$mobile_container")
 if [ "$mobile_exit_code" != 0 ]; then exit "$mobile_exit_code"; fi

@@ -1,4 +1,7 @@
 **
+!.mprlab/
+!.mprlab/deploy/
+!.mprlab/deploy/resources.yml
 !package.json
 !package-lock.json
 !index.html

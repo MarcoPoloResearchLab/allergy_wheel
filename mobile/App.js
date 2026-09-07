@@ -5,10 +5,11 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import game from './generated/game.json';
 import parents from './generated/parents.json';
+import analytics from './generated/analytics.json';
 import { MobileText, MobileLocation } from './constants.js';
 import { createLifecycleScript } from './lifecycle.js';
 
-const styles = StyleSheet.create({ screen: { flex: 1, backgroundColor: '#fff5e9' }, error: { padding: 24 } });
+const styles = StyleSheet.create({ screen: { flex: 1, backgroundColor: '#fff5e9' }, error: { padding: 24 }, analytics: { position: 'absolute', width: 1, height: 1, opacity: 0 } });
 
 /** The native entry point contains the packaged game and respects device safe areas. */
 export default function App() {
@@ -22,9 +23,18 @@ export default function App() {
         return () => subscription.remove();
     }, []);
     return React.createElement(SafeAreaProvider, null,
+        React.createElement(View, { style: styles.analytics, pointerEvents: 'none', accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' },
+            React.createElement(WebView, {
+                source: { html: analytics.html, baseUrl: MobileLocation.ANALYTICS },
+                originWhitelist: ['*'],
+                onShouldStartLoadWithRequest: (request) => request.url === 'about:blank' || request.url === MobileLocation.ANALYTICS,
+                javaScriptEnabled: true, domStorageEnabled: false, incognito: true,
+                thirdPartyCookiesEnabled: false, allowFileAccess: false, setSupportMultipleWindows: false
+            })),
         React.createElement(SafeAreaView, { style: styles.screen },
             React.createElement(Button, { title: MobileText.PARENTS, onPress: () => setParentsVisible(true) }),
-            React.createElement(Modal, { visible: parentsVisible, onRequestClose: () => setParentsVisible(false) },
+            React.createElement(Modal, { visible: parentsVisible, presentationStyle: 'fullScreen', onRequestClose: () => setParentsVisible(false) },
+                React.createElement(SafeAreaProvider, null,
                 React.createElement(SafeAreaView, { style: styles.screen },
                     React.createElement(Button, { title: MobileText.CLOSE, onPress: () => setParentsVisible(false) }),
                     parentsVisible ? React.createElement(WebView, {
@@ -34,7 +44,7 @@ export default function App() {
                         javaScriptEnabled: true, domStorageEnabled: false, incognito: true,
                         thirdPartyCookiesEnabled: false,
                         allowFileAccess: false, setSupportMultipleWindows: false, style: styles.screen
-                    }) : null)),
+                    }) : null))),
             React.createElement(WebView, {
                 ref: webView,
                 source: { html: game.html, baseUrl: MobileLocation.GAME },

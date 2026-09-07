@@ -16,7 +16,7 @@ help:
 
 up:
 	$(COMPOSE) up --detach --wait --wait-timeout 60 web
-	@printf 'Game: http://%s\n' "$$($(COMPOSE) port web 8000)"
+	@printf 'Game: %s\n' "$$(bash scripts/local-game-url.sh "$$($(COMPOSE) ps --quiet web)")"
 
 down:
 	$(COMPOSE) down
@@ -27,6 +27,7 @@ build-test-image:
 check: build-test-image
 	$(COMPOSE) config --quiet
 	bash -n "$(REPOSITORY_DIRECTORY)/tests/local-commands.sh"
+	bash -n "$(REPOSITORY_DIRECTORY)/scripts/local-game-url.sh"
 	git -C "$(REPOSITORY_DIRECTORY)" diff --check
 	docker run --rm --init "$(TEST_IMAGE)" node scripts/check-source.mjs
 
@@ -36,7 +37,7 @@ test: build-test-image
 test-local:
 	bash "$(REPOSITORY_DIRECTORY)/tests/local-commands.sh"
 
-ci: check test test-mobile mobile-check mobile-audit test-pages test-local
+ci: check test test-mobile mobile-check mobile-audit test-pages test-store-listings test-native-release test-release-adapter test-native-preparation test-local
 
 .PHONY: test-mobile mobile-dependencies mobile-prepare
 
@@ -48,6 +49,11 @@ mobile-dependencies: build-test-image
 
 mobile-prepare: build-test-image
 	bash scripts/prepare-mobile.sh "$(TEST_IMAGE)" "$(REPOSITORY_DIRECTORY)"
+
+.PHONY: mobile-prepare-store
+mobile-prepare-store: mobile-prepare mobile-package
+	cd mobile/ios && pod install
+	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY):/workspace" "$(TEST_IMAGE)" node scripts/record-native-preparation.mjs
 
 .PHONY: mobile-audit
 mobile-audit: build-test-image
@@ -83,6 +89,25 @@ test-ios-simulator:
 
 .PHONY: release publish deploy
 
+.PHONY: store-listings test-store-listings verify-store-pages verify-feedback
+.PHONY: store-artwork
+store-artwork: build-test-image
+	mkdir -p artifacts/store-artwork
+	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY)/artifacts/store-artwork:/output" "$(TEST_IMAGE)" node scripts/prepare-store-artwork.mjs /output
+
+store-listings: build-test-image
+	mkdir -p artifacts/store-listings
+	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY)/artifacts/store-listings:/output" "$(TEST_IMAGE)" node scripts/prepare-store-listings.mjs --output /output
+
+test-store-listings: build-test-image
+	docker run --rm --init "$(TEST_IMAGE)" node tests/store-listings.mjs
+
+verify-store-pages: build-test-image
+	docker run --rm --init --shm-size=1g "$(TEST_IMAGE)" node scripts/verify-store-pages.mjs
+
+verify-feedback: build-test-image
+	docker run --rm --init --shm-size=1g "$(TEST_IMAGE)" node scripts/verify-feedback.mjs
+
 release publish deploy:
 	@application_root="$$(git rev-parse --show-toplevel)"; \
 	gateway_root="$$(dirname "$${application_root}")/mprlab-gateway"; \
@@ -93,3 +118,15 @@ release publish deploy:
 	fi; \
 	$(MAKE) --no-print-directory -C "$${gateway_root}" "app-$@" \
 		MPRLAB_APP_ROOT="$${application_root}"
+
+.PHONY: test-native-release
+test-native-release: build-test-image
+	docker run --rm --init "$(TEST_IMAGE)" node tests/native-release.mjs
+
+.PHONY: test-release-adapter
+test-release-adapter: build-test-image
+	docker run --rm --init "$(TEST_IMAGE)" node tests/release-adapter.mjs
+
+.PHONY: test-native-preparation
+test-native-preparation: build-test-image
+	docker run --rm --init "$(TEST_IMAGE)" node tests/native-preparation.mjs

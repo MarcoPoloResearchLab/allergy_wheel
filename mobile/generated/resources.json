@@ -1,0 +1,65 @@
+{
+  "documentSha256": "7d302f6aa061917149185bf204d7d862d4876f4699fee6657edd7c50fcff8eef",
+  "resources": [
+    {
+      "path": "data/mobile-stores.json",
+      "sha256": "2d2ace6d72b5332662adab588c9786bffa10d08f24b8fcd680eb647341975eab"
+    },
+    {
+      "path": "assets/avatars/sunny.svg",
+      "sha256": "d92ea6833023edc5229875fadf8dbcd0502b41118e51b933782977c158182c3a"
+    },
+    {
+      "path": "assets/avatars/sea.svg",
+      "sha256": "dc7ba9b548b3f390eff47fcc80d51f839d70cb2482fa02d3435db708e7d29e7f"
+    },
+    {
+      "path": "assets/avatars/adventurous-boy.svg",
+      "sha256": "9fd0a455155950da65fdad3e1a5c86edf3c5f82a687c7f713ca8ad4a395508b8"
+    },
+    {
+      "path": "assets/avatars/sunny girl.svg",
+      "sha256": "b2a7fa8ef910cbdff2c7a8b97f46ea0aa94329ad839a1551ae3fd6d99f046c46"
+    },
+    {
+      "path": "assets/avatars/t-rex.svg",
+      "sha256": "22b03f8d8109f46667068a637912bf8b908df4d469bc7f89ae4625279fedcfbd"
+    },
+    {
+      "path": "assets/avatars/triceratops.svg",
+      "sha256": "1ead232a088c86ffe92c77ebc73d5f9f1e8a6ae79c4e3ce6ebdd94d723fdf091"
+    },
+    {
+      "path": "assets/audio/yam_yam.mp3",
+      "sha256": "90aed334567a7bb885fb729308d3c371c27194ae5885d2c837b6d4c33af404b1"
+    },
+    {
+      "path": "assets/audio/ambulance_siren.mp3",
+      "sha256": "aa22eb5eabacd05a63323fa2ae29361fee48311b978114fc39722e6fc5f7eecb"
+    },
+    {
+      "path": "data/allergens.json",
+      "sha256": "5b22fc55911004605b3308d138b4a5d722d915c183af3b7a6c6fae67485de47c"
+    },
+    {
+      "path": "data/dishes.json",
+      "sha256": "4d21477f0ce3c39816a872c06f97880776b6d5e18462358f9f7e0b5973009c40"
+    },
+    {
+      "path": "data/normalization.json",
+      "sha256": "d49508a73833264029dc968a10503bc8a4a43c16b11adaf5d4c253a38c2bb602"
+    },
+    {
+      "path": "data/countries.json",
+      "sha256": "f75981c5097d2032b19de76523e401a1d3cb3c4fe77e20becbfb50a83381f0ba"
+    },
+    {
+      "path": "data/ingredients.json",
+      "sha256": "eb8e172a110df4aa2d8bb1421792ff19ed24b748a08507a174e2cfa393ecaaca"
+    },
+    {
+      "path": "assets/icons/spinning-wheel.svg",
+      "sha256": "4552d664934994571a9e554f2979639f65b52eebbb2c20f649cf49c0f7e72ef1"
+    }
+  ]
+}

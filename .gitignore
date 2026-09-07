@@ -2,18 +2,20 @@
 
 .idea/
 node_modules/
-mobile/generated/
-mobile/android/
-mobile/ios/
+mobile/generated/*.html
+mobile/android/**/*.keystore
 mobile/dist/
 mobile/.expo/
 artifacts/
 # Managed by gix gitignore workflow
 .env
 .env.*
+/configs/.env.allergy-wheel
 qodana.yaml
 tools/
 bin/
+
+/configs/signing/
 
 # BEGIN MPRLAB-GOVERNANCE
 /.mprlab/*-PLAN.md

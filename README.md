@@ -76,11 +76,44 @@ The selected toolchain supports Android 7.0 and later, and iOS 16.4 and later.
 | `make mobile-package` | Write embedded game and parent documents to `mobile/generated`. |
 | `make mobile-dependencies` | Install locked native build dependencies through Docker. |
 | `make mobile-prepare` | Generate Android and iOS projects from Expo configuration. |
+| `make mobile-prepare-store` | Prepare native projects, offline content, dependency locks, and source digests before release. |
+| `make test-native-release` | Verify generated release signing and version inputs in Docker. |
+| `make test-release-adapter` | Verify both gateway build requests and exact retry identities in Docker. |
+| `make test-native-preparation` | Verify prepared input records and rejection of changed game source in Docker. |
 | `make mobile-android` | Build `artifacts/android/allergy-wheel-development.apk`. |
 | `make mobile-ios` | Build the iOS simulator application under `artifacts/ios`. |
 | `make install-android` | Install the development APK on the selected ADB device. |
 | `make test-ios-simulator` | Install and launch the application in the booted iOS simulator. |
-| `make test-pages` | Verify the static website artifact and excluded development files. |
+| `make test-pages` | Verify the selected Pages manifest, website artifact, and excluded development files. |
+| `make store-listings` | Prepare store text and reviewer instructions under `artifacts/store-listings`. |
+| `make store-artwork` | Render the existing wheel as native and Google Play artwork under `artifacts/store-artwork`. |
+| `make test-store-listings` | Verify store text exports, length limits, and public destinations in Docker. |
+| `make verify-store-pages` | Verify the live privacy and support page in Docker. |
+| `make verify-feedback` | Open the live LoopAware form in Chromium and WebKit without a feedback submission. |
+
+The selected audience is ages six and older. The catalog uses child-friendly recipes without beer or wine references.
+Apple saved a calculated 4+ content rating. Google Play saved Everyone and PEGI 3 ratings after the IARC questionnaire.
+The younger Google audience groups require the P002 compliance certification before their final save.
+
+The native app icon is `mobile/assets/icon.png`, rendered from the existing wheel artwork.
+Native preparation copies these assets into its container before Expo generates platform icons.
+
+Store preparation records generated native source and embedded game data under `mobile`.
+Build caches, private keys, and machine-local inputs remain excluded from Git.
+`mobile/native-preparation.json` binds each prepared native input to its content digest.
+`mobile/source-preparation.json` binds the embedded game to its source files.
+Run `make mobile-prepare-store` after a native configuration or game source change.
+Commit the prepared inputs with their source changes before release.
+
+`scripts/build-store-artifact.mjs` delegates native execution to the authoritative gateway executable.
+The adapter uses the allocated release version and a build number from the sealed UTC timestamp.
+An exact retry retains both values. Apple exports use the `app-store` intent.
+The private input is `configs/.env.allergy-wheel`. The example file names all signing and publication variables.
+Keep a recoverable private backup of `configs/signing/allergy-wheel-upload.p12` and its credential assignments.
+
+The selected manifest declares both production store destinations.
+Its Apple destination requires the gateway F008 candidate-submission extension.
+An upload receipt does not prove review or public availability. F003 retains those separate acceptance requirements.
 
 Native builds require Node 22.19 or later on the build host.
 Android also requires JDK 17, Android SDK 36, and NDK 27.1.12297006.
@@ -108,7 +141,10 @@ Regenerate native projects after a native configuration change.
 Do not edit generated `mobile/android` or `mobile/ios` files.
 The mobile build does not use a development server, Expo account, or EAS.
 
-The parent area separates optional analytics, feedback, and online fonts from game play.
+Fonts load automatically in the game. Analytics starts automatically in a separate document at application launch.
+Analytics scripts cannot read the selected allergen or game results from the game document.
+Only feedback requires the parent gate. The parent screen keeps detailed privacy text in an expandable section.
+The native modal has its own safe-area provider to keep controls below the device status area.
 The feedback action stays pending until LoopAware supplies its launcher and contact form.
 A script download alone does not establish readiness.
 A script error or a 10-second initialization timeout shows a failure and permits another attempt.
@@ -127,11 +163,19 @@ When both destinations exist, OS detection places the matching link first and pr
 The browser game and mobile privacy link remain available.
 
 The Pages manifest selects `gh-pages` and the existing `allergy.mprlab.com` domain.
+Use lowercase owner and repository names in the manifest repository identifier.
+The Pages test checks this identifier, the publication branch, and agreement with the published `CNAME`.
 The live Pages source still uses `master`.
 I002 records the prepared publication contract.
 Use the publication procedure in `.mprlab/MOBILE-READINESS.md` only after an explicit deployment request.
 The repository `release`, `publish`, and `deploy` targets delegate to the sibling MPR gateway.
 The selected manifest currently declares the website only.
+
+F003 preparation and current store blockers are recorded in `.mprlab/STORE-READINESS.md`.
+The store text source is `mobile/store/listing.json`.
+The store publisher reads private inputs from the ignored `configs/.env.allergy-wheel` file.
+The corresponding example file lists the required names without credential values.
+The store text export does not upload content or prove submission readiness.
 
 ## Dynamic allergen summary
 

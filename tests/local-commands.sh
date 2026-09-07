@@ -19,8 +19,7 @@ trap 'exit 143' TERM
 
 run_make up
 first_container_id=$(docker compose "${compose_arguments[@]}" ps --quiet web)
-test_address=$(docker compose "${compose_arguments[@]}" port web 8000)
-test_url="http://$test_address"
+test_url=$(bash "$repository_directory/scripts/local-game-url.sh" "$first_container_id")
 homepage=$(curl --fail --silent --show-error "$test_url/")
 case "$homepage" in
     *"Allergy Wheel"*) ;;

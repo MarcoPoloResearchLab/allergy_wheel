@@ -1,22 +1,7 @@
 // @ts-check
 import { ParentText, FeedbackConfiguration } from '../constants.js';
 
-/** Start a script request and retain its element for initialization cleanup. */
-function startParentScript(url) {
-    const element = document.createElement('script');
-    element.src = url;
-    const loaded = new Promise((resolveLoad, rejectLoad) => {
-        element.onload = () => resolveLoad();
-        element.onerror = () => { element.remove(); rejectLoad(new Error(ParentText.UNAVAILABLE)); };
-        document.head.append(element);
-    });
-    return { element, loaded };
-}
-
-/** Load a parent-selected script and expose download failures. */
-export function loadParentScript(url) {
-    return startParentScript(url).loaded;
-}
+import { startExternalScript } from './externalResources.js';
 
 /** Confirm the provider created its launcher and feedback form. */
 function feedbackControlsExist() {
@@ -35,7 +20,7 @@ export function loadParentFeedback(url) {
         const observer = new MutationObserver(handleWidgetMutation);
         const timer = window.setTimeout(() => finish(new Error(ParentText.UNAVAILABLE)), FeedbackConfiguration.INITIALIZATION_TIMEOUT_MS);
         observer.observe(document.body, { childList: true, subtree: true });
-        const request = startParentScript(url);
+        const request = startExternalScript(url);
         request.loaded.then(() => {
             scriptLoaded = true;
             handleWidgetMutation();
@@ -65,21 +50,14 @@ export function loadParentFeedback(url) {
     });
 }
 
-/** Load the optional font stylesheet after an adult selects it. */
-export function loadParentStylesheet(url) {
-    return new Promise((resolveLoad, rejectLoad) => {
-        const element = document.createElement('link');
-        element.rel = 'stylesheet';
-        element.href = url;
-        element.onload = () => resolveLoad();
-        element.onerror = () => { element.remove(); rejectLoad(new Error(ParentText.UNAVAILABLE)); };
-        document.head.append(element);
-    });
-}
-
 /** Render a parent gate and service actions in the separate parent document. */
 export function renderParentPanel(gateway) {
     const main = document.querySelector('main');
+    const title = document.createElement('h1');
+    title.textContent = ParentText.TITLE;
+    const introduction = document.createElement('p');
+    introduction.textContent = ParentText.INTRODUCTION;
+    main.append(title, introduction);
     const form = document.createElement('form');
     const firstFactor = 12 + Math.floor(Math.random() * 8);
     const secondFactor = 6 + Math.floor(Math.random() * 4);
@@ -101,17 +79,15 @@ export function renderParentPanel(gateway) {
     const consent = document.createElement('p');
     consent.textContent = ParentText.CONSENT;
     actions.append(consent);
-    for (const [text, action] of [[ParentText.ANALYTICS, gateway.enableAnalytics], [ParentText.FEEDBACK, gateway.openFeedback], [ParentText.FONTS, gateway.loadFonts]]) {
-        const button = document.createElement('button');
-        button.textContent = text;
-        button.addEventListener('click', async () => {
-            button.disabled = true;
-            status.textContent = ParentText.LOADING;
-            try { await action(); status.textContent = ParentText.READY; }
-            catch { status.textContent = ParentText.UNAVAILABLE; button.disabled = false; }
-        });
-        actions.append(button);
-    }
+    const feedbackButton = document.createElement('button');
+    feedbackButton.textContent = ParentText.FEEDBACK;
+    feedbackButton.addEventListener('click', async () => {
+        feedbackButton.disabled = true;
+        status.textContent = ParentText.LOADING;
+        try { await gateway.openFeedback(); status.textContent = ParentText.READY; }
+        catch { status.textContent = ParentText.UNAVAILABLE; feedbackButton.disabled = false; }
+    });
+    actions.append(feedbackButton);
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         if (Number(answer.value) !== firstFactor * secondFactor) { status.textContent = ParentText.INCORRECT; return; }

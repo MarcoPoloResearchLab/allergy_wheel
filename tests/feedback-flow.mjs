@@ -1,11 +1,11 @@
 // @ts-check
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { ParentService, ParentText } from '../js/constants.js';
+import { ExternalService, ParentText } from '../js/constants.js';
 import { MobileLocation } from '../mobile/constants.js';
 
 export const widgetSource = await readFile('tests/fixtures/loopaware-widget.js', 'utf8');
-export const widgetConfigUrl = `https://loopaware-api.mprlab.com/public/widget-config?site_id=${new URL(ParentService.LOOP_FEEDBACK).searchParams.get('site_id')}`;
+export const widgetConfigUrl = `https://loopaware-api.mprlab.com/public/widget-config?site_id=${new URL(ExternalService.LOOP_FEEDBACK).searchParams.get('site_id')}`;
 
 /** Verify the real provider script through the packaged parent entry point. */
 export async function runFeedbackFlow(browser, parentSource) {
@@ -19,7 +19,7 @@ export async function runFeedbackFlow(browser, parentSource) {
         await context.route('**/*', async (route) => {
             const url = route.request().url();
             if (url === MobileLocation.PARENTS) return route.fulfill({ contentType: 'text/html', body: parentSource });
-            if (url === ParentService.LOOP_FEEDBACK) {
+            if (url === ExternalService.LOOP_FEEDBACK) {
                 scriptRequests += 1;
                 return route.fulfill({ contentType: 'text/javascript', body: widgetSource });
             }
