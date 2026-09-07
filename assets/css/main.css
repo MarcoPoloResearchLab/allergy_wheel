@@ -1362,3 +1362,9 @@ body[data-screen="wheel"] #reveal[aria-hidden="false"] { display: grid }
 
 /* ---------- Emoji sizing helpers ---------- */
 .emoji-large { font-size: 2em; }
+/* Published mobile destinations share one compact, accessible installation section. */
+#mobile-installation { margin: 1rem auto; padding: 1rem; max-width: 40rem; text-align: center; }
+#mobile-installation h2 { font-size: 1.1rem; }
+#mobile-installation a { display: inline-block; margin: .4rem; padding: .8rem 1rem; border: 2px solid currentColor; border-radius: 1rem; color: #172554; background: #fff; font-weight: bold; }
+
+footer { padding: 1rem; text-align: center; }
