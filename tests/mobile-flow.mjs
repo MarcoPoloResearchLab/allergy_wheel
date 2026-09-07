@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
+import { runFeedbackFlow, widgetSource, widgetConfigUrl } from './feedback-flow.mjs';
 import { MobileLocation } from '../mobile/constants.js';
 import { ParentService } from '../js/constants.js';
 
@@ -54,6 +55,7 @@ try {
         await context.close();
     }
     const parentSource = await readFile('mobile/generated/parents.html', 'utf8');
+    await runFeedbackFlow(browser, parentSource);
     const context = await browser.newContext({ offline: true });
     const parentPage = await context.newPage();
     await parentPage.setContent(parentSource);
@@ -76,7 +78,9 @@ try {
         const url = route.request().url();
         if (url === MobileLocation.GAME) return route.fulfill({ contentType: 'text/html', body: '<main>Game storage fixture</main>' });
         if (url === MobileLocation.PARENTS) return route.fulfill({ contentType: 'text/html', body: parentSource });
+        if (url === widgetConfigUrl) return route.fulfill({ json: {} });
         requests.push(url);
+        if (url === ParentService.LOOP_FEEDBACK) return route.fulfill({ contentType: 'text/javascript', body: widgetSource });
         if ([ParentService.GOOGLE_TAG, ParentService.LOOP_ANALYTICS, ParentService.LOOP_FEEDBACK].includes(url)) {
             return route.fulfill({ contentType: 'text/javascript', body: 'window.providerSawSelection = localStorage.getItem("selectedAllergen");' });
         }
