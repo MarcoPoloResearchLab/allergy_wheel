@@ -9,6 +9,7 @@
     "test": "node scripts/run-browser-tests.mjs"
   },
   "devDependencies": {
+    "esbuild": "0.28.1",
     "playwright": "^1.55.1"
   }
 }
