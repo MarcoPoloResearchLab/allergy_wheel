@@ -444,6 +444,17 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
   These results do not prove live provider behavior or full native device acceptance.
 
+  Final Validation:
+  On September 7, 2026, `make ci` and both native builds passed on clean commit `8152c5d57c4b1bd77f60bdfb4d2cd90a633dd961`.
+  The development artifacts use version 1.0.0.
+  Both receipts identify that commit and report no uncommitted source at build time.
+  The Android artifact digest and all 69 iOS file digests matched their receipts.
+  The final iOS simulator installation, launch, and visible game checks passed.
+
+  `.mprlab/MOBILE-READINESS.md` records the final results and artifact identities.
+  Local logs are in `artifacts/validation`.
+  Physical-device interaction and live provider verification remain incomplete.
+
   Remaining Acceptance:
   - Supply signed AAB and IPA artifacts through the shared mobile lifecycle.
   - Complete real-device rounds, audio, mute, rotation, background return, and first-launch offline checks on both platforms.
@@ -485,6 +496,12 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Available links preserve both platforms and use detected OS information for their order.
   Tests passed Android, iPhone, iPadOS desktop mode, unknown OS, partial availability, and absent destination cases.
   The browser game and privacy page remained available in the tests.
+
+  Final Validation:
+  On September 7, 2026, the website flows and Pages artifact test passed through `make ci` on commit `8152c5d`.
+  Both store catalog values remain `null`.
+  The tests verified the hidden installation section, OS ordering, partial availability, and mobile privacy page.
+  The validation did not publish a website or verify a live store installation.
 
   Real store installation remains blocked until verified listings exist.
 

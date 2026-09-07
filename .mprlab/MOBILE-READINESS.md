@@ -173,15 +173,41 @@ The tablet later returned to another application. Further interaction stopped.
 The iOS simulator application built, installed, and displayed the game.
 Neither observation proves first-launch offline behavior on a real supported iPhone or complete physical-device acceptance.
 
-The final `make ci` command passed on September 7, 2026.
-It validated 62 JavaScript and JSON files, 10 harness cases, and the real browser and mobile flows.
-Expo dependency compatibility passed and the runtime audit reported zero vulnerabilities.
-The Pages artifact and local server lifecycle tests passed.
-Both native development builds passed after the active-spin background audio correction.
-The final iOS simulator install and launch also passed.
-The Governor check and mechanical language checks passed for the changed documents.
-The agent reviewed the changed repository prose against the verified Issue 9 reference.
-Generated Governor guides retain their template language.
+## Final Validation On September 7, 2026
+
+The final validation used commit `8152c5d57c4b1bd77f60bdfb4d2cd90a633dd961`.
+The checkout was clean during CI and both native builds.
+Version 1.0.0 identifies both development artifacts.
+The new receipts replace the earlier receipts from uncommitted source.
+
+| Validation | Result | Evidence boundary |
+| --- | --- | --- |
+| `make ci` | Passed | 62 JavaScript and JSON files, 10 harness cases, and real browser flows |
+| Offline mobile flows | Passed | Chromium at phone and tablet sizes, including audio lifecycle during a spin |
+| Parent service boundaries | Passed | Controlled provider scripts, separate document origins, and new consent for each visit |
+| Store and privacy flows | Passed | Android, iPhone, iPadOS, unknown OS, partial availability, and absent destinations |
+| Expo dependency compatibility | Passed | The locked mobile dependencies agree with the selected Expo version |
+| Runtime dependency audit | Passed | Zero reported vulnerabilities |
+| Pages artifact and local server | Passed | Current source files, startup, repeated startup, shutdown, and repeated shutdown |
+| `make mobile-android` | Passed | Development APK, package `com.mprlab.allergywheel`, minimum API 24, target API 36 |
+| `make mobile-ios` | Passed | Simulator application, bundle `com.mprlab.allergywheel`, minimum iOS 16.4 |
+| `make test-ios-simulator` | Passed | Installation, launch, and visible game in the iOS 26.5 simulator |
+| Artifact receipts | Passed | Android APK digest and all 69 recorded iOS file digests match the artifacts |
+
+The local logs and result record are in `artifacts/validation`.
+The iOS startup image is `artifacts/validation/ios-startup.png`.
+These generated files remain outside Git.
+
+The Android APK SHA-256 is `142ddbb69a856939edd636d54e1fabe6d00d4d1258ae602bdf8b00fa89781e5c`.
+The iOS JavaScript bundle SHA-256 is `92e3309c82bb7c92732de3f8d62a47453645b7f47b83ddaade7731eb381fd204`.
+The latter identifies `main.jsbundle`, not the complete iOS application.
+The iOS receipt records each application file separately.
+
+This validation did not repeat physical-device interaction tests or live provider requests.
+The earlier physical Android launch result remains limited to that earlier artifact.
+Hosted CI, signed store artifacts, store installation, and public publication remain unverified.
+The Governor and mechanical documentation checks passed for the final validation record.
+The language review covers the changed prose only.
 
 ## Remaining Acceptance
 
