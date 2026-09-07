@@ -94,6 +94,25 @@ Give each term one meaning. Use the same term for the same concept in all docume
 
 ## Repository Technical Nouns
 
+- `APK`: An Android application package for direct installation.
+- `AAB`: An Android application bundle for Google Play.
+- `IPA`: A signed iOS application archive.
+- `CocoaPods`: The dependency tool used by the iOS native project.
+- `Gradle`: The build tool used by the Android native project.
+- `incognito WebView`: A WebView configured to reduce retained browser data, subject to platform behavior.
+- `document origin`: The scheme, hostname, and port that define a browser storage boundary.
+- `DOM storage`: The browser localStorage and sessionStorage facilities.
+- `esbuild`: The JavaScript tool that creates the packaged game bundle.
+- `parent area`: The mobile document that contains adult access to optional online services.
+- `simulator`: A host application that executes an iOS application for development.
+
+- `analytics`: Data collection and reports about application use.
+- `feedback data`: Contact details, messages, and sentiment that a user submits to LoopAware.
+- `mobile shell`: The native application that contains the existing JavaScript game.
+- `privacy policy`: The document that describes data collection, use, retention, and deletion.
+- `React Native`: The mobile framework used with Expo in the related MPR Lab applications.
+- `store link`: A website link to a verified application listing in a mobile store.
+- `WebView`: A native component that displays HTML and executes browser JavaScript.
 - `allergen`: A catalog item that a player selects for the game.
 - `avatar`: The character image that the game shows for a player.
 - `browser harness`: The page and scripts that execute browser tests.

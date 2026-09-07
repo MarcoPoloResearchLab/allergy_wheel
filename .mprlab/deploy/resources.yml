@@ -1,0 +1,19 @@
+---
+mprlab_resources:
+  owner: allergy-wheel
+  release:
+    scheme: semver
+  resources:
+    - kind: github_pages
+      id: website
+      repository: MarcoPoloResearchLab/allergy_wheel
+      branch: gh-pages
+      domain: allergy.mprlab.com
+      url: https://allergy.mprlab.com/
+      source:
+        kind: container
+        context: .
+        dockerfile: Dockerfile.pages
+        target: pages
+      verification:
+        path: /.mprlab-release.json
