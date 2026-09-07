@@ -68,6 +68,44 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   The final `make ci` command failed because the repository has no `ci` target.
   I004 owns that command gap.
 
+- [x] [B003] (P2) Report feedback readiness after widget initialization
+  Goal:
+  The parent area must report success only after LoopAware supplies usable feedback controls.
+
+  Evidence:
+  The script load promise resolves before the widget configuration request completes.
+  A 403 or 404 configuration response prevents the widget from rendering.
+  The parent area still reports success and disables the feedback button.
+
+  Requirements:
+  - Verify widget initialization before the parent area reports readiness.
+  - Show a failure and allow another attempt when initialization fails.
+  - Keep the readiness state pending while configuration remains incomplete.
+  - Preserve the parent gate and optional service selection.
+
+  Validation:
+  - Reproduce 403 and 404 configuration responses after a successful script download.
+  - Verify delayed success and retry through the packaged parent document with the real widget script.
+  - Run the focused mobile test and final `make ci`.
+
+  Implementation:
+  The regression first failed because the parent area reported readiness while widget configuration remained pending.
+  The feedback adapter now waits for the launcher, panel, and contact input.
+  A script error or a 10-second initialization timeout reports failure and permits another attempt.
+  Completion removes the observer and timer. Failure also removes the script and incomplete controls.
+  The parent area shows a pending message when a service action starts.
+
+  Focused Validation:
+  `make test-mobile` passed with the actual LoopAware widget script and controlled configuration responses.
+  The cases cover 403, 404, delayed readiness, and successful retry.
+  The tests open the actual feedback form after a successful retry.
+  No feedback submission or live provider request occurred.
+
+  Resolution:
+  Final `make ci` passed with 64 source files, the browser flows, and the packaged mobile flows.
+  The Governor check and mechanical documentation checks passed.
+  The working tree contains the B003 correction.
+
 ## Improvements
 
 - [x] [I001] (P1) Establish real game integration coverage
@@ -461,11 +499,11 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Verify native parent requests and storage against P002.
   - Complete app artwork, store screenshots, and privacy declarations.
 
-- [!] [F002] (P1) {F001,I002} Add mobile installation to the website
+- [!] [F002] (P1) {F003,I002} Publish verified store links on the website
   Goal:
   Website visitors can obtain the mobile game from the game website.
 
-  Blocked: No verified store destination is recorded for either platform.
+  Blocked: F003 must supply verified public store destinations before website links can be published.
 
   Requirements:
   - Use the delivery path selected in P001.
@@ -477,10 +515,16 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Link only to verified artifacts or live store listings.
   - Show platform-specific installation steps when the selected path requires them.
   - Use the parent and support content selected in P002.
+  - Use the verified public destinations recorded by F003 in `data/mobile-stores.json`.
+  - Keep an unavailable platform value `null` when only the other store is ready.
+  - Publish the website through the I002 GitHub Pages lifecycle after a destination is verified.
+  - Preserve the game, privacy page, and existing website resources during publication.
 
   Deliverables:
   - Supply the download page or installation section.
   - Record the verified destinations for each supported platform.
+  - Record the website source commit, publication receipt, and verified release marker.
+  - Record the result of each public website-to-store installation path.
 
   Validation:
   - Verify each installation path from the website on a supported device.
@@ -488,6 +532,10 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Verify Android, iOS, iPadOS, desktop, and unknown OS cases.
   - Verify that an unavailable store listing has no installation link.
   - Verify the browser game remains available.
+  - Run `make ci` before website publication.
+  - Verify `https://allergy.mprlab.com/` and `/.mprlab-release.json` against the publication receipt.
+  - Verify both public store links on Android and iOS devices after website publication.
+  - Confirm each store destination identifies Allergy Wheel and permits installation of the approved version.
 
   Implementation:
   On September 7, 2026, the website gained a validated store catalog and mobile privacy page.
@@ -504,6 +552,80 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   The validation did not publish a website or verify a live store installation.
 
   Real store installation remains blocked until verified listings exist.
+
+  Execution Order:
+  F003 owns store publication and the public store destination record.
+  This issue owns the later website catalog change and public website verification.
+  A platform can proceed after F003 verifies its listing, even while the other platform awaits store review.
+  Close this issue after both website installation paths pass.
+
+- [!] [F003] (P1) {F001,P002,I002} Publish Allergy Wheel to Google Play and the Apple App Store
+  Goal:
+  End users can install the approved Allergy Wheel release from both public stores.
+
+  Blocked: F001 must supply signed artifacts and device acceptance, and P002 must complete the data and audience verification.
+
+  Evidence:
+  The current Android target creates a development APK.
+  The current iOS target creates a simulator application.
+  Local CI and development builds passed, but those results do not establish store readiness.
+  The selected deployment manifest currently declares only the website.
+  Both platforms use the application identifier `com.mprlab.allergywheel`.
+  Neither public store destination is recorded in the website catalog.
+
+  Requirements:
+  - Complete the F001 artifact and real-device prerequisites before store submission.
+  - Complete P002 provider, privacy, and audience verification before store submission.
+  - Inspect the current shared MPR mobile lifecycle before changes to application release or publication adapters.
+  - Add the mobile resource declarations and store adapters required by that lifecycle.
+  - Keep application identifiers, native configuration, store records, and publisher inputs in agreement.
+  - Verify ownership of the Google Play application and App Store Connect application records.
+  - Discover existing signing and store credentials through the repository policy before a credential request.
+  - Use non-mutating authentication checks where the selected store tooling supplies them.
+  - Prepare app icons, screenshots, descriptions, audience declarations, privacy disclosures, and review instructions for both stores.
+  - Configure free access without advertisements, purchases, or an account requirement.
+  - Select all available release countries under the confirmed P001 and P002 requirements.
+  - Record any store-imposed country restriction and its reason.
+  - Publish and verify the required privacy and support pages through I002 before store submission.
+  - Keep website store destinations `null` until their public listings are verified.
+  - Use `support@mprlab.com` as the support contact.
+  - Run Governor checks and `make ci` on the final release source.
+  - Use signed Android AAB and iOS IPA artifacts from the operator-controlled native build host.
+  - Record the source commit, release version, build identifiers, and artifact digests before publication.
+  - Publish the sealed artifacts through repository Make targets and the shared store publishers.
+  - Keep Expo CLI, EAS, and artifact rebuilds outside store publication.
+  - Complete store review and production release for each platform.
+  - Record upload, processing, review, and public availability as separate states.
+  - Resolve store rejection findings through the owning issue and revalidate each changed artifact before submission.
+  - Supply each verified public listing URL to F002 when that platform becomes available.
+
+  Deliverables:
+  - Supply the application mobile lifecycle configuration and executable store publication commands.
+  - Supply signed artifact identities and publication receipts for both platforms.
+  - Record final store metadata, selected countries, and privacy and support URLs.
+  - Record the store review result, approved version, and release date for each platform.
+  - Supply verified Google Play and Apple App Store destinations to F002.
+  - Record installation and game acceptance from the public stores.
+
+  Validation:
+  - Verify the artifact versions and identifiers against the selected release and publication receipts.
+  - Verify public production availability in both stores.
+  - Keep the issue open when an upload, internal test release, or review is the latest completed state.
+  - Install the public Android release on a supported Android device.
+  - Install the public iOS release on a supported iOS device.
+  - Confirm each installed version and build identifier agrees with the approved store release.
+  - Verify first-launch offline play, complete rounds, audio, mute, rotation, and background return on both platforms.
+  - Verify parent controls and actual provider behavior against the completed P002 data contract.
+  - Verify that the complete game remains free and usable without an account.
+  - Record store URLs, installation results, and any remaining platform restriction before closure.
+
+  Execution Boundary:
+  This entry prepares the deployment work requested on September 7, 2026.
+  Execute store and website publication only under an explicit deployment request.
+  F001 owns artifact preparation and device acceptance before submission.
+  P002 owns the data and audience contract.
+  This issue owns actual store submission, review, public release, and the destination record.
+  F002 owns the subsequent website store links.
 
 ## Planning
 
