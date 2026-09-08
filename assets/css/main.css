@@ -642,6 +642,17 @@ main { flex: 1; display: grid; place-items: center; padding: 20px }
 
 .card__body .grid { flex: 1 1 auto; }
 
+.allergen-introduction {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+}
+
+.allergen-introduction > .title,
+.allergen-introduction > .muted { margin: 0; }
+
+.allergen-introduction > .muted { line-height: 1.4; }
+
 .title { margin: 0 0 10px 0; font-size: clamp(22px, 3.4vw, 34px) }
 
 @keyframes title-attention {
@@ -1337,6 +1348,7 @@ body[data-screen="wheel"] #reveal[aria-hidden="false"] { display: grid }
 }
 
 .status { text-align: center; margin-top: 12px; font-weight: 700 }
+.wheel-instruction { margin: 0 0 8px; font-weight: 400; }
 .badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; background: #ffe08a; border: 2px solid #000; margin: 2px 6px; font-weight: 800 }
 .badge .emoji-large { line-height: 1; }
 

@@ -19,7 +19,7 @@ P001 and P002 record the owner decisions.
 | Distribution | Google Play and the Apple App Store |
 | Website | Verified store links when available, with OS detection |
 | Toolchain | Expo SDK 57, React Native 0.86, and React Native WebView |
-| Audience | Ages 6 and older |
+| Audience | Ages six and older, restored after the recipe revision |
 | Countries | All countries, subject to store availability and applicable requirements |
 | Price | No charges, advertisements, or in-app purchases |
 | Account | Complete game access without an account |
@@ -44,8 +44,8 @@ PWA installation and website APK downloads are outside the selected delivery pat
 | `js/core/stores.js` | Validate store destinations and order available links |
 | `js/ui/storeLinks.js` | Render installation links and the mobile privacy link |
 | `js/core/parentsApp.js` | Connect the parent UI and external gateway |
-| `js/core/gateway.js` | Own parent service URLs and Google Analytics settings |
-| `mobile/App.js` | Display the game and a separate parent WebView |
+| `js/core/gateway.js` | Own external service URLs and Google Analytics settings |
+| `mobile/App.js` | Display the game, automatic analytics, and a separate feedback WebView |
 | `mobile/plugins/withOfflineBuild.cjs` | Generate native bundle configuration |
 | `scripts/build-mobile-game.mjs` | Package the browser sources and local resources |
 
@@ -65,15 +65,17 @@ It removes the browser Full Screen button because the native game already fills 
 Native background events suspend audio through its public API.
 Return events resume the audio context.
 
-Generated native projects, bundles, dependency directories, and artifacts remain outside Git.
+Prepared native projects and embedded game inputs are recorded in Git for the signed release.
+Dependency directories, build caches, and output artifacts remain outside Git.
 Expo CLI generates native projects during `make mobile-prepare`.
 The native build scripts use Gradle, CocoaPods, Xcode, and the React Native bundler.
 They do not use Expo or EAS for artifact production.
 
 ## Data Contract
 
-The mobile game does not load external services.
-The parent document loads each service only after the parent gate and a separate service selection.
+The mobile game loads online fonts automatically.
+A separate analytics document starts Google Analytics and LoopAware analytics at application launch.
+The parent document loads feedback only after the parent gate and feedback selection.
 The parent gate uses a multiplication question.
 This gate is a product control. It does not establish legal parental consent or store acceptance.
 
@@ -83,15 +85,17 @@ Parent scripts cannot read storage from the game origin.
 Android parent DOM storage and third-party cookies are disabled.
 iOS uses an incognito WebView with a separate data store.
 Closing the parent area destroys its document.
-A new visit requires the gate and service choices again.
+A new feedback visit requires the gate again.
+The native analytics document uses the same separate origin and disables persistent DOM storage and third-party cookies.
+Its incognito WebView cannot read game-origin storage. Analytics failure does not interrupt game startup.
 
 | Surface | Data and behavior |
 | --- | --- |
 | Local game | The selected allergen token and label stay in device storage. Catalog and audio requests use packaged data URLs. |
-| Google Analytics | An explicit parent action loads the existing property. Consent defaults deny analytics storage and all advertisement storage. Google signals and advertisement personalization are disabled. |
-| LoopAware analytics | The parent action loads `pixel.js`. Its source sends a visit identifier, page, device, locale, timezone, and display data. The server receives IP data and can receive edge location data. |
+| Google Analytics | Application launch loads the existing property automatically. Consent defaults deny analytics storage and all advertisement storage. Google signals and advertisement personalization are disabled. |
+| LoopAware analytics | Application launch loads `pixel.js` in the separate analytics document. Its source sends a visit identifier, page, device, locale, timezone, and display data. The server receives IP data and can receive edge location data. |
 | LoopAware feedback | A separate parent action loads `widget.js`. Submission contains contact details, a message or sentiment, site ID, and source URL. |
-| External fonts | A separate parent action loads Google Fonts for the parent document. The game uses the system sans-serif font offline. |
+| External fonts | The game loads Google Fonts automatically when online. The game uses the system sans-serif font offline. |
 | Support | User correspondence to `support@mprlab.com` can contain contact details and message text. |
 | Website | The existing Google Analytics, LoopAware widget, and external fonts remain on the browser game. The mobile privacy page starts no external service. |
 
@@ -102,8 +106,8 @@ The source review does not prove the deployed retention configuration or all req
 
 The public mobile privacy page source is `privacy.html`.
 Its intended URL is `https://allergy.mprlab.com/privacy.html` after authorized website publication.
-The same privacy text appears inside the mobile parent area.
-It describes local preferences, optional services, feedback, support, and the food-safety limit of the game.
+The same privacy text appears in an expandable section inside the mobile parent area.
+It describes local preferences, automatic services, guarded feedback, support, and the food-safety limit of the game.
 P002 retains provider retention, deletion, store declarations, and runtime data verification before store submission.
 
 ## Official Policy Review
@@ -226,3 +230,16 @@ OS detection changes the order and preserves the other available link.
 
 No product decision remains for the owner.
 Store publication and website deployment require an explicit request.
+
+## Automatic Service Revision
+
+The owner required automatic fonts and analytics on September 7, 2026.
+This requirement replaces the earlier parent-only service design.
+The parent gate now controls feedback only.
+The game loads its online font without a service button. Offline play uses the system font.
+A separate analytics WebView starts without a parent action and cannot read game-origin preferences.
+The parent modal has its own safe-area provider. Detailed privacy text starts collapsed.
+
+The revised browser integration first failed because game startup did not load the font stylesheet.
+The tests cover automatic service requests, game-storage isolation, denied advertising storage, unavailable services, and the feedback gate.
+These results require native verification before store acceptance.

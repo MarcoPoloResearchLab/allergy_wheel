@@ -1,0 +1,17 @@
+{
+  "locale": "en-US",
+  "name": "Allergy Wheel",
+  "description": "Choose an allergen, spin the wheel, and discover the ingredients in dishes from different cuisines. Stop the wheel yourself or watch it slow down. Each result shows the dish ingredients and whether the selected allergen appears in the game catalog.\n\nPlay complete rounds offline from the first launch. Pick an avatar, use the mute control, and spin again. Allergy Wheel works on phones and tablets. The complete game is free, with no advertisements, purchases, or account requirement.\n\nWhen online, Allergy Wheel loads fonts, Google Analytics, and LoopAware analytics automatically. Feedback is optional and requires a parental gate. Open Feedback for parents to read the privacy information or send feedback.\n\nThis game is for entertainment and discussion. It cannot determine whether real food is safe. Recipes and ingredients can vary. Always check food labels and follow professional advice about allergies.",
+  "supportEmail": "support@mprlab.com",
+  "supportUrl": "https://allergy.mprlab.com/privacy.html",
+  "privacyUrl": "https://allergy.mprlab.com/privacy.html",
+  "marketingUrl": "https://allergy.mprlab.com/",
+  "reviewNotes": "No account, login, payment, advertisement, or purchase is required.\n\nGame review: Select Peanuts, start the wheel, and press Stop. The result shows the dish ingredients. Spin again or restart to change the selected allergen. Verify mute, rotation, and return from the background. After installation, disable network access before the first launch to verify offline play.\n\nAutomatic services: The game loads Google Fonts when online. Google Analytics and LoopAware analytics start automatically in a separate document at app launch. These services require no parental gate or activation button. Analytics cannot read game-origin storage, and the app does not send the selected allergen or game results. Analytics storage, advertising storage, Google signals, and advertising personalization are disabled.\n\nFeedback review: Open Feedback for parents and answer the multiplication question. Only feedback requires this gate. Select Open feedback to load the LoopAware form. Close the area to end that feedback session. Please do not submit test feedback to the live service. The privacy information is available in the expandable Privacy and support section.\n\nThe parent gate is an access control, not proof of legal parental consent. Data disclosures and child-audience verification remain subject to the completed provider review.\n\nThe game does not provide medical advice or establish whether food is safe. Support: support@mprlab.com.",
+  "apple": {
+    "subtitle": "Spin and explore ingredients",
+    "keywords": "food,ingredients,wheel,allergens,offline,game,family"
+  },
+  "google": {
+    "shortDescription": "Spin the wheel, reveal dish ingredients, and play complete rounds offline."
+  }
+}

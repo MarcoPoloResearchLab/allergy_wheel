@@ -50,10 +50,9 @@ const bundle = await build({
     }]
 });
 let html = await readFile(resolve(root, 'index.html'), 'utf8');
-// Website integrations remain on the website; mobile integrations have an explicit parent entry point.
+// Mobile analytics has its own document; feedback retains its parent entry point.
 html = html.replace(/\s*<!-- Google tag[\s\S]*?(?=\s*<meta content="Marco Polo)/, '');
 html = html.replace(/\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/, '');
-html = html.replace(/\s*<link href="https:\/\/fonts\.googleapis\.com[^>]+>/, '');
 html = html.replace('<link rel="stylesheet" href="/assets/css/main.css">', `<style>${await readFile(resolve(root, 'assets/css/main.css'), 'utf8')}</style>`);
 html = html.replace('<button class="ghost" id="fs">Full Screen</button>', '');
 html = await embedLiterals(html);
@@ -69,3 +68,9 @@ const parentHtml = (await readFile(resolve(root, 'mobile/parents.html'), 'utf8')
 await writeFile(resolve(output, 'parents.html'), parentHtml);
 await writeFile(resolve(output, 'parents.json'), JSON.stringify({ html: parentHtml }));
 console.info(`Packaged ${resources.size} game resources in ${Buffer.byteLength(html)} bytes.`);
+
+const analyticsBundle = await build({ absWorkingDir: root, entryPoints: ['js/core/analyticsApp.js'], bundle: true, write: false, format: 'iife', target: ['safari16.4', 'chrome107'] });
+const analyticsScript = Buffer.from(analyticsBundle.outputFiles[0].contents).toString('base64');
+const analyticsHtml = `<!doctype html><html><head><meta name="referrer" content="no-referrer"></head><body><script src="data:text/javascript;base64,${analyticsScript}"></script></body></html>`;
+await writeFile(resolve(output, 'analytics.html'), analyticsHtml);
+await writeFile(resolve(output, 'analytics.json'), JSON.stringify({ html: analyticsHtml }));

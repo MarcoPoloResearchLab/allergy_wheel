@@ -10,7 +10,7 @@
         gtag('js', new Date());
         gtag('config', 'G-5CDP19RY2Z');
     </script>
-    <script src="https://loopaware.mprlab.com/widget.js?site_id=de929d14-c425-4a4e-89fe-3d5fbc6e6a93"></script>
+    <script src="https://loopaware.mprlab.com/widget.js?site_id=9931e62f-5a60-48e6-9e31-16de62f62e7d"></script>
     <meta content="Marco Polo Research Lab" name="author"/>
     <link href="https://allergy.mprlab.com/" rel="canonical"/>
     <meta content="index,follow" name="robots"/>
@@ -120,9 +120,10 @@
 <main id="screen-allergy">
     <div class="card">
         <div class="card__body">
-            <h2 class="title" id="allergy-title">Pick your allergens</h2>
-            <p class="muted">Choose anything that might cause trouble. You can change this later.</p>
-            <p class="muted">Spin the allergy wheel to win 10 hearts!</p>
+            <hgroup class="allergen-introduction">
+                <h2 class="title" id="allergy-title">Pick your allergens</h2>
+                <p class="muted">Choose anything that might cause trouble. You can change this later.</p>
+            </hgroup>
             <div class="grid allergen-grid" id="allergy-list">
                 <button
                     aria-disabled="true"
@@ -168,7 +169,10 @@
             </div>
         </div>
     </div>
-    <div class="status">Allergens: <span id="sel-badges"></span></div>
+    <div class="status">
+        <p class="wheel-instruction muted">Spin the allergy wheel to win 10 hearts!</p>
+        Allergens: <span id="sel-badges"></span>
+    </div>
     <div
         aria-hidden="true"
         class="restart-modal"

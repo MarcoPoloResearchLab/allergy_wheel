@@ -106,6 +106,91 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   The Governor check and mechanical documentation checks passed.
   The working tree contains the B003 correction.
 
+- [x] [B004] (P1) {I002} Use a canonical repository identifier for GitHub Pages
+  Goal:
+  The website resource must pass the gateway repository validation during release.
+
+  Evidence:
+  The owner reported that `make release` failed with `app_lifecycle.invalid_resource` for the website resource.
+  The failing assertion uses `mprlab_repository_pattern`.
+  The gateway pattern accepts only lowercase owner and repository identifiers.
+  The manifest contains `MarcoPoloResearchLab/allergy_wheel`, which fails that pattern.
+  The Pages artifact test does not read the selected manifest.
+
+  Requirements:
+  - Use `marcopoloresearchlab/allergy_wheel` as the canonical repository identifier.
+  - Preserve the selected domain, publication branch, artifact source, and release marker path.
+  - Validate the actual selected manifest through the Docker Pages target before release.
+  - Keep private deployment inputs outside the test image and publication artifact.
+
+  Validation:
+  - Confirm that the Pages target fails on the current mixed-case repository identifier.
+  - Confirm that the target passes after the manifest correction.
+  - Run `make ci`, the Governor check, and the documentation checks.
+  - Record source validation separately from an actual release or publication result.
+
+  Implementation:
+  The manifest now uses `marcopoloresearchlab/allergy_wheel`.
+  The domain, publication branch, artifact source, and release marker path remain the same.
+  The test image includes only the public manifest from the deployment directory.
+  The Pages test reads that manifest through the locked YAML parser.
+  It checks the canonical repository identifier, publication branch, URL, and published `CNAME`.
+  It also verifies that the publication artifact excludes `.mprlab`.
+
+  Focused Validation:
+  The new `make test-pages` regression failed on `MarcoPoloResearchLab/allergy_wheel` before the manifest correction.
+  The same target passed after the correction.
+
+  Resolution:
+  Final `make ci` passed with 64 source files, browser and mobile flows, Pages validation, and local command checks.
+  The Expo dependency check passed. The mobile runtime audit found no vulnerabilities.
+  The Governor check, mechanical documentation checks, and changed-prose review passed.
+  These results validate the working tree. No release, publication, or deployment operation was run for B004.
+
+- [!] [B005] (P1) Restore the configured LoopAware feedback service
+  Goal:
+  The selected LoopAware site must supply a usable feedback configuration.
+
+  Blocked: Native feedback acceptance remains incomplete. The Android emulator disconnected, and iOS simulator coordinate input failed.
+
+  Evidence:
+  On September 7, 2026, the live widget requested `/public/widget-config` for site `de929d14-c425-4a4e-89fe-3d5fbc6e6a93`.
+  The request returned HTTP 404 with both `https://allergy-wheel-parents.invalid` and `https://allergy.mprlab.com` as the Origin header.
+  Both responses contained `Access-Control-Allow-Origin: *`.
+  B003 correctly reports initialization failure, but it cannot restore the provider configuration.
+
+  Requirements:
+  - Verify the site record and its ownership before a configuration change.
+  - Restore the correct configuration through the provider's supported interface.
+  - Change the application site ID only when a verified record requires that correction.
+  - Preserve the parent gate and explicit service selection.
+  - Keep credentials and feedback content outside source and logs.
+
+  Validation:
+  - Verify a successful configuration response for the selected site and mobile origin.
+  - Verify actual widget initialization in both native parent documents.
+  - Verify the form without a live feedback submission.
+  - Preserve the B003 failure and retry regression results.
+  - Record the result in P002 and F003.
+
+  Recovery On September 7, 2026:
+  The signed-in LoopAware dashboard contained no Allergy Wheel record. The old ID returned HTTP 404 with `unknown_site`.
+  The new site is `9931e62f-5a60-48e6-9e31-16de62f62e7d`, with `support@mprlab.com` as its notification contact.
+  Its allowed origins are `https://allergy.mprlab.com` and `https://allergy-wheel-parents.invalid`.
+  Both origins receive HTTP 200 from the new configuration.
+  The website widget and mobile analytics and feedback URLs now use the verified ID.
+
+  The new `make verify-feedback` command failed on HTTP 404 before the source correction.
+  It then opened the real form in Chromium and WebKit from the website embed and generated parent document.
+  The check preserved the parent gate and explicit selection. It allowed provider GET requests only and submitted no feedback.
+  Both corrected development artifacts built. The iOS simulator launched and showed the parent gate.
+  Native feedback interaction and publication of the corrected website remain incomplete.
+
+  Validation Result:
+  Final `make ci` passed with 69 source files, browser and mobile flows, and the existing B003 failure and retry cases.
+  The Governor check, mechanical documentation checks, and changed-prose review passed.
+  The live form check and both native build logs are under `artifacts/validation/b005-*`.
+
 ## Improvements
 
 - [x] [I001] (P1) Establish real game integration coverage
@@ -493,6 +578,19 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Local logs are in `artifacts/validation`.
   Physical-device interaction and live provider verification remain incomplete.
 
+  Signed Candidate Preparation:
+  The active Apple Distribution certificate matches the installed signing identity.
+  Apple created profile `M89DTYG66U` for `com.mprlab.allergywheel` with an expiration date of June 21, 2027.
+  The profile is installed. The private application input contains its signing references.
+  The application also has a new private Android upload key.
+
+  The native plugin separates Android release signing from the development key.
+  Both platforms accept the allocated gateway version and build number.
+  The application adapter delegates native execution to `mobile-build-operation`.
+  Preparation records the native inputs, dependency locks, and embedded game source digests.
+  The integration tests first failed, then passed after the source changes.
+  These results do not establish signed artifacts or device acceptance.
+
   Remaining Acceptance:
   - Supply signed AAB and IPA artifacts through the shared mobile lifecycle.
   - Complete real-device rounds, audio, mute, rotation, background return, and first-launch offline checks on both platforms.
@@ -563,7 +661,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Goal:
   End users can install the approved Allergy Wheel release from both public stores.
 
-  Blocked: F001 must supply signed artifacts and device acceptance, and P002 must complete the data and audience verification.
+  Blocked: F001 and P002 acceptance, B005 native verification, remaining store declarations, and gateway F008 public Apple delivery remain incomplete.
 
   Evidence:
   The current Android target creates a development APK.
@@ -626,6 +724,104 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   P002 owns the data and audience contract.
   This issue owns actual store submission, review, public release, and the destination record.
   F002 owns the subsequent website store links.
+
+  Current Preparation Update:
+  The recipe revision removes alcohol references and restores the selected ages-six-and-older audience.
+  Apple saved a calculated 4+ content rating. Google Play completed IARC with Everyone and PEGI 3 ratings.
+  The younger Google audience groups are selected in an incomplete form. Its compliance certification requires the remaining P002 evidence.
+  Application `make ci`, native source preparation, and the Governor check passed.
+  Signing inputs and the gateway Apple candidate path are prepared in the working files.
+  Gateway committed-source CI reports the existing redirect-test lint failure and reached its 599-second deadline.
+  Google Analytics optional identity, advertising, and granular location collection settings were reduced and verified in the console.
+  Signed artifacts, native acceptance, complete privacy declarations, and public availability remain incomplete.
+
+  Preparation On September 7, 2026:
+  The store text and reviewer instructions are in `mobile/store/listing.json`.
+  `make store-listings` exports fourteen text files and their digests without a provider operation.
+  `make test-store-listings` covers the real exporter, provider text limits, destination agreement, and invalid-input rejection.
+  The initial regression failed because the exporter was absent. The completed focused target passed.
+  The exporter also rejected an overlong Apple subtitle before its correction.
+  The canonical private input example and exact ignore rule are prepared.
+  `.mprlab/STORE-READINESS.md` records the source-backed preparation and completion order.
+
+  Verified Boundaries:
+  The gateway at `b2764b233670183615ac9245cd4d1a6e29b73cb2` accepts only internal TestFlight delivery for Apple.
+  Gateway F007 and F008 remain open for delivery goals and public store promotion.
+  No unsupported public Apple destination or placeholder store ID was added to the selected manifest.
+  The current native preparation lacks the digest record required by the shared builder.
+  F001 retains that build integration and its signed-artifact acceptance.
+  The credential search found no canonical store assignments in the process or private inputs in either authorized repository.
+  The initial preparation did not verify store records or the numeric App Store ID.
+  The host has four valid code-signing identities and two connected Android devices, but no connected physical Apple device.
+  These observations do not establish application signing ownership or device acceptance.
+
+  Public Evidence:
+  `make verify-store-pages` passed against the live privacy and support page.
+  Chromium verified HTTP 200, the current rendered privacy text, the support contact, and no external service requests.
+  The live LoopAware configuration returned HTTP 404. B005 records that defect.
+  No artifact upload, feedback submission, review request, or public release occurred during this preparation.
+
+  Preparation Validation:
+  Final `make ci` passed with 68 source files, browser and mobile flows, store text checks, Pages validation, and local command checks.
+  The Expo dependency check passed and the mobile runtime audit found no vulnerabilities.
+  The Governor check, tracker identifier check, and mechanical documentation checks passed.
+  The producing agent reviewed the changed prose. These results do not establish store or physical-device acceptance.
+
+  Console Operation On September 7, 2026:
+  The owner requested F003 execution through the signed-in internal browser.
+  Apple registered `com.mprlab.allergywheel` under team `Z9ZW6HDGML`.
+  App Store Connect created Allergy Wheel with Apple ID `6809568034` and status `Prepare for Submission`.
+  The saved app information contains the prepared subtitle, Games category, and privacy URL.
+  Apple accepted free pricing and selected all 175 countries or regions for availability after release.
+  Regional declarations remain incomplete.
+  The Apple version description, keywords, and reviewer notes persisted after a page reload.
+  The later API check verified saved review phone, email, first name, and last name values.
+  After owner continuation, the Google policy and export declarations were checked.
+  Google Play created record `4974738121228216490` in developer account `5851682736224790825`.
+  The saved Google record uses `com.mprlab.allergywheel`, English, Game, and Free.
+  Its privacy, access, ads, government, financial, health, category, and contact settings are saved.
+  The English listing text is saved as a draft. Artwork and native screenshots remain incomplete.
+  The dashboard shows seven of eleven setup tasks complete.
+  IARC terms acceptance awaits owner confirmation before content-rating completion.
+  Target audience and Data safety remain incomplete.
+  The initial credential search found no application or gateway publisher inputs.
+  The live privacy check passed. The initial LoopAware configuration returned HTTP 404.
+  Gateway F007 and F008 remain open at the previously inspected commit.
+  `.mprlab/STORE-READINESS.md` records the console results and remaining requirements.
+  The Governor check, mechanical documentation checks, and changed-prose review passed.
+  No artifact upload, review request, or public release occurred.
+
+  Provider And Credential Recovery On September 7, 2026:
+  B005 restored the LoopAware site configuration and corrected the application site ID.
+  The real feedback form passed Chromium and WebKit checks for the website and parent origins.
+  The existing LoopAware private inputs supplied the four canonical publisher assignments.
+  The ignored application input now references those existing key files.
+  Apple returned HTTP 200 for the Allergy Wheel app record and expected bundle ID.
+  Its review contact contains all four required fields. The earlier phone-number request is resolved.
+
+  The Google service account authenticated but initially returned HTTP 403 for Allergy Wheel.
+  Its saved application permissions now permit reads, testing releases, and production releases, with the required implied permissions.
+  A subsequent Google reviews request returned HTTP 200 for the expected package.
+  These results establish API read access. No artifact was uploaded.
+
+  Gateway F007 and F008 remain open. No physical Apple device is connected.
+  Both corrected native development artifacts built, but native feedback and physical-device acceptance remain incomplete.
+
+  Store Preparation Continuation:
+  The owner authorized the IARC agreement. Google Play saved the completed questionnaire on September 7, 2026.
+  Both store descriptions now describe automatic fonts and analytics, with feedback behind the parent gate.
+  App Store Connect also saved the revised reviewer instructions.
+  Google Play saved the existing wheel icon and feature graphic in its listing draft.
+  Native configuration now supplies the wheel icon instead of a blank image.
+  Native preparation first failed because its container omitted the icon. The prepare script now copies the mobile assets.
+  The real native generator test required the same fixture correction.
+  Both development builds, the focused native generator test, and final application CI passed.
+  Preparation records 76 native inputs. Signed artifacts and final screenshots remain incomplete.
+  The owner confirmed that no physical Apple device is available.
+  Simulator controls rejected interaction after a state refresh, so native interaction acceptance remains incomplete.
+  Application preparation is in pull request #134. Its source commit is `5c8c8402b3cc7ad0e0edaa3e5f1e6ad07fde7d1a`.
+  Gateway candidate changes are committed as `856c40a`. Full gateway CI passed against that commit.
+  Gateway pull request #363 contains the Apple candidate submission support. Both pull requests are ready for review.
 
 ## Planning
 
@@ -714,6 +910,32 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   The selected data scope includes feedback contact details and submitted content.
   These decisions replace the earlier ages 6–8 and no-analytics proposal.
 
+  Service Flow Decision:
+  On September 7, 2026, the owner required fonts and analytics to load automatically without a parental gate.
+  Only feedback requires the parental gate.
+  Remove the analytics and font controls from the parent screen.
+  Keep the selected allergen and game results outside analytics data.
+  This decision replaces the earlier parent-only service design.
+
+  Service Flow Validation:
+  The packaged tests passed automatic font and analytics startup, game-storage isolation, unavailable services, and feedback gate behavior.
+  The real LoopAware form opened in Chromium and WebKit without a feedback submission.
+  Both development artifacts built after correction of the Android version assignment.
+  The rebuilt iOS simulator displayed automatic game fonts and the compact parent screen below the status area.
+  Simulator coordinate input returned `noWindowsAvailable`. Native feedback entry remains unverified.
+  The privacy source and reviewer instructions describe automatic services and guarded feedback.
+
+
+  Later Audience Decision:
+  On September 7, 2026, the owner replaced the temporary 13+ decision with the original ages-six-and-older audience.
+  Remove beer and wine references from the catalog and use child-friendly recipes.
+  Recalculate store ratings after the catalog changes.
+  Apple saved the recalculated 4+ rating after the catalog revision and browser test.
+  Google Play saved the completed IARC questionnaire after the owner authorized its agreement.
+  Its ratings include Everyone and PEGI 3. Younger age groups are selected in the incomplete audience form.
+  The compliance certification requires the remaining provider and native privacy evidence.
+  The parent controls and selected services remain the same.
+
   Evidence:
   The source review found Google Analytics, LoopAware, and Google Fonts requests in `index.html`.
   The game saves the selected allergen token and label in `localStorage`.
@@ -739,9 +961,9 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Confirm the inventory includes requests from external scripts and local storage.
   - Confirm that the design and proposed store declarations describe the same behavior.
   Implementation Contract:
-  On September 7, 2026, optional services moved into a separate parent document in the mobile design.
-  The game starts no external service and retains its preferences locally.
-  Each service requires the parent gate and a separate action for that visit.
+  The game starts fonts, Google Analytics, and LoopAware analytics automatically.
+  The game retains its preferences locally and excludes allergens and results from analytics data.
+  Feedback requires the parent gate and a separate action in the parent document.
   Google Analytics defaults deny analytics storage and advertisement storage.
   Google signals and advertisement personalization are disabled.
 
@@ -755,3 +977,32 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Verify deployed retention, deletion procedures, Google property settings, and store declarations before store submission.
   Capture requests and storage on both native platforms with the actual provider scripts.
   The parent gate and controlled browser tests do not establish legal consent or store acceptance.
+
+  Provider Review Update:
+  The signed-in Google Analytics console verified the configured measurement ID and web stream.
+  Event data retention is two months. User data retention is fourteen months, with reset after new activity enabled.
+  Google signals, user-provided data collection, automatic user-data collection, and granular location and device collection are now disabled.
+  Advertising personalization is allowed in zero of 307 regions.
+  The existing web stream reports inactive consent signals.
+  The deletion control is available, but no deletion request was executed.
+  Native privacy acceptance remains incomplete.
+
+  F003 Preparation Evidence:
+  The live privacy and support page passed the Docker browser check on September 7, 2026.
+  The public text agrees with the current mobile privacy source.
+  B005 records a live HTTP 404 from the selected LoopAware widget configuration.
+  `.mprlab/STORE-READINESS.md` records the remaining declaration evidence and current official policy references.
+  Retention, deletion, property settings, and complete native request captures remain unverified.
+
+  Provider Recovery Evidence:
+  B005 restored the LoopAware configuration for the website and native parent origins.
+  The real form opened in Chromium and WebKit only after the required parent action.
+  No feedback was submitted. Native request captures and deployed retention verification remain incomplete.
+
+  Provider Policy Review:
+  On September 7, 2026, the signed-in LoopAware dashboard showed no visits for the new Allergy Wheel site.
+  The Admin and Traffic sections contained no retention control.
+  The published privacy policy retains data while the account is active and specifies deletion within 30 days after a request.
+  That policy says LoopAware does not knowingly collect personal information from children under 13.
+  Verify the automatic analytics payload and permitted child use before the Google audience certification.
+  The policy establishes the stated procedure. Actual retention and deletion behavior still require verification.

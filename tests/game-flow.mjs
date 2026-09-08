@@ -39,6 +39,13 @@ export async function runGameFlow(browser, gameUrl) {
         await page.locator('#nav-menu').click();
         await page.locator('#menu-table-body tr').first().waitFor();
         assert.ok(await page.locator('#menu-table-body tr').count() > 1);
+        const menuText = await page.locator('#menu-table-body').innerText();
+        assert.doesNotMatch(menuText, /\b(?:wine|beer|alcohol|vodka|brandy|rum|whiskey|whisky|liqueur)\b/i);
+        const codRow = page.locator('#menu-table-body tr').filter({ hasText: 'Crispy Battered Cod' });
+        await codRow.waitFor();
+        assert.match(await codRow.innerText(), /cod[\s\S]*wheat flour[\s\S]*egg[\s\S]*milk/i);
+        const musselsRow = page.locator('#menu-table-body tr').filter({ hasText: 'Mussels with Fries' });
+        assert.match(await musselsRow.innerText(), /mussels[\s\S]*cream[\s\S]*butter[\s\S]*lemon/i);
         await page.locator('#nav-game').click();
         await page.locator('#mute').click();
         assert.equal(await page.locator('#mute').getAttribute('aria-pressed'), 'false');

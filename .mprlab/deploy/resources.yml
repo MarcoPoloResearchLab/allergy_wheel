@@ -6,7 +6,7 @@ mprlab_resources:
   resources:
     - kind: github_pages
       id: website
-      repository: MarcoPoloResearchLab/allergy_wheel
+      repository: marcopoloresearchlab/allergy_wheel
       branch: gh-pages
       domain: allergy.mprlab.com
       url: https://allergy.mprlab.com/
@@ -17,3 +17,19 @@ mprlab_resources:
         target: pages
       verification:
         path: /.mprlab-release.json
+    - kind: mobile_application
+      id: mobile
+      source: mobile
+      build_system: local
+      build:
+        android: scripts/build-store-artifact.mjs
+        ios: scripts/build-store-artifact.mjs
+      android:
+        package_name: com.mprlab.allergywheel
+        destination: google_play
+        track: production
+      ios:
+        bundle_identifier: com.mprlab.allergywheel
+        app_store_id: '6809568034'
+        destination: app_store
+        track: production
