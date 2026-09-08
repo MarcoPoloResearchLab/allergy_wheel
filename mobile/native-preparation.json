@@ -52,7 +52,7 @@
     "index.js": "8b71fb58723cdf961ecd2d8a44bca4ceef89b98863e9217842c7a6c9a117a426",
     "ios/.gitignore": "f8042134be9ad24176d8d630255be93f8a0223925ae88c34b603c8989baa8345",
     "ios/.xcode.env": "3c02dca07775b31ce4e77dfb3bb660d7c6e577474d65a6216f1ea9bef54e1ca6",
-    "ios/AllergyWheel.xcodeproj/project.pbxproj": "54d83a1ea39209a9c3a81eadfef8856d566b6797f75de0c09c5a664516e6f2c3",
+    "ios/AllergyWheel.xcodeproj/project.pbxproj": "994613bd2f40b732def7c8d58f23eda72ee72a19cae167eaf11fda31cde649b0",
     "ios/AllergyWheel.xcodeproj/xcshareddata/xcschemes/AllergyWheel.xcscheme": "9644140c79ac4c640b153dc0d0a58bbfba2155d4da467a532385e227f69cfe3e",
     "ios/AllergyWheel.xcworkspace/contents.xcworkspacedata": "570d866bb6bad7290b23fe9889911e2a92376e52586ec0e618ed0400a36540d9",
     "ios/AllergyWheel/AllergyWheel-Bridging-Header.h": "4a625b53abd4333ca454a4161ba62ab1b0cb44e8a4581326c0bcfe03dc26dd5c",
@@ -62,20 +62,20 @@
     "ios/AllergyWheel/Images.xcassets/AppIcon.appiconset/Contents.json": "344a731ecf43e614be1d95fc1549918fae139fc41bce5db8d00c8359f712e3b2",
     "ios/AllergyWheel/Images.xcassets/Contents.json": "632a1481b9e3b957f3b34267728744d61272e3db32751432551b9eb7c58ad7a2",
     "ios/AllergyWheel/Info.plist": "8fff372542c2df2280115440e82a2a1b0d6f0ee91ae8ff4bade435aa1694f1ce",
-    "ios/AllergyWheel/PrivacyInfo.xcprivacy": "06949f6d09a83cea00c3a4895bb7300f2580d52852c6ade1a9caa169934a1001",
+    "ios/AllergyWheel/PrivacyInfo.xcprivacy": "e4465baecfb4d203727fdc87011d0076d1d397345da3c96359b823376df3a0c2",
     "ios/AllergyWheel/SplashScreen.storyboard": "0763588212466aaec0b9121db1e318eba07aff23b29940f7df97728c6f69f2d1",
     "ios/AllergyWheel/Supporting/Expo.plist": "9e93c2a9d202979e3b37d5b3e4e20f4dd6e88c2d48add9769a7ea98bfc7556a8",
     "ios/Podfile": "11092b2846e83368e26a2f9a46098aa51b3a25a83e7fef1fe680e87295bf00c7",
-    "ios/Podfile.lock": "39678b07aff3d76d75ea805252e29bab27761783fd08ca1e861019f6c59d4365",
+    "ios/Podfile.lock": "d885a6ef81b6ae36a1e51ce88fcd483e7464420726be4a516a6c784de214c123",
     "ios/Podfile.properties.json": "abcf04d5bee77b234bd4ce7b494a1009af985e2585c6acb77c4954123ae8507a",
     "lifecycle.js": "5f2d79a51b26588158e77c7bbd51b47d718afbc7cb1daf9f3bac9c32c74e98a0",
     "metro.config.js": "d3234ab9246b768470ddffde03d31ec8c1409ec8fb4887be6db346bb5c120e60",
     "package-lock.json": "e5905ce012564cf81d3e6f559858ce58dbd573fda5e0b0d7dfce85682a2d0c3d",
-    "package.json": "16ab525d40c86dbb1eda70b6ae911303919a880db444b240e95df33949e10ca1",
+    "package.json": "7b7cea00ecfd01cd814ea3dad61af38f1e5e0ce8b10ef4b2654031db859c7b0d",
     "parents.html": "2b0b4bba1180ba737dc2c026bc3481889a801c8f8f0c289773638a44a2d83884",
     "plugins/withOfflineBuild.cjs": "b8237653570a6cc239de0543ecb8c746f887fd579b1cb36473c3c6e826dbb00b",
     "plugins/withStoreRelease.cjs": "81317e1a6f3adeedbdc65eb2ea1a6ba0bdd0abb099d1bb51c497521efed8a149",
     "scripts/verify-native-release.mjs": "62a08fcd79406265d4cffc203569c3146aadb84f8066d687305b80c850824db6",
-    "source-preparation.json": "dba6b90978ff4aef3a62958c19bb865406c994a4be619dec0e585ce5335594ec"
+    "source-preparation.json": "74a8c2ffeb179dd727f6759d5127c8cf2aafce1b095f64baac20d3a65032e5f4"
   }
 }

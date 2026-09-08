@@ -2,6 +2,8 @@
   "schema_version": 1,
   "files": {
     "assets/audio/ambulance_siren.mp3": "aa22eb5eabacd05a63323fa2ae29361fee48311b978114fc39722e6fc5f7eecb",
+    "assets/audio/om_nom.mp3.m4a": "4ac26c0bc91617509c0d3d126f9dcf40ec96e15400fc3a6649b1cc8d33c6452a",
+    "assets/audio/yam-yam.m4a": "2da37e22758afc6aff49fc296a4e1aea0558a36ea4e3ddb3a576768a668ae53c",
     "assets/audio/yam_yam.mp3": "90aed334567a7bb885fb729308d3c371c27194ae5885d2c837b6d4c33af404b1",
     "assets/avatars/adventurous-boy.svg": "9fd0a455155950da65fdad3e1a5c86edf3c5f82a687c7f713ca8ad4a395508b8",
     "assets/avatars/sea.svg": "dc7ba9b548b3f390eff47fcc80d51f839d70cb2482fa02d3435db708e7d29e7f",

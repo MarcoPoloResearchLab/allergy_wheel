@@ -3,6 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "main": "index.js",
+  "expo": {
+    "autolinking": {
+      "ios": {
+        "buildFromSource": ["expo-modules-core"]
+      }
+    }
+  },
   "scripts": {
     "prepare:native": "expo prebuild --no-install --platform all",
     "check:expo": "expo install --check",

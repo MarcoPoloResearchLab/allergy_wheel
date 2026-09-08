@@ -101,6 +101,8 @@ Native preparation copies these assets into its container before Expo generates 
 Store preparation records generated native source and embedded game data under `mobile`.
 Build caches, private keys, and machine-local inputs remain excluded from Git.
 `mobile/native-preparation.json` binds each prepared native input to its content digest.
+The iOS configuration builds `expo-modules-core` from its locked source.
+Its prebuilt podspec includes absolute paths, which change the dependency checksum when the release uses a temporary directory.
 `mobile/source-preparation.json` binds the embedded game to its source files.
 Run `make mobile-prepare-store` after a native configuration or game source change.
 Commit the prepared inputs with their source changes before release.

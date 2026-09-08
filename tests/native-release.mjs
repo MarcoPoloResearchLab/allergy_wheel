@@ -7,6 +7,8 @@ import { execFileSync } from 'node:child_process';
 
 const prepared = await mkdtemp(join(tmpdir(), 'allergy-native-'));
 try {
+    const autolinking = JSON.parse(execFileSync(process.execPath, [resolve('mobile/node_modules/expo-modules-autolinking/bin/expo-modules-autolinking'), 'resolve', '--json', '--platform', 'ios', '--project-root', resolve('mobile')], { encoding: 'utf8' }));
+    assert.deepEqual(autolinking.configuration?.buildFromSource, ['expo-modules-core'], 'ExpoModulesCore must use source so its podspec checksum does not depend on the checkout path.');
     for (const name of ['app.json', 'package.json', 'package-lock.json', 'plugins', 'assets']) {
         await cp(resolve('mobile', name), join(prepared, name), { recursive: true });
     }
