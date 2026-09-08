@@ -75,8 +75,11 @@ mobile-ios: mobile-package
 
 .PHONY: test-pages
 test-pages: build-test-image
-	docker build --file Dockerfile.pages --target pages --output type=local,dest=artifacts/pages .
-	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY)/artifacts/pages:/publication:ro" "$(TEST_IMAGE)" node scripts/check-pages.mjs
+	@set -e; \
+	pages_output="$$(mktemp -d "$${TMPDIR:-/tmp}/allergy-wheel-pages.XXXXXX")"; \
+	trap 'rm -rf "$$pages_output"' EXIT; \
+	docker build --file Dockerfile.pages --target pages --output "type=local,dest=$$pages_output" .; \
+	docker run --rm --init --volume "$$pages_output:/publication:ro" "$(TEST_IMAGE)" node scripts/check-pages.mjs
 
 .PHONY: install-android
 install-android:
