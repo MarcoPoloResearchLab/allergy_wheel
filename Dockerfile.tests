@@ -1,5 +1,7 @@
 FROM mcr.microsoft.com/playwright:v1.55.1-noble@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c
 
+RUN apt-get update && apt-get install --yes --no-install-recommends make && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /workspace
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -8,6 +10,7 @@ COPY mobile/package.json mobile/package-lock.json ./mobile/
 RUN cd mobile && npm ci
 
 COPY .mprlab/deploy/resources.yml ./.mprlab/deploy/resources.yml
+COPY Makefile ./
 COPY index.html privacy.html CNAME robots.txt sitemap.xml ./
 COPY assets ./assets
 COPY data ./data
