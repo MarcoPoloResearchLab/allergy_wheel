@@ -4,6 +4,7 @@
 !.mprlab/deploy/resources.yml
 !package.json
 !package-lock.json
+!Makefile
 !index.html
 !privacy.html
 !CNAME
