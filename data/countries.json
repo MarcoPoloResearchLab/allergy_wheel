@@ -1,0 +1,207 @@
+[
+  {
+    "cuisine": "American",
+    "country": "United States",
+    "flag": "🇺🇸"
+  },
+  {
+    "cuisine": "Argentinian",
+    "country": "Argentina",
+    "flag": "🇦🇷"
+  },
+  {
+    "cuisine": "Brazilian",
+    "country": "Brazil",
+    "flag": "🇧🇷"
+  },
+  {
+    "cuisine": "British",
+    "country": "United Kingdom",
+    "flag": "🇬🇧"
+  },
+  {
+    "cuisine": "Canadian",
+    "country": "Canada",
+    "flag": "🇨🇦"
+  },
+  {
+    "cuisine": "Chinese",
+    "country": "China",
+    "flag": "🇨🇳"
+  },
+  {
+    "cuisine": "French",
+    "country": "France",
+    "flag": "🇫🇷"
+  },
+  {
+    "cuisine": "German",
+    "country": "Germany",
+    "flag": "🇩🇪"
+  },
+  {
+    "cuisine": "Greek",
+    "country": "Greece",
+    "flag": "🇬🇷"
+  },
+  {
+    "cuisine": "Indian",
+    "country": "India",
+    "flag": "🇮🇳"
+  },
+  {
+    "cuisine": "Italian",
+    "country": "Italy",
+    "flag": "🇮🇹"
+  },
+  {
+    "cuisine": "Japanese",
+    "country": "Japan",
+    "flag": "🇯🇵"
+  },
+  {
+    "cuisine": "Korean",
+    "country": "South Korea",
+    "flag": "🇰🇷"
+  },
+  {
+    "cuisine": "Mexican",
+    "country": "Mexico",
+    "flag": "🇲🇽"
+  },
+  {
+    "cuisine": "Moroccan",
+    "country": "Morocco",
+    "flag": "🇲🇦"
+  },
+  {
+    "cuisine": "Russian",
+    "country": "Russia",
+    "flag": "🇷🇺"
+  },
+  {
+    "cuisine": "Spanish",
+    "country": "Spain",
+    "flag": "🇪🇸"
+  },
+  {
+    "cuisine": "Thai",
+    "country": "Thailand",
+    "flag": "🇹🇭"
+  },
+  {
+    "cuisine": "Turkish",
+    "country": "Türkiye",
+    "flag": "🇹🇷"
+  },
+  {
+    "cuisine": "Vietnamese",
+    "country": "Vietnam",
+    "flag": "🇻🇳"
+  },
+  {
+    "cuisine": "Levantine",
+    "country": "Lebanon",
+    "flag": "🇱🇧"
+  },
+  {
+    "cuisine": "Belgian",
+    "country": "Belgium",
+    "flag": "🇧🇪"
+  },
+  {
+    "cuisine": "Breakfast",
+    "country": "Worldwide",
+    "flag": "🌍"
+  },
+  {
+    "cuisine": "Cajun",
+    "country": "Louisiana, USA",
+    "flag": "⚜️"
+  },
+  {
+    "cuisine": "Candy",
+    "country": "Sweet Treats",
+    "flag": "🍭"
+  },
+  {
+    "cuisine": "Caribbean",
+    "country": "Caribbean",
+    "flag": "🏝️"
+  },
+  {
+    "cuisine": "Chinese-American",
+    "country": "China & United States",
+    "flag": "🇨🇳🇺🇸"
+  },
+  {
+    "cuisine": "Deli",
+    "country": "Delicatessen",
+    "flag": "🥪"
+  },
+  {
+    "cuisine": "Dessert",
+    "country": "Dessert Classics",
+    "flag": "🍰"
+  },
+  {
+    "cuisine": "Diner",
+    "country": "American Diner",
+    "flag": "🍽️"
+  },
+  {
+    "cuisine": "Fusion",
+    "country": "Global Fusion",
+    "flag": "🌐"
+  },
+  {
+    "cuisine": "Indo-Chinese",
+    "country": "India & China",
+    "flag": "🇮🇳🇨🇳"
+  },
+  {
+    "cuisine": "Italian-American",
+    "country": "Italy & United States",
+    "flag": "🇮🇹🇺🇸"
+  },
+  {
+    "cuisine": "Korean-Japanese",
+    "country": "Korea & Japan",
+    "flag": "🇰🇷🇯🇵"
+  },
+  {
+    "cuisine": "Malaysian",
+    "country": "Malaysia",
+    "flag": "🇲🇾"
+  },
+  {
+    "cuisine": "Mediterranean",
+    "country": "Mediterranean Region",
+    "flag": "🌊"
+  },
+  {
+    "cuisine": "Middle Eastern",
+    "country": "Middle East",
+    "flag": "🕌"
+  },
+  {
+    "cuisine": "Portuguese",
+    "country": "Portugal",
+    "flag": "🇵🇹"
+  },
+  {
+    "cuisine": "Snack",
+    "country": "Snack Time",
+    "flag": "🥨"
+  },
+  {
+    "cuisine": "Sri Lankan",
+    "country": "Sri Lanka",
+    "flag": "🇱🇰"
+  },
+  {
+    "cuisine": "Taiwanese",
+    "country": "Taiwan",
+    "flag": "🇹🇼"
+  }
+]

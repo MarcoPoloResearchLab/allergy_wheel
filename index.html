@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5CDP19RY2Z"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-5CDP19RY2Z');
+    </script>
+    <script src="https://loopaware.mprlab.com/widget.js?site_id=9931e62f-5a60-48e6-9e31-16de62f62e7d"></script>
+    <meta content="Marco Polo Research Lab" name="author"/>
+    <link href="https://allergy.mprlab.com/" rel="canonical"/>
+    <meta content="index,follow" name="robots"/>
+    <meta
+        content="Interactive allergy-learning game where kids pick food allergens, spin the wheel to win hearts, and discover dishes that match their choices."
+        name="description"
+    />
+    <meta content="Allergy Wheel – Learn Food Allergens Through Play" property="og:title"/>
+    <meta
+        content="Interactive allergy-learning game where kids pick food allergens, spin the wheel to win hearts, and discover dishes that match their choices."
+        property="og:description"
+    />
+    <meta content="https://allergy.mprlab.com/" property="og:url"/>
+    <meta content="game" property="og:type"/>
+    <meta
+        content="https://allergy.mprlab.com/assets/social/allergy-wheel-social-preview.png"
+        property="og:image"
+    />
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@MprlabSupport">
+    <meta name="twitter:creator" content="@MprlabSupport">
+    <meta name="twitter:title" content="Allergy Wheel – Learn Food Allergens Through Play">
+    <meta name="twitter:description" content="Interactive allergy-learning game where kids pick food allergens, spin the wheel to win hearts, and discover dishes that match their choices.">
+    <meta name="twitter:image" content="https://allergy.mprlab.com/assets/social/allergy-wheel-social-preview.png">
+
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/spinning-wheel.svg">
+    <link rel="shortcut icon" type="image/svg+xml" href="/assets/icons/spinning-wheel.svg">
+
+    <title>Allergy Wheel – Learn Food Allergens Through Play</title>
+    <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "EducationalGame",
+            "name": "Allergy Wheel – Learn Food Allergens Through Play",
+            "url": "https://allergy.mprlab.com/",
+            "description": "Interactive allergy-learning game where kids pick food allergens, spin the wheel to win hearts, and discover dishes that match their choices.",
+            "image": "https://allergy.mprlab.com/assets/social/allergy-wheel-social-preview.png",
+            "audience": { "@type": "PeopleAudience", "audienceType": "Children and families" },
+            "inLanguage": "en",
+            "isFamilyFriendly": true,
+            "genre": ["Educational", "Kids"],
+            "publisher": {
+                "@type": "Organization",
+                "name": "Marco Polo Research Lab",
+                "url": "https://mprlab.com"
+            },
+            "potentialAction": {
+                "@type": "PlayAction",
+                "target": { "@type": "EntryPoint", "urlTemplate": "https://allergy.mprlab.com/" }
+            }
+        }
+    </script>
+
+</head>
+
+<body data-screen="allergy">
+<header>
+    <div class="header-left">
+        <div class="avatar-menu-wrapper">
+            <button aria-expanded="false" aria-haspopup="true" class="avatar-button" id="avatar-toggle" type="button"></button>
+            <div aria-hidden="true" class="avatar-menu-backdrop" id="avatar-menu-backdrop" hidden></div>
+            <div class="avatar-menu" id="avatar-menu" hidden></div>
+        </div>
+        <div class="aw-header-title-group">
+            <h1>Allergy Wheel</h1>
+        </div>
+        <div class="aw-bottombar">
+            <div aria-label="Select a view" class="header-nav" role="group">
+                <button
+                    aria-pressed="true"
+                    class="ghost"
+                    id="nav-game"
+                    type="button"
+                >
+                    Game
+                </button>
+                <button
+                    aria-pressed="false"
+                    class="ghost"
+                    id="nav-menu"
+                    type="button"
+                >
+                    Menu
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="aw-hearts-container">
+            <div aria-live="polite" class="hearts" data-count="0" id="hearts-bar" aria-label="0 hearts" title="0 hearts">
+                <span class="heart-count">0</span>
+                <span aria-hidden="true" class="heart-icons"></span>
+            </div>
+        </div>
+        <div class="aw-header-controls">
+            <button class="ghost" id="fs">Full Screen</button>
+            <button type="button" class="ghost" id="mute" aria-pressed="false" aria-label="Mute audio">Mute</button>
+        </div>
+    </div>
+</header>
+
+<!-- Allergy selection -->
+<main id="screen-allergy">
+    <div class="card">
+        <div class="card__body">
+            <hgroup class="allergen-introduction">
+                <h2 class="title" id="allergy-title">Pick your allergens</h2>
+                <p class="muted">Choose anything that might cause trouble. You can change this later.</p>
+            </hgroup>
+            <div class="grid allergen-grid" id="allergy-list">
+                <button
+                    aria-disabled="true"
+                    class="btn primary start-button"
+                    data-blocked="true"
+                    id="start"
+                    type="button"
+                >
+                    <span aria-hidden="true" class="start-button__icon">
+                        <img alt="" src="/assets/icons/spinning-wheel.svg"/>
+                    </span>
+                    Spin the Wheel
+                </button>
+            </div>
+        </div>
+        <div class="actions card__actions">
+            <div class="card-actions__status">
+                <p class="muted" id="loading">Loading data…</p>
+                <p class="muted" hidden id="load-error">Could not load data. Check JSON paths.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Wheel -->
+<main id="screen-wheel">
+    <div class="wheel-wrap">
+        <canvas aria-label="Spinning dish wheel" height="1000" id="wheel" width="1000"></canvas>
+        <!-- wheel control cluster; JS toggles .is-stop <-> .is-start on the main button -->
+        <div class="wheel-control" data-wheel-control-mode="start" id="wheel-control">
+            <button class="wheel-control__continue btn action is-start" id="wheel-continue" type="button">
+                <span class="wheel-control__label wheel-control__label--spin">SPIN</span>
+                <span class="wheel-control__label wheel-control__label--stop">STOP</span>
+            </button>
+            <div
+                aria-hidden="false"
+                class="wheel-control__restart"
+                id="wheel-restart"
+                role="button"
+                tabindex="0"
+            >
+                Restart
+            </div>
+        </div>
+    </div>
+    <div class="status">
+        <p class="wheel-instruction muted">Spin the allergy wheel to win 10 hearts!</p>
+        Allergens: <span id="sel-badges"></span>
+    </div>
+    <div
+        aria-hidden="true"
+        class="restart-modal"
+        hidden
+        id="restart-confirmation"
+    >
+        <div class="restart-modal__overlay" id="restart-confirmation-overlay"></div>
+        <div
+            aria-describedby="restart-confirmation-description"
+            aria-labelledby="restart-confirmation-title"
+            aria-modal="true"
+            class="restart-modal__dialog"
+            id="restart-confirmation-dialog"
+            role="dialog"
+            tabindex="-1"
+        >
+            <h2 class="restart-modal__title" id="restart-confirmation-title">Restart the game?</h2>
+            <p class="restart-modal__message" id="restart-confirmation-description">
+                Are you sure you want to restart? Your current progress will be lost.
+            </p>
+            <div class="restart-modal__actions">
+                <button class="btn danger restart-modal__confirm" id="restart-confirmation-confirm" type="button">
+                    Yes, restart
+                </button>
+                <button class="ghost restart-modal__cancel" id="restart-confirmation-cancel" type="button">
+                    Continue playing
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Menu -->
+<section aria-hidden="true" aria-labelledby="menu-title" id="screen-menu">
+    <div class="menu-card">
+        <div class="menu-card__header">
+            <h2 class="title" id="menu-title">Global Allergy-Friendly Menu</h2>
+            <p class="muted">Browse every dish from the wheel with its colorful story.</p>
+        </div>
+        <div class="menu-table-wrapper">
+            <table aria-describedby="menu-title" class="menu-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Dish</th>
+                        <th scope="col">
+                            <div class="menu-header-cell">
+                                <button
+                                    aria-controls="menu-ingredient-filter-panel"
+                                    aria-expanded="false"
+                                    aria-haspopup="true"
+                                    class="menu-header-toggle"
+                                    id="menu-ingredient-filter-toggle"
+                                    type="button"
+                                >
+                                    Ingredients
+                                </button>
+                                <div
+                                    aria-label="Filter ingredients"
+                                    class="menu-filter-panel"
+                                    hidden
+                                    id="menu-ingredient-filter-panel"
+                                    role="group"
+                                >
+                                    <div class="menu-filter-header">
+                                        <p class="menu-filter-title">Filter by ingredient</p>
+                                        <button
+                                            aria-disabled="true"
+                                            class="menu-filter-clear"
+                                            id="menu-ingredient-filter-clear"
+                                            type="button"
+                                        >
+                                            Clear
+                                        </button>
+                                    </div>
+                                    <div class="menu-filter-list" id="menu-ingredient-filter-list"></div>
+                                </div>
+                            </div>
+                        </th>
+                        <th scope="col">
+                            <div class="menu-header-cell">
+                                <button
+                                    aria-controls="menu-cuisine-filter-panel"
+                                    aria-expanded="false"
+                                    aria-haspopup="true"
+                                    class="menu-header-toggle"
+                                    id="menu-cuisine-filter-toggle"
+                                    type="button"
+                                >
+                                    Cuisine
+                                </button>
+                                <div
+                                    aria-label="Filter cuisines"
+                                    class="menu-filter-panel"
+                                    hidden
+                                    id="menu-cuisine-filter-panel"
+                                    role="group"
+                                >
+                                    <div class="menu-filter-header">
+                                        <p class="menu-filter-title">Filter by cuisine</p>
+                                        <button
+                                            aria-disabled="true"
+                                            class="menu-filter-clear"
+                                            id="menu-cuisine-filter-clear"
+                                            type="button"
+                                        >
+                                            Clear
+                                        </button>
+                                    </div>
+                                    <div class="menu-filter-list" id="menu-cuisine-filter-list"></div>
+                                </div>
+                            </div>
+                        </th>
+                        <th scope="col">Story</th>
+                    </tr>
+                </thead>
+                <tbody id="menu-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Reveal -->
+<section aria-hidden="true" aria-labelledby="dish-title" aria-modal="true" id="reveal" role="dialog">
+    <div class="reveal-card">
+        <div class="row">
+            <h3 class="title" id="dish-title" style="margin:0"></h3>
+            <span class="tag" id="dish-cuisine"></span>
+        </div>
+        <div class="banner ok" id="result">
+            <svg class="face" hidden id="face" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" fill="#ffd1dc" r="45" stroke="#000" stroke-width="4"/>
+                <circle cx="35" cy="40" r="6"/>
+                <circle cx="65" cy="40" r="6"/>
+                <ellipse cx="50" cy="65" fill="#ff9eb3" rx="22" ry="14" stroke="#000" stroke-width="4"/>
+            </svg>
+            <div id="result-text" style="font-weight:900"></div>
+        </div>
+        <div class="ingredients" id="dish-ingredients"></div>
+        <div class="actions" style="text-align:right">
+            <button class="btn primary" id="again">Spin Again</button>
+        </div>
+    </div>
+</section>
+
+<section aria-hidden="true" aria-labelledby="gameover-title" aria-modal="true" id="gameover" role="dialog">
+    <div class="reveal-card" style="text-align:center">
+        <h3 class="title" id="gameover-title" style="margin:0 0 6px 0">Game Over</h3>
+        <p class="muted" style="margin:0 0 16px 0">You ran out of hearts. Want to try again?</p>
+        <div class="actions" style="display:flex; gap:10px; justify-content:center">
+            <button class="btn primary" id="restart">Restart</button>
+        </div>
+    </div>
+</section>
+
+<script src="js/core/app.js" type="module"></script>
+</body>
+</html>
