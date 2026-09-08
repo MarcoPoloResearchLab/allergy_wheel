@@ -58,7 +58,7 @@ mobile-prepare: build-test-image
 	bash scripts/prepare-mobile.sh "$(TEST_IMAGE)" "$(REPOSITORY_DIRECTORY)"
 
 .PHONY: mobile-prepare-store
-mobile-prepare-store: mobile-prepare mobile-package
+mobile-prepare-store: mobile-dependencies mobile-prepare mobile-package
 	cd mobile/ios && pod install
 	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY):/workspace" "$(TEST_IMAGE)" node scripts/record-native-preparation.mjs
 
@@ -147,6 +147,7 @@ test-release-adapter: build-test-image
 .PHONY: test-native-preparation
 test-native-preparation: build-test-image
 	docker run --rm --init "$(TEST_IMAGE)" node tests/native-preparation.mjs
+	docker run --rm --init "$(TEST_IMAGE)" node tests/native-preparation-command.mjs
 
 .PHONY: check-signing
 check-signing:

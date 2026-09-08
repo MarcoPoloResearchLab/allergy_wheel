@@ -1,7 +1,7 @@
 PODS:
   - EXConstants (57.0.17):
     - ExpoModulesCore
-  - Expo (57.0.20):
+  - Expo (57.0.21):
     - ExpoModulesCore
     - ExpoModulesJSI
     - hermes-engine
@@ -39,7 +39,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLogBox (57.0.4):
     - React-Core
-  - ExpoModulesCore (57.0.16):
+  - ExpoModulesCore (57.0.17):
     - ExpoModulesJSI
     - hermes-engine
     - RCTRequired
@@ -63,10 +63,10 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - ExpoModulesJSI (57.0.8):
+  - ExpoModulesJSI (57.1.0):
     - React-Core
     - ReactCommon
-  - ExpoModulesWorklets (57.0.16):
+  - ExpoModulesWorklets (57.0.17):
     - ExpoModulesCore
     - ExpoModulesJSI
   - ExpoSystemUI (57.0.3):
@@ -2263,16 +2263,16 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   EXConstants: 799577d2516460afb4b57874d6823a62327ce5c7
-  Expo: 20c445ed59fdd6e967ced0bd3d3e99be771ea176
+  Expo: 8fcd49c9918bb861a881ea9844a3f099a9b0bd3b
   ExpoAsset: bea9115098b9f4ddfb0456961c8a7d2779ccc8f5
   ExpoDomWebView: beaec034e51bd028428b98bb1f2633ab79c6d095
   ExpoFileSystem: cc500f33804065aacc7b3366007267b84deca8c8
   ExpoFont: d5b77d74f8d5d1a248de70955bfad847079e9074
   ExpoKeepAwake: c26f14275017370cc8a4b7b43a0e23361f2053a5
   ExpoLogBox: 80957303325cd4439137765c90a87d7f22aaf2ff
-  ExpoModulesCore: bf0f447c9164035bdc8d58b939cddfb07b64b608
-  ExpoModulesJSI: 1a6f80255963c29cdf9a11d59cbdc12b3558d585
-  ExpoModulesWorklets: 161e2e951499cdbadb74acf4af86ff19d02919c9
+  ExpoModulesCore: 293e47c82c6c3ec4d3ec9571112a79d56c8a343a
+  ExpoModulesJSI: 9df8e7c9719f59e8c001ec33611774137fc1484a
+  ExpoModulesWorklets: 767d05688faa3bbf38b19c08abca031b5328093a
   ExpoSystemUI: e5f9a81b45481222f6b8b45b86fa37b18d0a86c9
   FBLazyVector: 2138c6c2ab66c31bf5754dc18097fbc498a49c7f
   hermes-engine: 63c5db7d529c36335fada6582fd293ae2a105d77
