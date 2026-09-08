@@ -1,5 +1,5 @@
 FROM scratch AS pages
-COPY index.html privacy.html CNAME robots.txt sitemap.xml /
+COPY index.html privacy.html robots.txt sitemap.xml /
 COPY assets/ /assets/
 COPY data/ /data/
 COPY js/ /js/
