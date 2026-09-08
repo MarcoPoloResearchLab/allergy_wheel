@@ -21,6 +21,8 @@ export async function executeSigningTool(name, args) {
     }
     const environment = { ...process.env };
     delete environment[CERTIFICATE_PASSWORD];
+    delete environment.GH_TOKEN;
+    delete environment.GITHUB_TOKEN;
     return new Promise((resolve, reject) => {
         const child = spawn(name, commandArgs, { env: environment, stdio: ['pipe', 'pipe', 'pipe'] });
         let stdout = '';
@@ -121,7 +123,7 @@ export async function withAppleSigning({ repositoryRoot, applicationIdentifier, 
         profilePath = join(profiles, `${uuid}-${randomBytes(12).toString('hex')}.mobileprovision`);
         await copyFile(profileSource, profilePath);
         const buildEnvironment = { ...environment };
-        for (const name of [CERTIFICATE_PATH, CERTIFICATE_PASSWORD, PROFILE_PATH, 'ALLERGY_WHEEL_ANDROID_KEYSTORE', 'ALLERGY_WHEEL_ANDROID_STORE_PASSWORD', 'ALLERGY_WHEEL_ANDROID_KEY_ALIAS', 'ALLERGY_WHEEL_ANDROID_KEY_PASSWORD']) delete buildEnvironment[name];
+        for (const name of [CERTIFICATE_PATH, CERTIFICATE_PASSWORD, PROFILE_PATH, 'GH_TOKEN', 'GITHUB_TOKEN', 'ALLERGY_WHEEL_ANDROID_KEYSTORE', 'ALLERGY_WHEEL_ANDROID_STORE_PASSWORD', 'ALLERGY_WHEEL_ANDROID_KEY_ALIAS', 'ALLERGY_WHEEL_ANDROID_KEY_PASSWORD']) delete buildEnvironment[name];
         buildEnvironment.ALLERGY_WHEEL_APPLE_TEAM = team;
         buildEnvironment.ALLERGY_WHEEL_APPLE_PROFILE = uuid;
         buildEnvironment.ALLERGY_WHEEL_APPLE_IDENTITY = matches[0];

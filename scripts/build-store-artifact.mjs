@@ -81,6 +81,8 @@ try {
         const keystore = await repositorySigningFile(repositoryRoot, process.env.ALLERGY_WHEEL_ANDROID_KEYSTORE, 'ALLERGY_WHEEL_ANDROID_KEYSTORE');
         const environment = { ...process.env, ALLERGY_WHEEL_ANDROID_KEYSTORE: keystore };
         delete environment.ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD;
+        delete environment.GH_TOKEN;
+        delete environment.GITHUB_TOKEN;
         process.exitCode = await runNativeBuild(gateway, request, environment, controller.signal);
     }
 } catch (error) {

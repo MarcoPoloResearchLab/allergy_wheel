@@ -120,7 +120,11 @@ Copy the ignored private files with the repository when you change build hosts.
 The release adapter prepares temporary Apple signing state from these files.
 It removes this state after success, failure, or an interruption.
 The build does not require an identity in the login Keychain.
-`make release` and `make check-signing` clear inherited signing variables and load this file.
+`make release`, `make publish`, `make deploy`, and `make check-signing` load this file after they clear inherited credential variables.
+The lifecycle commands require `GH_TOKEN` from this file for GitHub authentication.
+They use temporary HTTPS Git settings and the GitHub CLI credential helper.
+They do not change the saved Git configuration.
+The native signing and build processes do not receive the GitHub token.
 A missing file or a failed shell command in the file stops the command.
 All signing key files must be under the ignored `configs/signing/` directory.
 The Apple inputs are `ALLERGY_WHEEL_APPLE_CERTIFICATE_PATH`, `ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD`, and `ALLERGY_WHEEL_APPLE_PROFILE_PATH`.

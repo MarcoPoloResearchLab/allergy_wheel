@@ -9,11 +9,12 @@ export LOCAL_PORT
 COMPOSE = docker compose --env-file /dev/null --project-name "$(COMPOSE_PROJECT_NAME)" --file "$(REPOSITORY_DIRECTORY)/compose.local.yml"
 TEST_IMAGE = $(COMPOSE_PROJECT_NAME)-tests:local
 
-LOAD_SIGNING_INPUT = unset ALLERGY_WHEEL_ANDROID_KEYSTORE ALLERGY_WHEEL_ANDROID_STORE_PASSWORD \
+LOAD_PRIVATE_INPUT = unset ALLERGY_WHEEL_ANDROID_KEYSTORE ALLERGY_WHEEL_ANDROID_STORE_PASSWORD \
     ALLERGY_WHEEL_ANDROID_KEY_ALIAS ALLERGY_WHEEL_ANDROID_KEY_PASSWORD \
     ALLERGY_WHEEL_APPLE_TEAM ALLERGY_WHEEL_APPLE_PROFILE ALLERGY_WHEEL_APPLE_IDENTITY \
     ALLERGY_WHEEL_APPLE_KEYCHAIN ALLERGY_WHEEL_APPLE_CERTIFICATE_PATH \
-    ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD ALLERGY_WHEEL_APPLE_PROFILE_PATH; \
+    ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD ALLERGY_WHEEL_APPLE_PROFILE_PATH \
+    GH_TOKEN GITHUB_TOKEN; \
     set -a; source "$(REPOSITORY_DIRECTORY)/configs/.env.allergy-wheel"; set +a;
 
 .PHONY: help up down check test test-local ci build-test-image
@@ -127,9 +128,13 @@ release publish deploy:
 			"$${gateway_root}" "$${gateway_root}" >&2; \
 		exit 2; \
 	fi; \
-	if [ "$@" = release ]; then \
-		$(LOAD_SIGNING_INPUT) \
-	fi; \
+	$(LOAD_PRIVATE_INPUT) \
+	: "$${GH_TOKEN:?configs/.env.allergy-wheel must supply GH_TOKEN}"; \
+	export GH_HOST=github.com GIT_TERMINAL_PROMPT=0 GIT_CONFIG_COUNT=4; \
+	export GIT_CONFIG_KEY_0=url.https://github.com/.insteadOf GIT_CONFIG_VALUE_0=git@github.com:; \
+	export GIT_CONFIG_KEY_1=url.https://github.com/.insteadOf GIT_CONFIG_VALUE_1=ssh://git@github.com/; \
+	export GIT_CONFIG_KEY_2=credential.https://github.com.helper GIT_CONFIG_VALUE_2=; \
+	export GIT_CONFIG_KEY_3=credential.https://github.com.helper GIT_CONFIG_VALUE_3='!gh auth git-credential'; \
 	$(MAKE) --no-print-directory -C "$${gateway_root}" "app-$@" \
 		MPRLAB_APP_ROOT="$${application_root}"
 
@@ -151,4 +156,4 @@ test-native-preparation: build-test-image
 
 .PHONY: check-signing
 check-signing:
-	@set -e; $(LOAD_SIGNING_INPUT) node "$(REPOSITORY_DIRECTORY)/scripts/check-signing.mjs"
+	@set -e; $(LOAD_PRIVATE_INPUT) node "$(REPOSITORY_DIRECTORY)/scripts/check-signing.mjs"

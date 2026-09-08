@@ -20,6 +20,7 @@ try {
         await writeFile(join(signingDirectory, 'distribution.p12'), 'private certificate fixture');
         await writeFile(join(signingDirectory, 'app.mobileprovision'), 'signed profile fixture');
         const environment = {
+            GH_TOKEN: 'private GitHub fixture token',
             ALLERGY_WHEEL_APPLE_CERTIFICATE_PATH: join(signingDirectory, 'distribution.p12'),
             ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD: certificatePassword,
             ALLERGY_WHEEL_APPLE_PROFILE_PATH: join(signingDirectory, 'app.mobileprovision')
@@ -75,6 +76,7 @@ try {
             assert.equal(signing.environment.ALLERGY_WHEEL_APPLE_PROFILE, uuid);
             assert.equal(signing.environment.ALLERGY_WHEEL_APPLE_IDENTITY, identity);
             assert.equal(signing.environment.ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD, undefined);
+            assert.equal(signing.environment.GH_TOKEN, undefined);
             assert.equal(signing.keychainEnvironment, 'ALLERGY_WHEEL_APPLE_KEYCHAIN');
             assert.ok((await readFile(keychain, 'utf8')).includes('temporary'));
             assert.equal(await readFile(signing.profilePath, 'utf8'), 'signed profile fixture');

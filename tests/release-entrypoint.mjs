@@ -12,7 +12,8 @@ const signingNames = [
     'ALLERGY_WHEEL_ANDROID_KEY_PASSWORD',
     'ALLERGY_WHEEL_APPLE_CERTIFICATE_PATH',
     'ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD',
-    'ALLERGY_WHEEL_APPLE_PROFILE_PATH'
+    'ALLERGY_WHEEL_APPLE_PROFILE_PATH',
+    'GH_TOKEN'
 ];
 const fixtureRoot = await mkdtemp(join(tmpdir(), 'allergy-release-entrypoint-'));
 try {
@@ -39,12 +40,14 @@ const names = ${JSON.stringify(signingNames)};
 writeFileSync(process.env.TEST_GATEWAY_RECEIPT, JSON.stringify({
     target: process.argv[2],
     applicationRoot: process.argv[3],
-    signing: Object.fromEntries(names.map(name => [name, process.env[name] ?? null]))
+    signing: Object.fromEntries(names.map(name => [name, process.env[name] ?? null])),
+    git: Object.fromEntries(Object.entries(process.env).filter(([name]) => name.startsWith('GIT_CONFIG_'))),
+    githubFallback: process.env.GITHUB_TOKEN ?? null
 }));
 process.exit(Number(process.env.TEST_GATEWAY_EXIT ?? 0));
 `);
     const inheritedValues = Object.fromEntries(signingNames.map(name => [name, 'inherited-stale-value']));
-    const environment = { ...process.env, ...inheritedValues, TEST_GATEWAY_RECEIPT: receiptPath };
+    const environment = { ...process.env, ...inheritedValues, GITHUB_TOKEN: 'stale alternate token', TEST_GATEWAY_RECEIPT: receiptPath };
     const signingValues = Object.fromEntries(signingNames.map(name => [name, `fixture ${name} $literal; "quoted"`]));
     const inputContents = signingNames.map(name => `${name}='${signingValues[name]}'`).join('\n') + '\n';
     await writeFile(inputPath, inputContents);
@@ -63,6 +66,19 @@ process.exit(Number(process.env.TEST_GATEWAY_EXIT ?? 0));
     const receipt = JSON.parse(await readFile(receiptPath, 'utf8'));
     assert.equal(receipt.target, 'app-release');
     assert.equal(receipt.applicationRoot, applicationRoot);
+    assert.equal(receipt.git.GIT_CONFIG_KEY_0, 'url.https://github.com/.insteadOf');
+    assert.equal(receipt.git.GIT_CONFIG_VALUE_0, 'git@github.com:');
+    assert.equal(receipt.git.GIT_CONFIG_VALUE_2, '');
+    assert.equal(receipt.git.GIT_CONFIG_VALUE_3, '!gh auth git-credential');
+    assert.equal(receipt.githubFallback, null);
+    for (const address of ['git@github.com:example/fixture.git', 'ssh://git@github.com/example/fixture.git']) {
+        const configured = spawnSync('git', ['remote', 'add', 'portable-test', address], { cwd: applicationRoot, encoding: 'utf8' });
+        assert.equal(configured.status, 0, configured.stderr);
+        const remote = spawnSync('git', ['remote', 'get-url', 'portable-test'], { cwd: applicationRoot, env: { ...process.env, ...receipt.git }, encoding: 'utf8' });
+        assert.equal(remote.status, 0, remote.stderr);
+        assert.equal(remote.stdout.trim(), 'https://github.com/example/fixture.git');
+        assert.equal(spawnSync('git', ['remote', 'remove', 'portable-test'], { cwd: applicationRoot }).status, 0);
+    }
     assert.deepEqual(receipt.signing, signingValues, 'Release must export signing inputs from the repository private file.');
     for (const value of Object.values(signingValues)) {
         assert.ok(!(released.stdout + released.stderr).includes(value), 'Signing values must stay out of command output.');
@@ -71,6 +87,10 @@ process.exit(Number(process.env.TEST_GATEWAY_EXIT ?? 0));
     for (const omittedName of signingNames) {
         await writeFile(inputPath, inputContents.split('\n').filter(line => !line.startsWith(`${omittedName}=`)).join('\n'));
         const incomplete = runLifecycle('release');
+        if (omittedName === 'GH_TOKEN') {
+            assert.notEqual(incomplete.status, 0, 'Missing repository GitHub input must stop before saved-login lookup');
+            continue;
+        }
         assert.equal(incomplete.status, 0, incomplete.stderr);
         const incompleteReceipt = JSON.parse(await readFile(receiptPath, 'utf8'));
         assert.equal(incompleteReceipt.signing[omittedName], null, `${omittedName} must not retain an inherited value.`);
@@ -88,17 +108,23 @@ process.exit(Number(process.env.TEST_GATEWAY_EXIT ?? 0));
     await assert.rejects(readFile(receiptPath), { code: 'ENOENT' });
     for (const target of ['publish', 'deploy']) {
         const delegated = runLifecycle(target);
-        assert.equal(delegated.status, 0, delegated.stderr);
+        assert.notEqual(delegated.status, 0, 'Each lifecycle phase requires the repository environment file');
+        await assert.rejects(readFile(receiptPath), { code: 'ENOENT' });
+        await writeFile(inputPath, inputContents);
+        const loaded = runLifecycle(target);
+        assert.equal(loaded.status, 0, loaded.stderr);
         const delegatedReceipt = JSON.parse(await readFile(receiptPath, 'utf8'));
         assert.equal(delegatedReceipt.target, `app-${target}`);
-        assert.deepEqual(delegatedReceipt.signing, inheritedValues);
+        assert.deepEqual(delegatedReceipt.signing, signingValues);
+        await rm(inputPath);
+        await rm(receiptPath);
     }
 
     await writeFile(inputPath, inputContents);
     const failure = runLifecycle('release', { TEST_GATEWAY_EXIT: '47' });
     assert.notEqual(failure.status, 0, 'A gateway failure must fail the application command.');
     assert.match(failure.stderr, /Error 47/);
-    console.info('Release loads private signing inputs, clears stale values, and preserves lifecycle delegation and failures.');
+    console.info('Lifecycle commands load repository credentials and use temporary HTTPS Git authentication settings.');
 } finally {
     await rm(fixtureRoot, { recursive: true, force: true });
 }
