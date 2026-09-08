@@ -112,12 +112,21 @@ verify-feedback: build-test-image
 	docker run --rm --init --shm-size=1g "$(TEST_IMAGE)" node scripts/verify-feedback.mjs
 
 release publish deploy:
-	@application_root="$$(git rev-parse --show-toplevel)"; \
+	@set -e; \
+	application_root="$$(git rev-parse --show-toplevel)"; \
 	gateway_root="$$(dirname "$${application_root}")/mprlab-gateway"; \
 	if [ ! -d "$${gateway_root}" ]; then \
 		printf "required sibling gateway is missing: %s; clone mprlab-gateway at exactly %s\n" \
 			"$${gateway_root}" "$${gateway_root}" >&2; \
 		exit 2; \
+	fi; \
+	if [ "$@" = release ]; then \
+		unset ALLERGY_WHEEL_ANDROID_KEYSTORE ALLERGY_WHEEL_ANDROID_STORE_PASSWORD \
+			ALLERGY_WHEEL_ANDROID_KEY_ALIAS ALLERGY_WHEEL_ANDROID_KEY_PASSWORD \
+			ALLERGY_WHEEL_APPLE_TEAM ALLERGY_WHEEL_APPLE_PROFILE ALLERGY_WHEEL_APPLE_IDENTITY; \
+		set -a; \
+		source "$${application_root}/configs/.env.allergy-wheel"; \
+		set +a; \
 	fi; \
 	$(MAKE) --no-print-directory -C "$${gateway_root}" "app-$@" \
 		MPRLAB_APP_ROOT="$${application_root}"
@@ -129,6 +138,7 @@ test-native-release: build-test-image
 .PHONY: test-release-adapter
 test-release-adapter: build-test-image
 	docker run --rm --init "$(TEST_IMAGE)" node tests/release-adapter.mjs
+	docker run --rm --init "$(TEST_IMAGE)" node tests/release-entrypoint.mjs
 
 .PHONY: test-native-preparation
 test-native-preparation: build-test-image
