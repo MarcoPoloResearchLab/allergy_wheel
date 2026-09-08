@@ -52,7 +52,7 @@
     "index.js": "8b71fb58723cdf961ecd2d8a44bca4ceef89b98863e9217842c7a6c9a117a426",
     "ios/.gitignore": "f8042134be9ad24176d8d630255be93f8a0223925ae88c34b603c8989baa8345",
     "ios/.xcode.env": "3c02dca07775b31ce4e77dfb3bb660d7c6e577474d65a6216f1ea9bef54e1ca6",
-    "ios/AllergyWheel.xcodeproj/project.pbxproj": "994613bd2f40b732def7c8d58f23eda72ee72a19cae167eaf11fda31cde649b0",
+    "ios/AllergyWheel.xcodeproj/project.pbxproj": "08234a9212e65a2767eab286c6f355c031849e134eace5fe140b5ddceff4c06a",
     "ios/AllergyWheel.xcodeproj/xcshareddata/xcschemes/AllergyWheel.xcscheme": "9644140c79ac4c640b153dc0d0a58bbfba2155d4da467a532385e227f69cfe3e",
     "ios/AllergyWheel.xcworkspace/contents.xcworkspacedata": "570d866bb6bad7290b23fe9889911e2a92376e52586ec0e618ed0400a36540d9",
     "ios/AllergyWheel/AllergyWheel-Bridging-Header.h": "4a625b53abd4333ca454a4161ba62ab1b0cb44e8a4581326c0bcfe03dc26dd5c",
@@ -73,7 +73,7 @@
     "package-lock.json": "e5905ce012564cf81d3e6f559858ce58dbd573fda5e0b0d7dfce85682a2d0c3d",
     "package.json": "7b7cea00ecfd01cd814ea3dad61af38f1e5e0ce8b10ef4b2654031db859c7b0d",
     "parents.html": "2b0b4bba1180ba737dc2c026bc3481889a801c8f8f0c289773638a44a2d83884",
-    "plugins/withOfflineBuild.cjs": "b8237653570a6cc239de0543ecb8c746f887fd579b1cb36473c3c6e826dbb00b",
+    "plugins/withOfflineBuild.cjs": "befdd9b1e3d557c75bd37191c51a1228c259dee6fe5ef522ca09bb97348465aa",
     "plugins/withStoreRelease.cjs": "81317e1a6f3adeedbdc65eb2ea1a6ba0bdd0abb099d1bb51c497521efed8a149",
     "scripts/verify-native-release.mjs": "62a08fcd79406265d4cffc203569c3146aadb84f8066d687305b80c850824db6",
     "source-preparation.json": "74a8c2ffeb179dd727f6759d5127c8cf2aafce1b095f64baac20d3a65032e5f4"

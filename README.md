@@ -107,6 +107,9 @@ Its prebuilt podspec includes absolute paths, which change the dependency checks
 Run `make mobile-prepare-store` after a native configuration or game source change.
 Commit the prepared inputs with their source changes before release.
 
+The iOS bundle phase resolves the physical project directory before it selects the entry file.
+This keeps the entry file inside the Metro project when Xcode uses a symbolic link for the temporary directory.
+
 `scripts/build-store-artifact.mjs` delegates native execution to the authoritative gateway executable.
 The adapter uses the allocated release version and a build number from the sealed UTC timestamp.
 An exact retry retains both values. Apple exports use the `app-store` intent.

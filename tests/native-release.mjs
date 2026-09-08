@@ -1,6 +1,6 @@
 // @ts-check
 import assert from 'node:assert/strict';
-import { mkdtemp, cp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, cp, readFile, rm, mkdir, writeFile, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -19,6 +19,21 @@ try {
     const gradle = await readFile(join(prepared, 'android/app/build.gradle'), 'utf8');
     const plist = await readFile(join(prepared, 'ios/AllergyWheel/Info.plist'), 'utf8');
     const xcode = await readFile(join(prepared, 'ios/AllergyWheel.xcodeproj/project.pbxproj'), 'utf8');
+    const bundlePhase = [...xcode.matchAll(/shellScript = ("[^\n]+");/g)]
+        .map(match => JSON.parse(match[1]))
+        .find(script => script.includes('react-native-xcode.sh'));
+    assert.ok(bundlePhase, 'The generated project must contain the native bundle phase.');
+    const alias = join(prepared, 'project-alias');
+    await symlink(prepared, alias);
+    const bundleScripts = join(prepared, 'node_modules/react-native/scripts');
+    await mkdir(bundleScripts, { recursive: true });
+    // Capture the native bundler boundary after the real generated shell phase resolves its paths.
+    await writeFile(join(bundleScripts, 'react-native-xcode.sh'), 'printf "%s\\n" "$PROJECT_ROOT" "$ENTRY_FILE" "$CLI_PATH"\n');
+    const bundlePaths = execFileSync('/bin/sh', ['-c', bundlePhase], {
+        env: { ...process.env, PROJECT_DIR: join(alias, 'ios'), PROJECT_ROOT: '', ENTRY_FILE: 'inherited-entry.js' },
+        encoding: 'utf8'
+    }).trim().split('\n');
+    assert.deepEqual(bundlePaths, [prepared, join(prepared, 'index.js'), join(bundleScripts, 'bundle.js')], 'The native bundle phase must use the physical project path through a symlinked Xcode directory.');
     const release = gradle.split('buildTypes {')[1].split('release {')[1].split('packagingOptions {')[0];
     assert.match(release, /signingConfig signingConfigs\.release/, 'Release must use its own signing configuration');
     assert.doesNotMatch(release, /signingConfigs\.debug/, 'Release must never use the development key');

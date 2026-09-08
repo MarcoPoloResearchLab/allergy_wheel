@@ -23,7 +23,7 @@ module.exports = function withOfflineBuild(config) {
         for (const phase of Object.values(phases)) {
             if (typeof phase !== 'object' || !phase.shellScript?.includes('react-native-xcode.sh')) continue;
             // Use the native React Native bundler for artifacts; Expo remains the source-config generator.
-            const script = 'export ENTRY_FILE="$PROJECT_DIR/../index.js"\nexport CLI_PATH="$PROJECT_DIR/../node_modules/react-native/scripts/bundle.js"\nexport BUNDLE_COMMAND=bundle\nexport FORCE_BUNDLING=1\nexport NODE_BINARY="$(command -v node)"\n/bin/sh "$PROJECT_DIR/../node_modules/react-native/scripts/react-native-xcode.sh"\n';
+            const script = 'set -e\nPROJECT_ROOT="$(cd "$PROJECT_DIR/.." && pwd -P)"\nexport PROJECT_ROOT\nexport ENTRY_FILE="$PROJECT_ROOT/index.js"\nexport CLI_PATH="$PROJECT_ROOT/node_modules/react-native/scripts/bundle.js"\nexport BUNDLE_COMMAND=bundle\nexport FORCE_BUNDLING=1\nexport NODE_BINARY="$(command -v node)"\n/bin/sh "$PROJECT_DIR/../node_modules/react-native/scripts/react-native-xcode.sh"\n';
             phase.shellScript = JSON.stringify(script);
             updatedPhase = true;
         }
