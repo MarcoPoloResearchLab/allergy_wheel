@@ -109,6 +109,8 @@ Commit the prepared inputs with their source changes before release.
 The adapter uses the allocated release version and a build number from the sealed UTC timestamp.
 An exact retry retains both values. Apple exports use the `app-store` intent.
 The private input is `configs/.env.allergy-wheel`. The example file names all signing and publication variables.
+`make release` clears inherited signing variables, loads this file, and exports its values before it calls the gateway.
+A missing file or a failed shell command in the file stops the release before the gateway starts.
 Keep a recoverable private backup of `configs/signing/allergy-wheel-upload.p12` and its credential assignments.
 
 The selected manifest declares both production store destinations.
