@@ -9,6 +9,13 @@ export LOCAL_PORT
 COMPOSE = docker compose --env-file /dev/null --project-name "$(COMPOSE_PROJECT_NAME)" --file "$(REPOSITORY_DIRECTORY)/compose.local.yml"
 TEST_IMAGE = $(COMPOSE_PROJECT_NAME)-tests:local
 
+LOAD_SIGNING_INPUT = unset ALLERGY_WHEEL_ANDROID_KEYSTORE ALLERGY_WHEEL_ANDROID_STORE_PASSWORD \
+    ALLERGY_WHEEL_ANDROID_KEY_ALIAS ALLERGY_WHEEL_ANDROID_KEY_PASSWORD \
+    ALLERGY_WHEEL_APPLE_TEAM ALLERGY_WHEEL_APPLE_PROFILE ALLERGY_WHEEL_APPLE_IDENTITY \
+    ALLERGY_WHEEL_APPLE_KEYCHAIN ALLERGY_WHEEL_APPLE_CERTIFICATE_PATH \
+    ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD ALLERGY_WHEEL_APPLE_PROFILE_PATH; \
+    set -a; source "$(REPOSITORY_DIRECTORY)/configs/.env.allergy-wheel"; set +a;
+
 .PHONY: help up down check test test-local ci build-test-image
 
 help:
@@ -121,12 +128,7 @@ release publish deploy:
 		exit 2; \
 	fi; \
 	if [ "$@" = release ]; then \
-		unset ALLERGY_WHEEL_ANDROID_KEYSTORE ALLERGY_WHEEL_ANDROID_STORE_PASSWORD \
-			ALLERGY_WHEEL_ANDROID_KEY_ALIAS ALLERGY_WHEEL_ANDROID_KEY_PASSWORD \
-			ALLERGY_WHEEL_APPLE_TEAM ALLERGY_WHEEL_APPLE_PROFILE ALLERGY_WHEEL_APPLE_IDENTITY; \
-		set -a; \
-		source "$${application_root}/configs/.env.allergy-wheel"; \
-		set +a; \
+		$(LOAD_SIGNING_INPUT) \
 	fi; \
 	$(MAKE) --no-print-directory -C "$${gateway_root}" "app-$@" \
 		MPRLAB_APP_ROOT="$${application_root}"
@@ -139,7 +141,13 @@ test-native-release: build-test-image
 test-release-adapter: build-test-image
 	docker run --rm --init "$(TEST_IMAGE)" node tests/release-adapter.mjs
 	docker run --rm --init "$(TEST_IMAGE)" node tests/release-entrypoint.mjs
+	docker run --rm --init "$(TEST_IMAGE)" node tests/portable-signing.mjs
+	docker run --rm --init "$(TEST_IMAGE)" node tests/native-build-process.mjs
 
 .PHONY: test-native-preparation
 test-native-preparation: build-test-image
 	docker run --rm --init "$(TEST_IMAGE)" node tests/native-preparation.mjs
+
+.PHONY: check-signing
+check-signing:
+	@set -e; $(LOAD_SIGNING_INPUT) node "$(REPOSITORY_DIRECTORY)/scripts/check-signing.mjs"

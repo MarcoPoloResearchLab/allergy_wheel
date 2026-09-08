@@ -1,7 +1,9 @@
 // @ts-check
 import { readFile } from 'node:fs/promises';
 import { resolve, dirname, join, isAbsolute } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { withAppleSigning, repositorySigningFile } from './apple-signing.mjs';
+import { runNativeBuild } from './native-build-process.mjs';
 
 const acceptedOptions = new Set(['--mobile-dir', '--output', '--release-timestamp', '--manifest']);
 const options = new Map();
@@ -62,8 +64,29 @@ const request = {
         export_intent: 'app-store'
     } })
 };
-const result = spawnSync(gateway, ['mobile-build-operation'], {
-    cwd: sourceRoot, input: JSON.stringify(request), stdio: ['pipe', 'inherit', 'inherit']
-});
-if (result.error) throw result.error;
-process.exit(result.status ?? 1);
+const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+const controller = new AbortController();
+const interrupt = () => controller.abort('SIGINT');
+const terminate = () => controller.abort('SIGTERM');
+process.on('SIGINT', interrupt);
+process.on('SIGTERM', terminate);
+try {
+    if (platform === 'ios') {
+        process.exitCode = await withAppleSigning({ repositoryRoot, applicationIdentifier: request.application_identifier, signal: controller.signal },
+            async signing => {
+                request.ios.keychain_environment = signing.keychainEnvironment;
+                return runNativeBuild(gateway, request, signing.environment, controller.signal);
+            });
+    } else {
+        const keystore = await repositorySigningFile(repositoryRoot, process.env.ALLERGY_WHEEL_ANDROID_KEYSTORE, 'ALLERGY_WHEEL_ANDROID_KEYSTORE');
+        const environment = { ...process.env, ALLERGY_WHEEL_ANDROID_KEYSTORE: keystore };
+        delete environment.ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD;
+        process.exitCode = await runNativeBuild(gateway, request, environment, controller.signal);
+    }
+} catch (error) {
+    process.stderr.write(`${error.message}\n`);
+    process.exitCode = controller.signal.aborted ? (controller.signal.reason === 'SIGINT' ? 130 : 143) : 2;
+} finally {
+    process.removeListener('SIGINT', interrupt);
+    process.removeListener('SIGTERM', terminate);
+}

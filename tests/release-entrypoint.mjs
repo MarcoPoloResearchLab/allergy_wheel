@@ -10,9 +10,9 @@ const signingNames = [
     'ALLERGY_WHEEL_ANDROID_STORE_PASSWORD',
     'ALLERGY_WHEEL_ANDROID_KEY_ALIAS',
     'ALLERGY_WHEEL_ANDROID_KEY_PASSWORD',
-    'ALLERGY_WHEEL_APPLE_TEAM',
-    'ALLERGY_WHEEL_APPLE_PROFILE',
-    'ALLERGY_WHEEL_APPLE_IDENTITY'
+    'ALLERGY_WHEEL_APPLE_CERTIFICATE_PATH',
+    'ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD',
+    'ALLERGY_WHEEL_APPLE_PROFILE_PATH'
 ];
 const fixtureRoot = await mkdtemp(join(tmpdir(), 'allergy-release-entrypoint-'));
 try {
@@ -68,11 +68,13 @@ process.exit(Number(process.env.TEST_GATEWAY_EXIT ?? 0));
         assert.ok(!(released.stdout + released.stderr).includes(value), 'Signing values must stay out of command output.');
     }
 
-    await writeFile(inputPath, inputContents.split('\n').slice(1).join('\n'));
-    const incomplete = runLifecycle('release');
-    assert.equal(incomplete.status, 0, incomplete.stderr);
-    const incompleteReceipt = JSON.parse(await readFile(receiptPath, 'utf8'));
-    assert.equal(incompleteReceipt.signing[signingNames[0]], null, 'An omitted signing input must not retain an inherited value.');
+    for (const omittedName of signingNames) {
+        await writeFile(inputPath, inputContents.split('\n').filter(line => !line.startsWith(`${omittedName}=`)).join('\n'));
+        const incomplete = runLifecycle('release');
+        assert.equal(incomplete.status, 0, incomplete.stderr);
+        const incompleteReceipt = JSON.parse(await readFile(receiptPath, 'utf8'));
+        assert.equal(incompleteReceipt.signing[omittedName], null, `${omittedName} must not retain an inherited value.`);
+    }
 
     await writeFile(inputPath, 'false\n');
     await rm(receiptPath);

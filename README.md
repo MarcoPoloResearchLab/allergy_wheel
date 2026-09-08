@@ -114,9 +114,35 @@ This keeps the entry file inside the Metro project when Xcode uses a symbolic li
 The adapter uses the allocated release version and a build number from the sealed UTC timestamp.
 An exact retry retains both values. Apple exports use the `app-store` intent.
 The private input is `configs/.env.allergy-wheel`. The example file names all signing and publication variables.
-`make release` clears inherited signing variables, loads this file, and exports its values before it calls the gateway.
-A missing file or a failed shell command in the file stops the release before the gateway starts.
-Keep a recoverable private backup of `configs/signing/allergy-wheel-upload.p12` and its credential assignments.
+The repository directory is the complete private input source for native signing.
+Copy the ignored private files with the repository when you change build hosts.
+The release adapter prepares temporary Apple signing state from these files.
+It removes this state after success, failure, or an interruption.
+The build does not require an identity in the login Keychain.
+`make release` and `make check-signing` clear inherited signing variables and load this file.
+A missing file or a failed shell command in the file stops the command.
+All signing key files must be under the ignored `configs/signing/` directory.
+The Apple inputs are `ALLERGY_WHEEL_APPLE_CERTIFICATE_PATH`, `ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD`, and `ALLERGY_WHEEL_APPLE_PROFILE_PATH`.
+The certificate archive must contain its private key and the Apple issuer certificate.
+The profile must be an unexpired App Store profile for the application and the imported identity.
+The adapter obtains the team, profile UUID, and certificate identity from these inputs.
+It creates a temporary Keychain password for each build.
+It sends passwords to the native signing tool through standard input.
+It removes its Keychain from the search list and removes its temporary profile after the build.
+Cleanup failures fail the command and identify the temporary directory for recovery.
+A forced process termination or a host failure can prevent cleanup.
+
+To move the build to another Mac:
+
+1. Copy the repository and its ignored `configs/.env.allergy-wheel` and `configs/signing/` files.
+2. Install the native toolchain and the sibling gateway described below.
+3. Update absolute file paths in `.env.allergy-wheel` for the new repository directory.
+4. Run `make check-signing` to verify the private inputs and native signing tools.
+5. Run `make release` to build the signed store artifacts.
+
+Keep a recoverable private backup of the environment file and the signing directory.
+Keep the store API key files in this directory and update their paths in the environment file.
+`make check-signing` verifies native signing and cleanup. It does not prove IPA export or store acceptance.
 
 The selected manifest declares both production store destinations.
 Its Apple destination requires the gateway F008 candidate-submission extension.
