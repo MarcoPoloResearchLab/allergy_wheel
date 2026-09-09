@@ -30,7 +30,9 @@ The first validation run downloads the test image and its locked dependencies.
 | `make check` | Validate JavaScript and JSON syntax, Compose configuration, and whitespace. |
 | `make ci` | Run source, browser, mobile, dependency, Pages, and local server checks. |
 
-Use `make up LOCAL_PORT=8766` to select a different port.
+Use `make up LOCAL_PORT=8766` to select a different port for a new local container.
+Repeated startup preserves the existing container and its assigned port.
+After a port or Compose configuration change, run `make down`, then run `make up` with the selected inputs.
 The service binds to the local host only and mounts game files as read-only files.
 Edit the source, then reload the browser to see changes.
 The default Compose project is `allergy-wheel-local`.
@@ -77,9 +79,14 @@ The selected toolchain supports Android 7.0 and later, and iOS 16.4 and later.
 | `make mobile-dependencies` | Install locked native build dependencies through Docker. |
 | `make mobile-prepare` | Generate Android and iOS projects from Expo configuration. |
 | `make mobile-prepare-store` | Prepare native projects, offline content, dependency locks, and source digests before release. |
-| `make test-native-release` | Verify generated release signing and version inputs in Docker. |
+| `make test-native-release` | Verify generated release signing, scheme targets, and version inputs in Docker. |
+| `make test-podfile-config` | Verify native property failures and explicit source dependencies through actual CocoaPods. |
 | `make test-release-adapter` | Verify both gateway build requests and exact retry identities in Docker. |
-| `make test-native-preparation` | Verify prepared input records and rejection of changed game source in Docker. |
+| `make mobile-native-check` | Verify the retained game and native source in the current checkout. |
+| `make mobile-audit-build` | Audit all mobile runtime and build dependencies in Docker. |
+| `make test-tooling-audit` | Audit the browser test and game packaging dependencies in Docker. |
+| `make test-native-preparation` | Verify prepared input records and rejection of changed game or native source in Docker. |
+| `make test-apple-bundle` | Rebuild the offline game and run the actual native JavaScript bundle phase in Docker. |
 | `make mobile-android` | Build `artifacts/android/allergy-wheel-development.apk`. |
 | `make mobile-ios` | Build the iOS simulator application under `artifacts/ios`. |
 | `make install-android` | Install the development APK on the selected ADB device. |
@@ -101,57 +108,51 @@ Native preparation copies these assets into its container before Expo generates 
 Store preparation records generated native source and embedded game data under `mobile`.
 Build caches, private keys, and machine-local inputs remain excluded from Git.
 `mobile/native-preparation.json` binds each prepared native input to its content digest.
-The iOS configuration builds `expo-modules-core` from its locked source.
-Its prebuilt podspec includes absolute paths, which change the dependency checksum when the release uses a temporary directory.
+The iOS configuration explicitly selects React Native and Expo source dependencies from their locked versions.
+The source selection overrides inherited prebuilt flags and remains unchanged when a prebuilt service is unavailable.
+CocoaPods rejects missing or malformed native properties.
+The application plugin removes absent test targets from the generated shared scheme.
 `mobile/source-preparation.json` binds the embedded game to its source files.
 Run `make mobile-prepare-store` after a native configuration or game source change.
 This command installs the locked host dependencies before CocoaPods prepares the native project.
+It then runs `make test-podfile-config` with Ruby and CocoaPods on the native preparation host.
+The four cases cover valid, missing, and malformed properties, plus an unavailable prebuilt service.
 Commit the prepared inputs with their source changes before release.
 
 The iOS bundle phase resolves the physical project directory before it selects the entry file.
 This keeps the entry file inside the Metro project when Xcode uses a symbolic link for the temporary directory.
 
-`scripts/build-store-artifact.mjs` delegates native execution to the authoritative gateway executable.
-The adapter uses the allocated release version and a build number from the sealed UTC timestamp.
-An exact retry retains both values. Apple exports use the `app-store` intent.
-The private input is `configs/.env.allergy-wheel`. The example file names all signing and publication variables.
-The repository directory is the complete private input source for native signing.
-Copy the ignored private files with the repository when you change build hosts.
-The release adapter prepares temporary Apple signing state from these files.
-It removes this state after success, failure, or an interruption.
-The build does not require an identity in the login Keychain.
-`make release`, `make publish`, `make deploy`, and `make check-signing` load this file after they clear inherited credential variables.
-The lifecycle commands require `GH_TOKEN` from this file for GitHub authentication.
-They use temporary HTTPS Git settings and the GitHub CLI credential helper.
-They do not change the saved Git configuration.
-The native signing and build processes do not receive the GitHub token.
+`scripts/build-ios.sh` uses the shared Gateway Xcode Cloud operation.
+The declaration in `.mprlab/apple-build.json` selects public App Store eligibility.
+Xcode Cloud owns automatic signing and the Apple build number.
+Gateway retains the cloud receipt and artifacts.
+Its publisher verifies the existing App Store Connect build before publication acceptance.
+The retained `mobile/ios/ci_scripts/ci_post_clone.sh` installs Node.js 24 and the locked mobile dependencies.
+It verifies the recorded game and native source before dependency installation.
+CocoaPods uses the retained lockfile with `pod install --deployment`.
+The generated native project declares automatic signing.
+The native bundle phase uses the Node executable selected by the cloud hook.
+The verified `Release` workflow uses Xcode 26.6, macOS Tahoe 26.6.2, and manual branch starts.
+The archive retains the declared App Store eligibility.
+Apple account setup and source authorization passed.
+I005 retains release-version alignment and hosted build acceptance.
+
+`scripts/build-store-artifact.mjs` supplies the Android request to Gateway.
+It uses the allocated release version and a build number from the sealed UTC timestamp.
+An exact retry retains both values.
+The Android keystore stays under the ignored `configs/signing/` directory.
+
+The private input is `configs/.env.allergy-wheel`.
+The example file names the Android signing inputs and store API credentials.
+The lifecycle commands clear their inherited credential variables before they load this file.
+They require `GH_TOKEN` for GitHub authentication and use temporary HTTPS Git settings.
+The native Android process does not receive the GitHub token.
 A missing file or a failed shell command in the file stops the command.
-All signing key files must be under the ignored `configs/signing/` directory.
-The Apple inputs are `ALLERGY_WHEEL_APPLE_CERTIFICATE_PATH`, `ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD`, and `ALLERGY_WHEEL_APPLE_PROFILE_PATH`.
-The certificate archive must contain its private key and the Apple issuer certificate.
-The profile must be an unexpired App Store profile for the application and the imported identity.
-The adapter obtains the team, profile UUID, and certificate identity from these inputs.
-It creates a temporary Keychain password for each build.
-It sends passwords to the native signing tool through standard input.
-It removes its Keychain from the search list and removes its temporary profile after the build.
-Cleanup failures fail the command and identify the temporary directory for recovery.
-A forced process termination or a host failure can prevent cleanup.
 
-To move the build to another Mac:
-
-1. Copy the repository and its ignored `configs/.env.allergy-wheel` and `configs/signing/` files.
-2. Install the native toolchain and the sibling gateway described below.
-3. Update absolute file paths in `.env.allergy-wheel` for the new repository directory.
-4. Run `make check-signing` to verify the private inputs and native signing tools.
-5. Run `make release` to build the signed store artifacts.
-
-Keep a recoverable private backup of the environment file and the signing directory.
-Keep the store API key files in this directory and update their paths in the environment file.
-`make check-signing` verifies native signing and cleanup. It does not prove IPA export or store acceptance.
-
-The selected manifest declares both production store destinations.
-Its Apple destination requires the gateway F008 candidate-submission extension.
-An upload receipt does not prove review or public availability. F003 retains those separate acceptance requirements.
+Use `make release` for the selected Apple cloud build and Android artifact.
+Use `make publish` to verify the Apple build and submit the Android artifact.
+An accepted build does not prove store review or public availability.
+F003 retains those separate acceptance requirements.
 
 Native builds require Node 22.19 or later on the build host.
 Android also requires JDK 17, Android SDK 36, and NDK 27.1.12297006.

@@ -243,3 +243,34 @@ The parent modal has its own safe-area provider. Detailed privacy text starts co
 The revised browser integration first failed because game startup did not load the font stylesheet.
 The tests cover automatic service requests, game-storage isolation, denied advertising storage, unavailable services, and the feedback gate.
 These results require native verification before store acceptance.
+
+## Apple Cloud Preparation
+
+I005 connects the retained native project to the shared Xcode Cloud operation.
+The generated project declares automatic signing.
+The clone hook verifies game and native source before it installs the locked mobile dependencies.
+The hook selects Node.js 24, and the workflow requires Xcode 26.6.
+The native phase uses the selected Node executable and the React Native bundler.
+The cloud build consumes the retained offline game resources.
+The source config and prepared native projects use release version 1.0.1.
+B006 verifies the source version through the real Expo generator for both platforms.
+B007 removes absent native test targets from the generated shared scheme.
+B008 removes Podfile property error recovery. B009 explicitly selects React Native and Expo source dependencies.
+The selected source dependencies override inherited prebuilt flags.
+Native preparation checks valid, missing, and malformed properties, plus an unavailable prebuilt service, through actual CocoaPods.
+After a source version change, run `make mobile-prepare-store` before the cloud build.
+Apple account setup and source authorization passed.
+A successful hosted build remains required for provider acceptance.
+
+Final `make ci` passed after B006 prepared release version 1.0.1.
+It includes the retained-source check and actual production JavaScript phase in Docker.
+Mobile runtime, build, and test-tooling audits reported zero vulnerabilities.
+The final log is `/tmp/allergy-version-final-ci.log`.
+These checks do not prove a hosted Apple build or physical-device acceptance.
+
+B007 through B010 passed corrected final CI after the native source review.
+The log is `/tmp/allergy-native-review-final-ci-corrected.log`.
+The selected Apple source passed native generation, cloud hooks, preparation checks, the production bundle, and local startup.
+Both source sets passed all four CocoaPods cases. The deployment install preserved the dependency lock.
+Existing dependency versions and app metadata remain unchanged at release version 1.0.1.
+The review patch excludes concurrent analytics changes. Hosted Apple compilation and signing remain unverified.

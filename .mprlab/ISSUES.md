@@ -8,6 +8,101 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B010] (P1) Preserve the local game on repeated startup
+  Goal:
+  Repeated `make up` must preserve the running local container.
+
+  Evidence:
+  Final CI replaced the container during the second startup with Docker Compose v5.4.0.
+  The existing public local command test rejected the changed container identifier.
+  The failure log is `/tmp/allergy-native-review-final-ci.log`.
+
+  Requirements:
+  - Preserve the existing local container during startup.
+  - Document the shutdown and startup sequence for local configuration changes.
+  - Verify the existing local command integration test and final CI.
+
+  Validation:
+  The existing public local command test passed after the startup correction.
+  It also passed in the selected source fixture, which excludes concurrent analytics changes.
+  Corrected final CI passed with Docker Compose v5.4.0.
+  The focused log is `/tmp/allergy-b010-fixed.log`.
+
+- [x] [B009] (P1) Select native source dependencies explicitly
+  Goal:
+  Native dependency selection must remain unchanged when a prebuilt service is unavailable.
+
+  Evidence:
+  The generated properties do not select React Native or Expo source dependencies.
+  React Native can change its selected dependency graph after a prebuilt service check fails.
+
+  Requirements:
+  - Exercise an unavailable prebuilt service through actual CocoaPods.
+  - Select source dependencies through the application plugin.
+  - Override inherited prebuilt flags with the declared source selection.
+  - Regenerate native output and verify the deployment install preserves its lock.
+
+  Validation:
+  The unavailable-service case first failed during actual CocoaPods evaluation.
+  Native preparation passed all four cases after the source plugin correction.
+  The deployment install preserved the lockfile. Existing dependency versions and app metadata stayed unchanged.
+  The selected Apple source separately passed all four CocoaPods cases.
+  Corrected final CI passed. The initial failure log is `/tmp/allergy-b009-initial.log`.
+
+- [x] [B008] (P1) Reject invalid native dependency configuration
+  Goal:
+  CocoaPods must reject absent or malformed native properties.
+
+  Evidence:
+  The generated Podfile replaces property read and parse errors with an empty object.
+
+  Requirements:
+  - Exercise valid, missing, and malformed properties through actual CocoaPods.
+  - Remove error recovery from the source plugin output.
+
+  Validation:
+  Actual CocoaPods first accepted missing and malformed properties.
+  All three property cases passed after the source plugin correction and native regeneration.
+  The focused logs are `/tmp/allergy-b008-initial.log` and `/tmp/allergy-b008-fixed.log`.
+  Corrected final CI passed.
+
+- [x] [B007] (P1) Remove the absent native test target from the shared scheme
+  Goal:
+  The generated shared scheme must reference only targets in the Xcode project.
+
+  Evidence:
+  The scheme references AllergyWheelTests, but the generated project contains no such target.
+
+  Requirements:
+  - Verify scheme references through the real Expo generator.
+  - Correct the source plugin and regenerate the retained project.
+
+  Validation:
+  The real Expo generator test first failed on the absent test target and passed after the plugin correction.
+  Native preparation regenerated the retained scheme. Corrected final CI passed.
+  The focused logs are `/tmp/allergy-b007-initial.log` and `/tmp/allergy-b007-fixed.log`.
+
+- [x] [B006] (P1) Preserve the source version in native preparation
+  Goal:
+  Both generated platforms must use the version from the Expo application config.
+
+  Evidence:
+  The Android release plugin hardcodes development version 1.0.0.
+  The existing generator test checks only the initial application version.
+
+  Requirements:
+  - Verify a different source version through the real Expo generator.
+  - Use the source version in generated Android and Apple projects.
+  - Prepare the selected release version 1.0.1 before the cloud build.
+
+  Validation:
+  The real Expo generator first failed because Android retained version 1.0.0 for source version 3.2.1.
+  After the plugin correction, both Apple configurations and Android used the supplied source version.
+  `make mobile-prepare-store` generated both platforms from application version 1.0.1.
+  Final `make ci` passed, including native preparation, the production bundle, browser flows, and dependency audits.
+  The final log is `/tmp/allergy-version-final-ci.log`.
+  Concurrent analytics changes remain separate from this correction.
+
 - [x] [B001] (P1) Run browser CI for the default branch
   Goal:
   Browser CI must run when the default branch receives a push.
@@ -192,6 +287,57 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   The live form check and both native build logs are under `artifacts/validation/b005-*`.
 
 ## Improvements
+
+- [-] [I005] (P1) Use the shared Xcode Cloud release flow
+  Goal:
+  Build Apple release artifacts through the single MPR Lab Xcode Cloud flow.
+
+  Requirements:
+  - Apply the shared Apple guide from MPR Governor.
+  - Declare each native project and shared scheme in `.mprlab/apple-build.json`.
+  - Use the shared Gateway cloud operation and its recorded Apple build number.
+  - Use the App Store Connect build that Xcode Cloud submits.
+  - Remove local Apple release signing during the migration.
+  - Keep public store release under operator control.
+
+  Implementation:
+  The shared Apple guide and related mobile rules are installed.
+  Gateway F010 supplies the shared operation.
+  The POSIX shell adapter invokes the compiled Gateway executable directly.
+  The adapter passed its public command test with an empty tool search path.
+  The Apple adapter uses the shared Gateway cloud operation.
+  The Android adapter retains its build identity and repository keystore input.
+  The temporary Keychain, certificate import, and local signing qualification code is removed.
+  The retained cloud hook verifies game and native inputs before it installs locked dependencies.
+  The native project declares automatic signing and uses the cloud Node executable.
+  The real native JavaScript phase passed in Docker with the reconstructed offline game.
+  B006 aligns the source and prepared native projects with release version 1.0.1.
+  Apple account setup and source authorization passed.
+  The Release workflow uses Xcode 26.6, macOS Tahoe 26.6.2, and manual branch starts.
+  The archive retains the declared App Store eligibility.
+  The cloud adapter and native preparation checks passed after setup.
+  A successful hosted build remains required for provider acceptance.
+
+  Validation:
+  The shared Apple and mobile guide checks passed.
+  The full Governor check passed.
+  The declaration JSON, native container, and named shared scheme checks passed.
+  Docker tests passed for cloud forwarding, Android build identity, private inputs, and native process control.
+  Final `make ci` passed after the adapter migration.
+  Final CI also passed after native cloud preparation, including the actual production bundle and retained-source check.
+  Final CI also passed after B006 prepared release version 1.0.1.
+  The final log is `/tmp/allergy-version-final-ci.log`.
+  Mobile runtime, build, and test-tooling audits reported zero vulnerabilities.
+  The audit log is `/tmp/allergy-cloud-dependency-audit.log`.
+
+  B007 removes the absent native test target. B008 rejects Podfile property errors.
+  B009 explicitly selects React Native and Expo source dependencies. B010 preserves the local container on repeated startup.
+  Native preparation passed all four CocoaPods cases, and the deployment install preserved the dependency lock.
+  Corrected final CI passed in `/tmp/allergy-native-review-final-ci-corrected.log`.
+  The selected source separately passed native generation, cloud hooks, preparation checks, the production Apple bundle, and local startup.
+  Its four CocoaPods cases also passed. The patch excludes concurrent analytics changes.
+  Existing app metadata and dependency versions remain unchanged at release version 1.0.1.
+  Hosted Apple compilation and signing remain unverified.
 
 - [x] [I001] (P1) Establish real game integration coverage
   Goal:

@@ -11,9 +11,7 @@ TEST_IMAGE = $(COMPOSE_PROJECT_NAME)-tests:local
 
 LOAD_PRIVATE_INPUT = unset ALLERGY_WHEEL_ANDROID_KEYSTORE ALLERGY_WHEEL_ANDROID_STORE_PASSWORD \
     ALLERGY_WHEEL_ANDROID_KEY_ALIAS ALLERGY_WHEEL_ANDROID_KEY_PASSWORD \
-    ALLERGY_WHEEL_APPLE_TEAM ALLERGY_WHEEL_APPLE_PROFILE ALLERGY_WHEEL_APPLE_IDENTITY \
-    ALLERGY_WHEEL_APPLE_KEYCHAIN ALLERGY_WHEEL_APPLE_CERTIFICATE_PATH \
-    ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD ALLERGY_WHEEL_APPLE_PROFILE_PATH \
+    APP_STORE_CONNECT_API_KEY_ID APP_STORE_CONNECT_API_ISSUER_ID APP_STORE_CONNECT_API_KEY_PATH \
     GH_TOKEN GITHUB_TOKEN; \
     set -a; source "$(REPOSITORY_DIRECTORY)/configs/.env.allergy-wheel"; set +a;
 
@@ -23,7 +21,7 @@ help:
 	@printf '%s\n' 'make up          Start the game at http://127.0.0.1:8765' 'make down        Stop the local game' 'make test        Run browser tests in Docker' 'make test-local  Verify local startup and shutdown' 'make check       Validate source, JSON, Compose, and whitespace' 'make ci          Run all validation and integration tests' 'Set LOCAL_PORT to choose a different local port.'
 
 up:
-	$(COMPOSE) up --detach --wait --wait-timeout 60 web
+	$(COMPOSE) up --detach --no-recreate --wait --wait-timeout 60 web
 	@printf 'Game: %s\n' "$$(bash scripts/local-game-url.sh "$$($(COMPOSE) ps --quiet web)")"
 
 down:
@@ -45,7 +43,7 @@ test: build-test-image
 test-local:
 	bash "$(REPOSITORY_DIRECTORY)/tests/local-commands.sh"
 
-ci: check test test-mobile mobile-check mobile-audit test-pages test-store-listings test-native-release test-release-adapter test-native-preparation test-local
+ci: check test test-mobile mobile-check mobile-audit test-pages test-store-listings test-native-release test-release-adapter test-native-preparation test-apple-bundle test-local
 
 .PHONY: test-mobile mobile-dependencies mobile-prepare
 
@@ -62,6 +60,7 @@ mobile-prepare: build-test-image
 mobile-prepare-store: mobile-dependencies mobile-prepare mobile-package
 	cd mobile/ios && pod install
 	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY):/workspace" "$(TEST_IMAGE)" node scripts/record-native-preparation.mjs
+	$(MAKE) --no-print-directory test-podfile-config
 
 .PHONY: mobile-audit
 mobile-audit: build-test-image
@@ -142,18 +141,35 @@ release publish deploy:
 test-native-release: build-test-image
 	docker run --rm --init "$(TEST_IMAGE)" node tests/native-release.mjs
 
-.PHONY: test-release-adapter
-test-release-adapter: build-test-image
+.PHONY: test-release-adapter test-apple-cloud
+test-apple-cloud: build-test-image
+	docker run --rm --init "$(TEST_IMAGE)" node tests/apple-cloud.mjs
+	docker run --rm --init "$(TEST_IMAGE)" node tests/apple-native-cloud.mjs
+
+test-release-adapter: build-test-image test-apple-cloud
 	docker run --rm --init "$(TEST_IMAGE)" node tests/release-adapter.mjs
 	docker run --rm --init "$(TEST_IMAGE)" node tests/release-entrypoint.mjs
-	docker run --rm --init "$(TEST_IMAGE)" node tests/portable-signing.mjs
 	docker run --rm --init "$(TEST_IMAGE)" node tests/native-build-process.mjs
 
-.PHONY: test-native-preparation
-test-native-preparation: build-test-image
+.PHONY: test-native-preparation mobile-native-check
+mobile-native-check: build-test-image
+	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY):/workspace:ro" --workdir /workspace/mobile "$(TEST_IMAGE)" node scripts/verify-native-release.mjs
+
+test-native-preparation: build-test-image mobile-native-check
 	docker run --rm --init "$(TEST_IMAGE)" node tests/native-preparation.mjs
 	docker run --rm --init "$(TEST_IMAGE)" node tests/native-preparation-command.mjs
 
-.PHONY: check-signing
-check-signing:
-	@set -e; $(LOAD_PRIVATE_INPUT) node "$(REPOSITORY_DIRECTORY)/scripts/check-signing.mjs"
+.PHONY: test-apple-bundle
+test-apple-bundle: build-test-image
+	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY)/mobile/ios/AllergyWheel.xcodeproj:/workspace/mobile/ios/AllergyWheel.xcodeproj:ro" "$(TEST_IMAGE)" node tests/apple-bundle.mjs
+
+.PHONY: mobile-audit-build test-tooling-audit
+mobile-audit-build: build-test-image
+	docker run --rm --init --workdir /workspace/mobile "$(TEST_IMAGE)" npm audit
+
+test-tooling-audit: build-test-image
+	docker run --rm --init "$(TEST_IMAGE)" npm audit
+
+.PHONY: test-podfile-config
+test-podfile-config:
+	ruby tests/podfile-config.rb

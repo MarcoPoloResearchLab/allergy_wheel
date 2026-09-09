@@ -26,12 +26,19 @@ pod() {
     fi
     printf verified > "$TEST_DEPENDENCY_STAMP"
 }
-export -f docker pod
+ruby() {
+    if [ "$*" != 'tests/podfile-config.rb' ] || [ "$(cat "$TEST_DEPENDENCY_STAMP")" != verified ]; then
+        printf 'CocoaPods configuration checks require completed native preparation\\n' >&2
+        return 75
+    fi
+    printf configuration-verified > "$TEST_DEPENDENCY_STAMP"
+}
+export -f docker pod ruby
 make --no-print-directory -f Makefile -f boundary.mk mobile-prepare-store
 `);
     const result = spawnSync('bash', ['boundary.sh'], { cwd: root, env: { ...process.env, TEST_DEPENDENCY_STAMP: stamp }, encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
-    assert.equal(await readFile(stamp, 'utf8'), 'verified');
+    assert.equal(await readFile(stamp, 'utf8'), 'configuration-verified');
     console.info('Native store preparation refreshes locked host dependencies before CocoaPods.');
 } finally {
     await rm(root, { recursive: true, force: true });
