@@ -8,6 +8,80 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B010] (P1) Preserve the local game on repeated startup
+  Goal:
+  Repeated `make up` must preserve the running local container.
+
+  Evidence:
+  Final CI replaced the container during the second startup with Docker Compose v5.4.0.
+  The existing public local command test rejected the changed container identifier.
+  The failure log is `/tmp/allergy-native-review-final-ci.log`.
+
+  Requirements:
+  - Preserve the existing local container during startup.
+  - Document the shutdown and startup sequence for local configuration changes.
+  - Verify the existing local command integration test and final CI.
+
+  Validation:
+  The existing public local command test passed after the startup correction.
+  It also passed in the selected source fixture, which excludes concurrent analytics changes.
+  Corrected final CI passed with Docker Compose v5.4.0.
+  The focused log is `/tmp/allergy-b010-fixed.log`.
+
+- [x] [B009] (P1) Select native source dependencies explicitly
+  Goal:
+  Native dependency selection must remain unchanged when a prebuilt service is unavailable.
+
+  Evidence:
+  The generated properties do not select React Native or Expo source dependencies.
+  React Native can change its selected dependency graph after a prebuilt service check fails.
+
+  Requirements:
+  - Exercise an unavailable prebuilt service through actual CocoaPods.
+  - Select source dependencies through the application plugin.
+  - Override inherited prebuilt flags with the declared source selection.
+  - Regenerate native output and verify the deployment install preserves its lock.
+
+  Validation:
+  The unavailable-service case first failed during actual CocoaPods evaluation.
+  Native preparation passed all four cases after the source plugin correction.
+  The deployment install preserved the lockfile. Existing dependency versions and app metadata stayed unchanged.
+  The selected Apple source separately passed all four CocoaPods cases.
+  Corrected final CI passed. The initial failure log is `/tmp/allergy-b009-initial.log`.
+
+- [x] [B008] (P1) Reject invalid native dependency configuration
+  Goal:
+  CocoaPods must reject absent or malformed native properties.
+
+  Evidence:
+  The generated Podfile replaces property read and parse errors with an empty object.
+
+  Requirements:
+  - Exercise valid, missing, and malformed properties through actual CocoaPods.
+  - Remove error recovery from the source plugin output.
+
+  Validation:
+  Actual CocoaPods first accepted missing and malformed properties.
+  All three property cases passed after the source plugin correction and native regeneration.
+  The focused logs are `/tmp/allergy-b008-initial.log` and `/tmp/allergy-b008-fixed.log`.
+  Corrected final CI passed.
+
+- [x] [B007] (P1) Remove the absent native test target from the shared scheme
+  Goal:
+  The generated shared scheme must reference only targets in the Xcode project.
+
+  Evidence:
+  The scheme references AllergyWheelTests, but the generated project contains no such target.
+
+  Requirements:
+  - Verify scheme references through the real Expo generator.
+  - Correct the source plugin and regenerate the retained project.
+
+  Validation:
+  The real Expo generator test first failed on the absent test target and passed after the plugin correction.
+  Native preparation regenerated the retained scheme. Corrected final CI passed.
+  The focused logs are `/tmp/allergy-b007-initial.log` and `/tmp/allergy-b007-fixed.log`.
+
 - [x] [B006] (P1) Preserve the source version in native preparation
   Goal:
   Both generated platforms must use the version from the Expo application config.
@@ -255,6 +329,15 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   The final log is `/tmp/allergy-version-final-ci.log`.
   Mobile runtime, build, and test-tooling audits reported zero vulnerabilities.
   The audit log is `/tmp/allergy-cloud-dependency-audit.log`.
+
+  B007 removes the absent native test target. B008 rejects Podfile property errors.
+  B009 explicitly selects React Native and Expo source dependencies. B010 preserves the local container on repeated startup.
+  Native preparation passed all four CocoaPods cases, and the deployment install preserved the dependency lock.
+  Corrected final CI passed in `/tmp/allergy-native-review-final-ci-corrected.log`.
+  The selected source separately passed native generation, cloud hooks, preparation checks, the production Apple bundle, and local startup.
+  Its four CocoaPods cases also passed. The patch excludes concurrent analytics changes.
+  Existing app metadata and dependency versions remain unchanged at release version 1.0.1.
+  Hosted Apple compilation and signing remain unverified.
 
 - [x] [I001] (P1) Establish real game integration coverage
   Goal:

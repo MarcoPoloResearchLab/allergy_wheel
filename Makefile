@@ -21,7 +21,7 @@ help:
 	@printf '%s\n' 'make up          Start the game at http://127.0.0.1:8765' 'make down        Stop the local game' 'make test        Run browser tests in Docker' 'make test-local  Verify local startup and shutdown' 'make check       Validate source, JSON, Compose, and whitespace' 'make ci          Run all validation and integration tests' 'Set LOCAL_PORT to choose a different local port.'
 
 up:
-	$(COMPOSE) up --detach --wait --wait-timeout 60 web
+	$(COMPOSE) up --detach --no-recreate --wait --wait-timeout 60 web
 	@printf 'Game: %s\n' "$$(bash scripts/local-game-url.sh "$$($(COMPOSE) ps --quiet web)")"
 
 down:
@@ -60,6 +60,7 @@ mobile-prepare: build-test-image
 mobile-prepare-store: mobile-dependencies mobile-prepare mobile-package
 	cd mobile/ios && pod install
 	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY):/workspace" "$(TEST_IMAGE)" node scripts/record-native-preparation.mjs
+	$(MAKE) --no-print-directory test-podfile-config
 
 .PHONY: mobile-audit
 mobile-audit: build-test-image
@@ -168,3 +169,7 @@ mobile-audit-build: build-test-image
 
 test-tooling-audit: build-test-image
 	docker run --rm --init "$(TEST_IMAGE)" npm audit
+
+.PHONY: test-podfile-config
+test-podfile-config:
+	ruby tests/podfile-config.rb

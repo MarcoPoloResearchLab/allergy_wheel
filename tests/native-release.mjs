@@ -1,5 +1,6 @@
 // @ts-check
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { mkdtemp, cp, readFile, rm, mkdir, writeFile, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
@@ -24,6 +25,14 @@ try {
     const gradle = await readFile(join(prepared, 'android/app/build.gradle'), 'utf8');
     const plist = await readFile(join(prepared, 'ios/AllergyWheel/Info.plist'), 'utf8');
     const xcode = await readFile(join(prepared, 'ios/AllergyWheel.xcodeproj/project.pbxproj'), 'utf8');
+    const require = createRequire(resolve('mobile/package.json'));
+    const project = require('xcode').project(join(prepared, 'ios/AllergyWheel.xcodeproj/project.pbxproj'));
+    project.parseSync();
+    const targets = project.pbxNativeTargetSection();
+    const scheme = await readFile(join(prepared, 'ios/AllergyWheel.xcodeproj/xcshareddata/xcschemes/AllergyWheel.xcscheme'), 'utf8');
+    for (const reference of scheme.matchAll(/BlueprintIdentifier\s*=\s*"([^"]+)"/g)) {
+        assert.ok(targets[reference[1]], `Shared scheme references absent native target ${reference[1]}`);
+    }
     assert.equal((xcode.match(/CODE_SIGN_STYLE = Automatic;/g) ?? []).length, 2, 'The application must declare automatic signing for both configurations.');
     const bundlePhase = [...xcode.matchAll(/shellScript = ("[^\n]+");/g)]
         .map(match => JSON.parse(match[1]))

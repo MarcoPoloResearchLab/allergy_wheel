@@ -30,7 +30,9 @@ The first validation run downloads the test image and its locked dependencies.
 | `make check` | Validate JavaScript and JSON syntax, Compose configuration, and whitespace. |
 | `make ci` | Run source, browser, mobile, dependency, Pages, and local server checks. |
 
-Use `make up LOCAL_PORT=8766` to select a different port.
+Use `make up LOCAL_PORT=8766` to select a different port for a new local container.
+Repeated startup preserves the existing container and its assigned port.
+After a port or Compose configuration change, run `make down`, then run `make up` with the selected inputs.
 The service binds to the local host only and mounts game files as read-only files.
 Edit the source, then reload the browser to see changes.
 The default Compose project is `allergy-wheel-local`.
@@ -77,7 +79,8 @@ The selected toolchain supports Android 7.0 and later, and iOS 16.4 and later.
 | `make mobile-dependencies` | Install locked native build dependencies through Docker. |
 | `make mobile-prepare` | Generate Android and iOS projects from Expo configuration. |
 | `make mobile-prepare-store` | Prepare native projects, offline content, dependency locks, and source digests before release. |
-| `make test-native-release` | Verify generated release signing and version inputs in Docker. |
+| `make test-native-release` | Verify generated release signing, scheme targets, and version inputs in Docker. |
+| `make test-podfile-config` | Verify native property failures and explicit source dependencies through actual CocoaPods. |
 | `make test-release-adapter` | Verify both gateway build requests and exact retry identities in Docker. |
 | `make mobile-native-check` | Verify the retained game and native source in the current checkout. |
 | `make mobile-audit-build` | Audit all mobile runtime and build dependencies in Docker. |
@@ -105,11 +108,15 @@ Native preparation copies these assets into its container before Expo generates 
 Store preparation records generated native source and embedded game data under `mobile`.
 Build caches, private keys, and machine-local inputs remain excluded from Git.
 `mobile/native-preparation.json` binds each prepared native input to its content digest.
-The iOS configuration builds `expo-modules-core` from its locked source.
-Its prebuilt podspec includes absolute paths, which change the dependency checksum when the release uses a temporary directory.
+The iOS configuration explicitly selects React Native and Expo source dependencies from their locked versions.
+The source selection overrides inherited prebuilt flags and remains unchanged when a prebuilt service is unavailable.
+CocoaPods rejects missing or malformed native properties.
+The application plugin removes absent test targets from the generated shared scheme.
 `mobile/source-preparation.json` binds the embedded game to its source files.
 Run `make mobile-prepare-store` after a native configuration or game source change.
 This command installs the locked host dependencies before CocoaPods prepares the native project.
+It then runs `make test-podfile-config` with Ruby and CocoaPods on the native preparation host.
+The four cases cover valid, missing, and malformed properties, plus an unavailable prebuilt service.
 Commit the prepared inputs with their source changes before release.
 
 The iOS bundle phase resolves the physical project directory before it selects the entry file.

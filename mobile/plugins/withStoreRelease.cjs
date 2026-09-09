@@ -1,13 +1,35 @@
 // @ts-check
-const { withAppBuildGradle, withInfoPlist, withSettingsGradle, withXcodeProject } = require('expo/config-plugins');
+const { readFile, writeFile } = require('node:fs/promises');
+const { join } = require('node:path');
+const { withAppBuildGradle, withInfoPlist, withPodfile, withPodfileProperties, withSettingsGradle, withXcodeProject } = require('expo/config-plugins');
 
 /** Prepare native release inputs for the shared gateway builder. */
 module.exports = function withStoreRelease(config) {
+    config = withPodfileProperties(config, (project) => {
+        project.modResults['ios.buildReactNativeFromSource'] = 'true';
+        project.modResults.EXPO_USE_PRECOMPILED_MODULES = 'false';
+        return project;
+    });
+    config = withPodfile(config, (project) => {
+        const propertiesRead = "podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties.json')))";
+        const generatedRead = `${propertiesRead} rescue {}`;
+        if (!project.modResults.contents.includes(generatedRead)) throw new Error('iOS Podfile property read template changed.');
+        project.modResults.contents = project.modResults.contents.replace(generatedRead, propertiesRead);
+        for (const name of ['RCT_USE_RN_DEP', 'RCT_USE_PREBUILT_RNCORE']) {
+            const generatedAssignment = `ENV['${name}'] ||=`;
+            if (!project.modResults.contents.includes(generatedAssignment)) throw new Error(`iOS dependency assignment template changed: ${name}`);
+            project.modResults.contents = project.modResults.contents.replace(generatedAssignment, `ENV['${name}'] =`);
+        }
+        return project;
+    });
     config = withSettingsGradle(config, (project) => {
         project.modResults.contents = project.modResults.contents.replace(/[\t ]+$/gm, '');
         return project;
     });
-    config = withXcodeProject(config, (project) => {
+    config = withXcodeProject(config, async (project) => {
+        const schemePath = join(project.modRequest.platformProjectRoot, 'AllergyWheel.xcodeproj/xcshareddata/xcschemes/AllergyWheel.xcscheme');
+        const scheme = await readFile(schemePath, 'utf8');
+        await writeFile(schemePath, scheme.replace(/[ \t]*<TestableReference\b[\s\S]*?<\/TestableReference>\n?/g, ''));
         const configurations = project.modResults.pbxXCBuildConfigurationSection();
         for (const configuration of Object.values(configurations)) {
             const settings = configuration?.buildSettings;
