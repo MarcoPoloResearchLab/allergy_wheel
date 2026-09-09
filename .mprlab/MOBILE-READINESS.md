@@ -252,10 +252,14 @@ The clone hook verifies game and native source before it installs the locked mob
 The hook selects Node.js 24, and the workflow requires Xcode 26.6.
 The native phase uses the selected Node executable and the React Native bundler.
 The cloud build consumes the retained offline game resources.
-Release-version alignment, account setup, and a hosted build remain open.
+The source config and prepared native projects use release version 1.0.1.
+B006 verifies the source version through the real Expo generator for both platforms.
+After a source version change, run `make mobile-prepare-store` before the cloud build.
+Apple account setup and source authorization passed.
+A successful hosted build remains required for provider acceptance.
 
-Final `make ci` passed after the cloud preparation changes.
+Final `make ci` passed after B006 prepared release version 1.0.1.
 It includes the retained-source check and actual production JavaScript phase in Docker.
 Mobile runtime, build, and test-tooling audits reported zero vulnerabilities.
-The logs are `/tmp/allergy-cloud-native-ci-complete.log` and `/tmp/allergy-cloud-dependency-audit.log`.
+The final log is `/tmp/allergy-version-final-ci.log`.
 These checks do not prove a hosted Apple build or physical-device acceptance.

@@ -27,7 +27,7 @@ module.exports = function withStoreRelease(config) {
         let source = project.modResults.contents;
         const replacements = [
             [/versionCode \d+/, 'versionCode = (System.getenv("MPRLAB_MOBILE_VERSION_CODE") ?: "1").toInteger()'],
-            [/versionName "[^"]+"/, 'versionName = (System.getenv("MPRLAB_MOBILE_VERSION_NAME") ?: "1.0.0")'],
+            [/versionName "[^"]+"/, `versionName = (System.getenv("MPRLAB_MOBILE_VERSION_NAME") ?: "${config.version}")`],
             [/signingConfigs \{/, `signingConfigs {
         release {
             def uploadKey = System.getenv("ALLERGY_WHEEL_ANDROID_KEYSTORE")

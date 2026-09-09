@@ -12,6 +12,11 @@ try {
     for (const name of ['app.json', 'package.json', 'package-lock.json', 'plugins', 'assets']) {
         await cp(resolve('mobile', name), join(prepared, name), { recursive: true });
     }
+    const configPath = join(prepared, 'app.json');
+    const config = JSON.parse(await readFile(configPath, 'utf8'));
+    const sourceVersion = '3.2.1';
+    config.expo.version = sourceVersion;
+    await writeFile(configPath, JSON.stringify(config));
     // Use the real Expo generator and application plugins with installed container dependencies.
     execFileSync(process.execPath, [resolve('mobile/node_modules/expo/bin/cli'), 'prebuild', '--no-install', '--platform', 'all'], {
         cwd: prepared, env: { ...process.env, NODE_PATH: resolve('mobile/node_modules'), CI: '1' }, stdio: 'inherit'
@@ -44,7 +49,8 @@ try {
     assert.match(release, /minifyEnabled true/, 'Release must produce the required mapping');
     assert.match(plist, /<key>CFBundleShortVersionString<\/key>\s*<string>\$\(MARKETING_VERSION\)<\/string>/);
     assert.match(plist, /<key>CFBundleVersion<\/key>\s*<string>\$\(CURRENT_PROJECT_VERSION\)<\/string>/);
-    assert.match(xcode, /MARKETING_VERSION = 1\.0\.0;/, 'Development builds must retain the Expo application version');
+    assert.deepEqual([...xcode.matchAll(/MARKETING_VERSION = ([^;]+);/g)].map(match => match[1]), [sourceVersion, sourceVersion], 'Both Apple configurations must retain the Expo application version');
+    assert.ok(gradle.includes(`versionName = (System.getenv("MPRLAB_MOBILE_VERSION_NAME") ?: "${sourceVersion}")`), 'Android development builds must retain the Expo application version');
     console.info('Generated native release signing and version contracts passed.');
 } finally {
     await rm(prepared, { recursive: true, force: true });

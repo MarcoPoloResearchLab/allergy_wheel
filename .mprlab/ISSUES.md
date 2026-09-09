@@ -8,6 +8,27 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B006] (P1) Preserve the source version in native preparation
+  Goal:
+  Both generated platforms must use the version from the Expo application config.
+
+  Evidence:
+  The Android release plugin hardcodes development version 1.0.0.
+  The existing generator test checks only the initial application version.
+
+  Requirements:
+  - Verify a different source version through the real Expo generator.
+  - Use the source version in generated Android and Apple projects.
+  - Prepare the selected release version 1.0.1 before the cloud build.
+
+  Validation:
+  The real Expo generator first failed because Android retained version 1.0.0 for source version 3.2.1.
+  After the plugin correction, both Apple configurations and Android used the supplied source version.
+  `make mobile-prepare-store` generated both platforms from application version 1.0.1.
+  Final `make ci` passed, including native preparation, the production bundle, browser flows, and dependency audits.
+  The final log is `/tmp/allergy-version-final-ci.log`.
+  Concurrent analytics changes remain separate from this correction.
+
 - [x] [B001] (P1) Run browser CI for the default branch
   Goal:
   Browser CI must run when the default branch receives a push.
@@ -216,7 +237,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   The retained cloud hook verifies game and native inputs before it installs locked dependencies.
   The native project declares automatic signing and uses the cloud Node executable.
   The real native JavaScript phase passed in Docker with the reconstructed offline game.
-  Release-version alignment remains open.
+  B006 aligns the source and prepared native projects with release version 1.0.1.
   Apple account setup and source authorization passed.
   The Release workflow uses Xcode 26.6, macOS Tahoe 26.6.2, and manual branch starts.
   The archive retains the declared App Store eligibility.
@@ -230,7 +251,8 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Docker tests passed for cloud forwarding, Android build identity, private inputs, and native process control.
   Final `make ci` passed after the adapter migration.
   Final CI also passed after native cloud preparation, including the actual production bundle and retained-source check.
-  The final log is `/tmp/allergy-cloud-native-ci-complete.log`.
+  Final CI also passed after B006 prepared release version 1.0.1.
+  The final log is `/tmp/allergy-version-final-ci.log`.
   Mobile runtime, build, and test-tooling audits reported zero vulnerabilities.
   The audit log is `/tmp/allergy-cloud-dependency-audit.log`.
 
