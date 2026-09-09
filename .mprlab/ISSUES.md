@@ -193,6 +193,47 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## Improvements
 
+- [-] [I005] (P1) Use the shared Xcode Cloud release flow
+  Goal:
+  Build Apple release artifacts through the single MPR Lab Xcode Cloud flow.
+
+  Requirements:
+  - Apply the shared Apple guide from MPR Governor.
+  - Declare each native project and shared scheme in `.mprlab/apple-build.json`.
+  - Use the shared Gateway cloud operation and its recorded Apple build number.
+  - Use the App Store Connect build that Xcode Cloud submits.
+  - Remove local Apple release signing during the migration.
+  - Keep public store release under operator control.
+
+  Implementation:
+  The shared Apple guide and related mobile rules are installed.
+  Gateway F010 supplies the shared operation.
+  The POSIX shell adapter invokes the compiled Gateway executable directly.
+  The adapter passed its public command test with an empty tool search path.
+  The Apple adapter uses the shared Gateway cloud operation.
+  The Android adapter retains its build identity and repository keystore input.
+  The temporary Keychain, certificate import, and local signing qualification code is removed.
+  The retained cloud hook verifies game and native inputs before it installs locked dependencies.
+  The native project declares automatic signing and uses the cloud Node executable.
+  The real native JavaScript phase passed in Docker with the reconstructed offline game.
+  Release-version alignment remains open.
+  Apple account setup and source authorization passed.
+  The Release workflow uses Xcode 26.6, macOS Tahoe 26.6.2, and manual branch starts.
+  The archive retains the declared App Store eligibility.
+  The cloud adapter and native preparation checks passed after setup.
+  A successful hosted build remains required for provider acceptance.
+
+  Validation:
+  The shared Apple and mobile guide checks passed.
+  The full Governor check passed.
+  The declaration JSON, native container, and named shared scheme checks passed.
+  Docker tests passed for cloud forwarding, Android build identity, private inputs, and native process control.
+  Final `make ci` passed after the adapter migration.
+  Final CI also passed after native cloud preparation, including the actual production bundle and retained-source check.
+  The final log is `/tmp/allergy-cloud-native-ci-complete.log`.
+  Mobile runtime, build, and test-tooling audits reported zero vulnerabilities.
+  The audit log is `/tmp/allergy-cloud-dependency-audit.log`.
+
 - [x] [I001] (P1) Establish real game integration coverage
   Goal:
   Agents need repeatable validation through the real game page.

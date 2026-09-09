@@ -12,6 +12,7 @@ module.exports = function withStoreRelease(config) {
         for (const configuration of Object.values(configurations)) {
             const settings = configuration?.buildSettings;
             if (!settings || !settings.PRODUCT_BUNDLE_IDENTIFIER) continue;
+            settings.CODE_SIGN_STYLE = 'Automatic';
             settings.MARKETING_VERSION = config.version;
             settings.CURRENT_PROJECT_VERSION = config.ios?.buildNumber ?? '1';
         }

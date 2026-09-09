@@ -2,7 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve, dirname, join, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { withAppleSigning, repositorySigningFile } from './apple-signing.mjs';
+import { repositorySigningFile } from './repository-signing-file.mjs';
 import { runNativeBuild } from './native-build-process.mjs';
 
 const acceptedOptions = new Set(['--mobile-dir', '--output', '--release-timestamp', '--manifest']);
@@ -19,8 +19,8 @@ for (const name of ['--mobile-dir', '--output', '--release-timestamp']) {
 }
 const sourceRoot = resolve(options.get('--mobile-dir'));
 const output = resolve(options.get('--output'));
-const platform = output.endsWith('.ipa') ? 'ios' : output.endsWith('.aab') ? 'android' : undefined;
-if (!platform) throw new Error('Release output must be an IPA or AAB.');
+const platform = 'android';
+if (!output.endsWith('.aab')) throw new Error('Android release output must be an AAB.');
 if (options.has('--manifest') && resolve(options.get('--manifest')) !== join(dirname(output), `${platform}.json`)) {
     throw new Error('Release manifest must use the gateway platform path.');
 }
@@ -31,7 +31,7 @@ const milliseconds = Date.parse(timestamp);
 if (!Number.isFinite(milliseconds) || new Date(milliseconds).toISOString().replace('.000Z', 'Z') !== timestamp) {
     throw new Error('Release timestamp must use canonical UTC seconds.');
 }
-// The sealed release timestamp allocates one monotonic store number for both platforms.
+// The sealed release timestamp allocates the Android store number.
 const buildNumber = milliseconds / 1000;
 if (!Number.isInteger(buildNumber) || buildNumber < 1 || buildNumber > 2100000000) throw new Error('Release build number exceeds the store range.');
 const gateway = process.env.MPRLAB_GATEWAY_EXECUTABLE;
@@ -42,27 +42,18 @@ const request = {
     source_root: sourceRoot,
     platform,
     output,
-    application_identifier: platform === 'ios' ? config.ios.bundleIdentifier : config.android.package,
+    application_identifier: config.android.package,
     version: versionMatch[1],
     build_number: String(buildNumber),
     release_timestamp: timestamp,
     preparation_manifest: 'native-preparation.json',
     verify_script: 'scripts/verify-native-release.mjs',
-    ...(platform === 'android' ? { android: {
+    android: {
         module: 'app',
         version_name_environment: 'MPRLAB_MOBILE_VERSION_NAME',
         version_code_environment: 'MPRLAB_MOBILE_VERSION_CODE',
         signing_environment: ['ALLERGY_WHEEL_ANDROID_KEYSTORE', 'ALLERGY_WHEEL_ANDROID_STORE_PASSWORD', 'ALLERGY_WHEEL_ANDROID_KEY_ALIAS', 'ALLERGY_WHEEL_ANDROID_KEY_PASSWORD']
-    } } : { ios: {
-        workspace: 'ios/AllergyWheel.xcworkspace',
-        scheme: 'AllergyWheel',
-        app_name: 'AllergyWheel',
-        entry_file: 'index.js',
-        team_environment: 'ALLERGY_WHEEL_APPLE_TEAM',
-        profile_environment: 'ALLERGY_WHEEL_APPLE_PROFILE',
-        identity_environment: 'ALLERGY_WHEEL_APPLE_IDENTITY',
-        export_intent: 'app-store'
-    } })
+    }
 };
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const controller = new AbortController();
@@ -71,20 +62,11 @@ const terminate = () => controller.abort('SIGTERM');
 process.on('SIGINT', interrupt);
 process.on('SIGTERM', terminate);
 try {
-    if (platform === 'ios') {
-        process.exitCode = await withAppleSigning({ repositoryRoot, applicationIdentifier: request.application_identifier, signal: controller.signal },
-            async signing => {
-                request.ios.keychain_environment = signing.keychainEnvironment;
-                return runNativeBuild(gateway, request, signing.environment, controller.signal);
-            });
-    } else {
-        const keystore = await repositorySigningFile(repositoryRoot, process.env.ALLERGY_WHEEL_ANDROID_KEYSTORE, 'ALLERGY_WHEEL_ANDROID_KEYSTORE');
-        const environment = { ...process.env, ALLERGY_WHEEL_ANDROID_KEYSTORE: keystore };
-        delete environment.ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD;
-        delete environment.GH_TOKEN;
-        delete environment.GITHUB_TOKEN;
-        process.exitCode = await runNativeBuild(gateway, request, environment, controller.signal);
-    }
+    const keystore = await repositorySigningFile(repositoryRoot, process.env.ALLERGY_WHEEL_ANDROID_KEYSTORE, 'ALLERGY_WHEEL_ANDROID_KEYSTORE');
+    const environment = { ...process.env, ALLERGY_WHEEL_ANDROID_KEYSTORE: keystore };
+    delete environment.GH_TOKEN;
+    delete environment.GITHUB_TOKEN;
+    process.exitCode = await runNativeBuild(gateway, request, environment, controller.signal);
 } catch (error) {
     process.stderr.write(`${error.message}\n`);
     process.exitCode = controller.signal.aborted ? (controller.signal.reason === 'SIGINT' ? 130 : 143) : 2;

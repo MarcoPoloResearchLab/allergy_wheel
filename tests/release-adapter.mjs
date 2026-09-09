@@ -9,7 +9,7 @@ const directory = await mkdtemp(join(tmpdir(), 'allergy-release-'));
 const adapter = join(directory, 'scripts/build-store-artifact.mjs');
 try {
     await mkdir(join(directory, 'scripts'));
-    for (const file of ['build-store-artifact.mjs', 'apple-signing.mjs', 'native-build-process.mjs']) {
+    for (const file of ['build-store-artifact.mjs', 'repository-signing-file.mjs', 'native-build-process.mjs']) {
         await copyFile(resolve('scripts', file), join(directory, 'scripts', file));
     }
     await mkdir(join(directory, 'configs/signing'), { recursive: true });
@@ -20,18 +20,11 @@ try {
     // The subprocess boundary represents the gateway; the application request stays real.
     await writeFile(join(mobile, 'mobile-build-operation'), `let body='';process.stdin.on('data',data=>body+=data);process.stdin.on('end',()=>{process.stdout.write(body);process.exit(Number(process.env.TEST_GATEWAY_EXIT||0));});`);
     const timestamp = '2026-09-07T20:00:00Z';
-    const environment = { ...process.env, MPRLAB_GATEWAY_EXECUTABLE: process.execPath, MPRLAB_ARTIFACT_VERSION: 'v1.2.3', ALLERGY_WHEEL_ANDROID_KEYSTORE: join(directory, 'configs/signing/android.p12'), ALLERGY_WHEEL_APPLE_CERTIFICATE_PATH: '' };
-    for (const [platform, extension] of [['android', 'aab'], ['ios', 'ipa']]) {
+    const environment = { ...process.env, MPRLAB_GATEWAY_EXECUTABLE: process.execPath, MPRLAB_ARTIFACT_VERSION: 'v1.2.3', ALLERGY_WHEEL_ANDROID_KEYSTORE: join(directory, 'configs/signing/android.p12') };
+    for (const [platform, extension] of [['android', 'aab']]) {
         const output = join(directory, `${platform}.${extension}`);
         const args = [adapter, '--mobile-dir', mobile, '--output', output, '--release-timestamp', timestamp];
-        if (platform === 'ios') args.push('--manifest', join(directory, 'ios.json'));
         const run = spawnSync(process.execPath, args, { env: environment, encoding: 'utf8' });
-        if (platform === 'ios') {
-            assert.equal(run.status, 2);
-            assert.match(run.stderr, /ALLERGY_WHEEL_APPLE_CERTIFICATE_PATH/);
-            assert.equal(run.stdout, '', 'Missing portable signing input must stop before gateway execution');
-            continue;
-        }
         assert.equal(run.status, 0, run.stderr);
         const request = JSON.parse(run.stdout);
         assert.equal(request.application_identifier, 'com.mprlab.allergywheel');
@@ -41,7 +34,6 @@ try {
         assert.equal(request.output, output);
         assert.equal(request.preparation_manifest, 'native-preparation.json');
         assert.equal(request.verify_script, 'scripts/verify-native-release.mjs');
-        if (platform === 'ios') assert.equal(request.ios.export_intent, 'app-store');
         const retry = spawnSync(process.execPath, args, { env: environment, encoding: 'utf8' });
         assert.equal(retry.stdout, run.stdout, 'An exact retry must retain the build identity');
         const failure = spawnSync(process.execPath, args, { env: { ...environment, TEST_GATEWAY_EXIT: '47' }, encoding: 'utf8' });
@@ -49,7 +41,7 @@ try {
         const missingVersion = spawnSync(process.execPath, args, { env: { ...environment, MPRLAB_ARTIFACT_VERSION: '' }, encoding: 'utf8' });
         assert.notEqual(missingVersion.status, 0, 'Do not use the development version for a release');
     }
-    console.info('The release adapter retains Android build identity and requires portable Apple credentials before gateway execution.');
+    console.info('The Android release adapter retains build identity and provider status.');
 } finally {
     await rm(directory, { recursive: true, force: true });
 }

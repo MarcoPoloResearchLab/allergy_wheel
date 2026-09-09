@@ -23,7 +23,7 @@ mprlab_resources:
       build_system: local
       build:
         android: scripts/build-store-artifact.mjs
-        ios: scripts/build-store-artifact.mjs
+        ios: scripts/build-ios.sh
       android:
         package_name: com.mprlab.allergywheel
         destination: google_play

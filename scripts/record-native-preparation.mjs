@@ -40,8 +40,10 @@ await writeFile(join(mobile, 'source-preparation.json'), `${JSON.stringify(await
 await mkdir(join(mobile, 'scripts'), { recursive: true });
 const verifierSource = resolve(import.meta.dirname, 'verify-native-release.mjs');
 await copyFile(verifierSource, join(mobile, 'scripts/verify-native-release.mjs'));
+await mkdir(join(mobile, 'ios/ci_scripts'), { recursive: true });
+await copyFile(join(mobile, 'cloud/ci_post_clone.sh'), join(mobile, 'ios/ci_scripts/ci_post_clone.sh'));
 const prepared = await digests(mobile, await collect(mobile));
-for (const path of ['package.json', 'package-lock.json', 'app.json', 'scripts/verify-native-release.mjs', 'android/gradlew', 'android/app/build.gradle', 'ios/Podfile', 'ios/Podfile.lock', 'ios/AllergyWheel.xcworkspace/contents.xcworkspacedata', 'generated/game.json', 'generated/parents.json', 'generated/analytics.json']) {
+for (const path of ['package.json', 'package-lock.json', 'app.json', 'scripts/verify-native-release.mjs', 'ios/ci_scripts/ci_post_clone.sh', 'android/gradlew', 'android/app/build.gradle', 'ios/Podfile', 'ios/Podfile.lock', 'ios/AllergyWheel.xcworkspace/contents.xcworkspacedata', 'generated/game.json', 'generated/parents.json', 'generated/analytics.json']) {
     if (!prepared.files[path]) throw new Error(`Native preparation requires ${path}`);
 }
 await writeFile(join(mobile, 'native-preparation.json'), `${JSON.stringify(prepared, null, 2)}\n`);

@@ -58,7 +58,7 @@
     "privacy.html": "8a18955213614a78b30ffe66500a98b06b8a335cad1ced0ed0fcc8248135abcb",
     "scripts/build-mobile-game.mjs": "97ee22a5d0ceb08653b8d15ee79ed0c346e8a0e307e4f6b35833dc8ae171be47",
     "scripts/prepare-mobile.sh": "074ce82e5069d9291410bbcf0628cefa9947b386d67b8fe4a2ae5795a19fb178",
-    "scripts/record-native-preparation.mjs": "e3031906e6e0ff2b1e4766246accef5d65a75ec26dec1303989bb9f4e5cee378",
-    "scripts/verify-native-release.mjs": "62a08fcd79406265d4cffc203569c3146aadb84f8066d687305b80c850824db6"
+    "scripts/record-native-preparation.mjs": "f752fb1581a32a1cc3287e4b252a6b979b311e7fd77875c4a9b4c67dffc118c3",
+    "scripts/verify-native-release.mjs": "34901258b1b9313f078a67d222d003c578776446e7892808c365702f13daacba"
   }
 }

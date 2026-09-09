@@ -19,6 +19,7 @@ try {
     const gradle = await readFile(join(prepared, 'android/app/build.gradle'), 'utf8');
     const plist = await readFile(join(prepared, 'ios/AllergyWheel/Info.plist'), 'utf8');
     const xcode = await readFile(join(prepared, 'ios/AllergyWheel.xcodeproj/project.pbxproj'), 'utf8');
+    assert.equal((xcode.match(/CODE_SIGN_STYLE = Automatic;/g) ?? []).length, 2, 'The application must declare automatic signing for both configurations.');
     const bundlePhase = [...xcode.matchAll(/shellScript = ("[^\n]+");/g)]
         .map(match => JSON.parse(match[1]))
         .find(script => script.includes('react-native-xcode.sh'));

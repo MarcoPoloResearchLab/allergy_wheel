@@ -243,3 +243,19 @@ The parent modal has its own safe-area provider. Detailed privacy text starts co
 The revised browser integration first failed because game startup did not load the font stylesheet.
 The tests cover automatic service requests, game-storage isolation, denied advertising storage, unavailable services, and the feedback gate.
 These results require native verification before store acceptance.
+
+## Apple Cloud Preparation
+
+I005 connects the retained native project to the shared Xcode Cloud operation.
+The generated project declares automatic signing.
+The clone hook verifies game and native source before it installs the locked mobile dependencies.
+The hook selects Node.js 24, and the workflow requires Xcode 26.6.
+The native phase uses the selected Node executable and the React Native bundler.
+The cloud build consumes the retained offline game resources.
+Release-version alignment, account setup, and a hosted build remain open.
+
+Final `make ci` passed after the cloud preparation changes.
+It includes the retained-source check and actual production JavaScript phase in Docker.
+Mobile runtime, build, and test-tooling audits reported zero vulnerabilities.
+The logs are `/tmp/allergy-cloud-native-ci-complete.log` and `/tmp/allergy-cloud-dependency-audit.log`.
+These checks do not prove a hosted Apple build or physical-device acceptance.
