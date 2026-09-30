@@ -4,8 +4,8 @@ mprlab_resources:
   release:
     scheme: semver
   resources:
-    - kind: github_pages
-      id: website
+    website:
+      kind: github_pages
       repository: marcopoloresearchlab/allergy_wheel
       branch: gh-pages
       domain: allergy.mprlab.com
@@ -17,8 +17,8 @@ mprlab_resources:
         target: pages
       verification:
         path: /.mprlab-release.json
-    - kind: mobile_application
-      id: mobile
+    mobile:
+      kind: mobile_application
       source: mobile
       build_system: local
       build:
