@@ -8,6 +8,16 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B043] (P0) Align the Expo SDK 57 dependency contract.
+  Goal: Pass the mobile dependency check with the current SDK 57 packages.
+  Requirements:
+  - Update Expo and its package lock together.
+  - Update the native files through the repository preparation target.
+  Validation: The initial mobile check rejected two Expo package versions.
+  The corrected `make ci` passed, including browser, mobile, native, and local startup tests.
+  Resolution: Expo uses version 57.0.26. Expo SystemUI uses version 57.0.4.
+  The dependency audit passed after the brace-expansion update.
+
 - [x] [B010] (P1) Preserve the local game on repeated startup
   Goal:
   Repeated `make up` must preserve the running local container.

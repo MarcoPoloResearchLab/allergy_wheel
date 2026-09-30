@@ -70,6 +70,11 @@ mobile-audit: build-test-image
 mobile-package: build-test-image
 	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY)/mobile/generated:/workspace/mobile/generated" "$(TEST_IMAGE)" node scripts/build-mobile-game.mjs
 
+.PHONY: mobile-update-dependencies
+mobile-update-dependencies:
+	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY):/workspace" --workdir /workspace/mobile "$(TEST_IMAGE)" npm install --package-lock-only --ignore-scripts
+	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY):/workspace" --workdir /workspace/mobile "$(TEST_IMAGE)" npm exec -- expo install --fix
+
 mobile-check: build-test-image
 	docker run --rm --init --workdir /workspace/mobile --env CI=1 "$(TEST_IMAGE)" npm run check:expo
 
