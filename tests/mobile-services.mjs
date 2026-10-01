@@ -8,6 +8,9 @@ import { MobileLocation } from '../mobile/constants.js';
 export async function runAutomaticServicesFlow(browser, gameSource, parentSource) {
     const context = await browser.newContext();
     const requests = [];
+    const countRequests = [];
+    const countEndpoint = "https://loopaware-api.mprlab.com/public/sites/9931e62f-5a60-48e6-9e31-16de62f62e7d/visit-counts";
+    await context.addCookies([{ name: "private-session", value: "private-marker", domain: "loopaware-api.mprlab.com", path: "/" }]);
     await context.route('**/*', async (route) => {
         const url = route.request().url();
         if (url === MobileLocation.GAME) return route.fulfill({ contentType: 'text/html', body: gameSource });
@@ -15,8 +18,9 @@ export async function runAutomaticServicesFlow(browser, gameSource, parentSource
         if (url === MobileLocation.ANALYTICS) return route.fulfill({ contentType: 'text/html', body: await readFile('mobile/generated/analytics.html', 'utf8') });
         requests.push(url);
         if (url === ExternalService.FONTS) return route.fulfill({ contentType: 'text/css', body: 'body { font-family: sans-serif; }' });
-        if ([ExternalService.GOOGLE_TAG, ExternalService.LOOP_ANALYTICS].includes(url)) {
-            return route.fulfill({ contentType: 'text/javascript', body: 'window.providerSawSelection = localStorage.getItem("selectedAllergen");' });
+        if (url === countEndpoint) {
+            countRequests.push({ method: route.request().method(), body: route.request().postData(), headers: await route.request().allHeaders() });
+            return route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*' } });
         }
         return route.abort();
     });
@@ -28,14 +32,16 @@ export async function runAutomaticServicesFlow(browser, gameSource, parentSource
         await gamePage.evaluate(() => localStorage.setItem('selectedAllergen', 'peanuts'));
         const analyticsPage = await context.newPage();
         await analyticsPage.goto(MobileLocation.ANALYTICS);
-        await analyticsPage.waitForFunction(() => document.documentElement.dataset.analyticsState === 'ready');
-        assert.deepEqual(requests.sort(), [ExternalService.FONTS, ExternalService.GOOGLE_TAG, ExternalService.LOOP_ANALYTICS].sort());
-        assert.equal(await analyticsPage.evaluate(() => window.providerSawSelection), null, 'Analytics must not read game-origin preferences.');
-        const events = await analyticsPage.evaluate(() => window.dataLayer.map((event) => Array.from(event)));
-        assert.equal(events[0][2].ad_storage, 'denied');
-        assert.equal(events[0][2].analytics_storage, 'denied');
-        assert.equal(events[2][2].page_location, MobileLocation.GAME);
-        assert.equal(JSON.stringify(events).includes('peanuts'), false);
+        await analyticsPage.waitForFunction(() => ['ready', 'unavailable'].includes(document.documentElement.dataset.analyticsState));
+        assert.deepEqual(requests.sort(), [ExternalService.FONTS, countEndpoint].sort());
+        assert.equal(await analyticsPage.evaluate(() => document.documentElement.dataset.analyticsState), 'ready');
+        assert.equal(countRequests.length, 1);
+        assert.equal(countRequests[0].method, 'POST');
+        assert.equal(countRequests[0].body, '{}');
+        assert.equal(countRequests[0].headers.cookie, undefined);
+        assert.equal(countRequests[0].headers.referer, undefined);
+        assert.equal(await analyticsPage.evaluate(() => typeof window.gtag), 'undefined');
+        assert.deepEqual(await analyticsPage.evaluate(() => Object.keys(localStorage)), []);
         const parentPage = await context.newPage();
         await parentPage.goto(MobileLocation.PARENTS);
         assert.equal(await parentPage.getByRole('button', { name: 'Enable analytics for this visit' }).count(), 0);

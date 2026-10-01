@@ -23,7 +23,7 @@ P001 and P002 record the owner decisions.
 | Countries | All countries, subject to store availability and applicable requirements |
 | Price | No charges, advertisements, or in-app purchases |
 | Account | Complete game access without an account |
-| Services | Google Analytics, LoopAware analytics and feedback, and external fonts |
+| Services | Automatic LoopAware counts, parent feedback, and external fonts |
 | Support | `support@mprlab.com` |
 | Offline play | Complete game resources available from the first installed launch |
 
@@ -44,7 +44,7 @@ PWA installation and website APK downloads are outside the selected delivery pat
 | `js/core/stores.js` | Validate store destinations and order available links |
 | `js/ui/storeLinks.js` | Render installation links and the mobile privacy link |
 | `js/core/parentsApp.js` | Connect the parent UI and external gateway |
-| `js/core/gateway.js` | Own external service URLs and Google Analytics settings |
+| `js/core/gateway.js` | Own external service URLs and the native count request |
 | `mobile/App.js` | Display the game, automatic analytics, and a separate feedback WebView |
 | `mobile/plugins/withOfflineBuild.cjs` | Generate native bundle configuration |
 | `scripts/build-mobile-game.mjs` | Package the browser sources and local resources |
@@ -74,7 +74,9 @@ They do not use Expo or EAS for artifact production.
 ## Data Contract
 
 The mobile game loads online fonts automatically.
-A separate analytics document starts Google Analytics and LoopAware analytics at application launch.
+A separate analytics document sends one empty LoopAware count request at application launch.
+The native application has no Google Analytics integration.
+Native counts use a dedicated LoopAware site with an aggregate profile.
 The parent document loads feedback only after the parent gate and feedback selection.
 The parent gate uses a multiplication question.
 This gate is a product control. It does not establish legal parental consent or store acceptance.
@@ -92,17 +94,17 @@ Its incognito WebView cannot read game-origin storage. Analytics failure does no
 | Surface | Data and behavior |
 | --- | --- |
 | Local game | The selected allergen token and label stay in device storage. Catalog and audio requests use packaged data URLs. |
-| Google Analytics | Application launch loads the existing property automatically. Consent defaults deny analytics storage and all advertisement storage. Google signals and advertisement personalization are disabled. |
-| LoopAware analytics | Application launch loads `pixel.js` in the separate analytics document. Its source sends a visit identifier, page, device, locale, timezone, and display data. The server receives IP data and can receive edge location data. |
+| Native analytics client | Sends one empty JSON object by POST. Omits cookies and referrer. Does not retry a failed or uncertain response. |
+| LoopAware analytics | The collector stores only site ID, UTC date, and request count. Transport processes network information transiently. Proxy logging requires separate verification before production activation. |
 | LoopAware feedback | A separate parent action loads `widget.js`. Submission contains contact details, a message or sentiment, site ID, and source URL. |
 | External fonts | The game loads Google Fonts automatically when online. The game uses the system sans-serif font offline. |
 | Support | User correspondence to `support@mprlab.com` can contain contact details and message text. |
 | Website | The existing Google Analytics, LoopAware widget, and external fonts remain on the browser game. The mobile privacy page starts no external service. |
 
-The LoopAware pixel source uses a local visitor ID when browser storage is available.
-It creates a visit ID when storage is unavailable.
-The native parent adapter disables persistent DOM storage on Android.
-The source review does not prove the deployed retention configuration or all requests from Google scripts.
+The native analytics client uses no visitor identifier, device record, or persistent storage.
+LoopAware retains daily counts for the configured calendar-day window.
+The canonical configuration specifies 90 days.
+The native request tests do not prove deployed proxy behavior or store acceptance.
 
 The public mobile privacy page source is `privacy.html`.
 Its intended URL is `https://allergy.mprlab.com/privacy.html` after authorized website publication.
@@ -243,3 +245,34 @@ The parent modal has its own safe-area provider. Detailed privacy text starts co
 The revised browser integration first failed because game startup did not load the font stylesheet.
 The tests cover automatic service requests, game-storage isolation, denied advertising storage, unavailable services, and the feedback gate.
 These results require native verification before store acceptance.
+
+## Apple Cloud Preparation
+
+I005 connects the retained native project to the shared Xcode Cloud operation.
+The generated project declares automatic signing.
+The clone hook verifies game and native source before it installs the locked mobile dependencies.
+The hook selects Node.js 24, and the workflow requires Xcode 26.6.
+The native phase uses the selected Node executable and the React Native bundler.
+The cloud build consumes the retained offline game resources.
+The source config and prepared native projects use release version 1.0.1.
+B006 verifies the source version through the real Expo generator for both platforms.
+B007 removes absent native test targets from the generated shared scheme.
+B008 removes Podfile property error recovery. B009 explicitly selects React Native and Expo source dependencies.
+The selected source dependencies override inherited prebuilt flags.
+Native preparation checks valid, missing, and malformed properties, plus an unavailable prebuilt service, through actual CocoaPods.
+After a source version change, run `make mobile-prepare-store` before the cloud build.
+Apple account setup and source authorization passed.
+A successful hosted build remains required for provider acceptance.
+
+Final `make ci` passed after B006 prepared release version 1.0.1.
+It includes the retained-source check and actual production JavaScript phase in Docker.
+Mobile runtime, build, and test-tooling audits reported zero vulnerabilities.
+The final log is `/tmp/allergy-version-final-ci.log`.
+These checks do not prove a hosted Apple build or physical-device acceptance.
+
+B007 through B010 passed corrected final CI after the native source review.
+The log is `/tmp/allergy-native-review-final-ci-corrected.log`.
+The selected Apple source passed native generation, cloud hooks, preparation checks, the production bundle, and local startup.
+Both source sets passed all four CocoaPods cases. The deployment install preserved the dependency lock.
+Existing dependency versions and app metadata remain unchanged at release version 1.0.1.
+The review patch excludes concurrent analytics changes. Hosted Apple compilation and signing remain unverified.

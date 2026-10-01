@@ -13,7 +13,7 @@ const source = await readFile(values.metadata, 'utf8');
 const listing = JSON.parse(source);
 const application = JSON.parse(await readFile('mobile/app.json', 'utf8')).expo;
 const manifest = parse(await readFile('.mprlab/deploy/resources.yml', 'utf8'));
-const website = manifest.mprlab_resources.resources.find((resource) => resource.kind === 'github_pages' && resource.id === 'website');
+const website = manifest.mprlab_resources.resources.website;
 
 /** Reject missing or unknown fields at the metadata file boundary. */
 function requireFields(value, fields, label) {
