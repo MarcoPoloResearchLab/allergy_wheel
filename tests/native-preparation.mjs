@@ -11,7 +11,7 @@ try {
         await cp(resolve(name), join(fixture, name), { recursive: true });
     }
     await mkdir(join(fixture, 'mobile/scripts'), { recursive: true });
-    for (const name of ['app.json', 'package.json', 'package-lock.json', 'plugins', 'cloud', 'index.js', 'App.js', 'metro.config.js', 'lifecycle.js', 'constants.js', 'parents.html']) {
+    for (const name of ['app.json', 'package.json', 'package-lock.json', 'plugins', 'index.js', 'App.js', 'metro.config.js', 'lifecycle.js', 'constants.js', 'parents.html']) {
         await cp(resolve('mobile', name), join(fixture, 'mobile', name), { recursive: true });
     }
     for (const path of ['android/gradlew', 'android/app/build.gradle', 'ios/Podfile', 'ios/Podfile.lock', 'ios/AllergyWheel.xcworkspace/contents.xcworkspacedata', 'generated/game.json', 'generated/parents.json', 'generated/analytics.json']) {

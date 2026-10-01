@@ -9,7 +9,10 @@ export async function runAutomaticServicesFlow(browser, gameSource, parentSource
     const context = await browser.newContext();
     const requests = [];
     const countRequests = [];
-    const countEndpoint = "https://loopaware-api.mprlab.com/public/sites/9931e62f-5a60-48e6-9e31-16de62f62e7d/visit-counts";
+    const countEndpoint = ExternalService.LOOP_COUNTS;
+    const countSite = new URL(countEndpoint).pathname.split('/')[3];
+    const feedbackSite = new URL(ExternalService.LOOP_FEEDBACK).searchParams.get('site_id');
+    assert.notEqual(countSite, feedbackSite, 'Native aggregate counts require a site separate from detailed feedback analytics.');
     await context.addCookies([{ name: "private-session", value: "private-marker", domain: "loopaware-api.mprlab.com", path: "/" }]);
     await context.route('**/*', async (route) => {
         const url = route.request().url();
