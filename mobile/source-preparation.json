@@ -21,12 +21,12 @@
     "data/mobile-stores.json": "2d2ace6d72b5332662adab588c9786bffa10d08f24b8fcd680eb647341975eab",
     "data/normalization.json": "d49508a73833264029dc968a10503bc8a4a43c16b11adaf5d4c253a38c2bb602",
     "index.html": "9e58022813b49b604ff4ad8b5ea11714f87e9fcb03b9c1306735c356c003a58e",
-    "js/constants.js": "bb9e3d4360eb4dd0aeccea057b9cf46a4bf8037528dd914b6e4c4d89955f4326",
-    "js/core/analyticsApp.js": "533400b862b0f838e7bb01ac32a60a752eeb9d67c1057d8b541499a9eca93748",
+    "js/constants.js": "14c14d9a34c66b29ad292f1be7223ee5e69dcc4bcd7cb7dc14c7a7fc92ff681e",
+    "js/core/analyticsApp.js": "bb28e2e904e9975819b20061eb0b15a2e47537b1090c4e16d35a36a855eb6f76",
     "js/core/app.js": "00530d170576de4c079305101df006b48c9713970efcef7b307753d0aa65ec1b",
     "js/core/board.js": "6d1e6fe6243a44533cf517079c162ab56be564e5e6e9cfcca39379faf490cc86",
     "js/core/game.js": "4cb0360a869840802fb2d9f1e58f01fdf4b1d83a10b058738fe278f42e9a2fe7",
-    "js/core/gateway.js": "7a02193a8b8b17b365ebbab3c3ebe08a9f8c5b46a26f5c919c6b88a3d6eee8cb",
+    "js/core/gateway.js": "66ffbd2f94ebee4ea5586976fd67c6af9efce3352df790828fca933e82ab15d8",
     "js/core/navigation.js": "210dabb031264bcbbf62869bbc7bb42e92b8808eb03fafd602fa8826e9909596",
     "js/core/parentsApp.js": "afad91c2ef27dd0b922add768704a14c6706f76eca825b17a95b9017b0e22d57",
     "js/core/privacyApp.js": "0a121da0d3187408b6536fbad2fcf26c7f3bfb1d441f19feb10803a31aaffa62",
@@ -58,7 +58,7 @@
     "privacy.html": "8a18955213614a78b30ffe66500a98b06b8a335cad1ced0ed0fcc8248135abcb",
     "scripts/build-mobile-game.mjs": "97ee22a5d0ceb08653b8d15ee79ed0c346e8a0e307e4f6b35833dc8ae171be47",
     "scripts/prepare-mobile.sh": "074ce82e5069d9291410bbcf0628cefa9947b386d67b8fe4a2ae5795a19fb178",
-    "scripts/record-native-preparation.mjs": "e3031906e6e0ff2b1e4766246accef5d65a75ec26dec1303989bb9f4e5cee378",
-    "scripts/verify-native-release.mjs": "62a08fcd79406265d4cffc203569c3146aadb84f8066d687305b80c850824db6"
+    "scripts/record-native-preparation.mjs": "f752fb1581a32a1cc3287e4b252a6b979b311e7fd77875c4a9b4c67dffc118c3",
+    "scripts/verify-native-release.mjs": "34901258b1b9313f078a67d222d003c578776446e7892808c365702f13daacba"
   }
 }

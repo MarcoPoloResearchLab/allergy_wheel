@@ -1,16 +1,15 @@
 // @ts-check
 import { ExternalService } from '../constants.js';
 
-/** Own external service destinations; the caller supplies DOM resource adapters. */
-export function createAnalyticsGateway({ loadScript, globalScope = globalThis }) {
+/** Send one startup count through the restricted LoopAware collector. */
+export function createAnalyticsGateway({ sendRequest = globalThis.fetch.bind(globalThis) } = {}) {
     return Object.freeze({
         async enableAnalytics() {
-            globalScope.dataLayer = [];
-            globalScope.gtag = function () { globalScope.dataLayer.push(arguments); };
-            globalScope.gtag('consent', 'default', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
-            globalScope.gtag('js', new Date());
-            globalScope.gtag('config', ExternalService.GOOGLE_ID, { page_location: ExternalService.PAGE, page_title: ExternalService.PAGE_TITLE, allow_google_signals: false, allow_ad_personalization_signals: false });
-            await Promise.all([loadScript(ExternalService.GOOGLE_TAG), loadScript(ExternalService.LOOP_ANALYTICS)]);
+            const response = await sendRequest(ExternalService.LOOP_COUNTS, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+                credentials: 'omit', referrerPolicy: 'no-referrer', redirect: 'error', cache: 'no-store'
+            });
+            if (response.status !== 204) throw new Error('LoopAware count was not accepted.');
         }
     });
 }

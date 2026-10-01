@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "products": {
+    "ios": {
+      "bundle_identifier": "com.mprlab.allergywheel",
+      "platform": "IOS",
+      "workflow": "Release",
+      "container_file": "mobile/ios/AllergyWheel.xcworkspace",
+      "scheme": "AllergyWheel",
+      "distribution": "APP_STORE_ELIGIBLE"
+    }
+  }
+}

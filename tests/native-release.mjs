@@ -1,5 +1,6 @@
 // @ts-check
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { mkdtemp, cp, readFile, rm, mkdir, writeFile, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
@@ -12,6 +13,11 @@ try {
     for (const name of ['app.json', 'package.json', 'package-lock.json', 'plugins', 'assets']) {
         await cp(resolve('mobile', name), join(prepared, name), { recursive: true });
     }
+    const configPath = join(prepared, 'app.json');
+    const config = JSON.parse(await readFile(configPath, 'utf8'));
+    const sourceVersion = '3.2.1';
+    config.expo.version = sourceVersion;
+    await writeFile(configPath, JSON.stringify(config));
     // Use the real Expo generator and application plugins with installed container dependencies.
     execFileSync(process.execPath, [resolve('mobile/node_modules/expo/bin/cli'), 'prebuild', '--no-install', '--platform', 'all'], {
         cwd: prepared, env: { ...process.env, NODE_PATH: resolve('mobile/node_modules'), CI: '1' }, stdio: 'inherit'
@@ -19,6 +25,15 @@ try {
     const gradle = await readFile(join(prepared, 'android/app/build.gradle'), 'utf8');
     const plist = await readFile(join(prepared, 'ios/AllergyWheel/Info.plist'), 'utf8');
     const xcode = await readFile(join(prepared, 'ios/AllergyWheel.xcodeproj/project.pbxproj'), 'utf8');
+    const require = createRequire(resolve('mobile/package.json'));
+    const project = require('xcode').project(join(prepared, 'ios/AllergyWheel.xcodeproj/project.pbxproj'));
+    project.parseSync();
+    const targets = project.pbxNativeTargetSection();
+    const scheme = await readFile(join(prepared, 'ios/AllergyWheel.xcodeproj/xcshareddata/xcschemes/AllergyWheel.xcscheme'), 'utf8');
+    for (const reference of scheme.matchAll(/BlueprintIdentifier\s*=\s*"([^"]+)"/g)) {
+        assert.ok(targets[reference[1]], `Shared scheme references absent native target ${reference[1]}`);
+    }
+    assert.equal((xcode.match(/CODE_SIGN_STYLE = Automatic;/g) ?? []).length, 2, 'The application must declare automatic signing for both configurations.');
     const bundlePhase = [...xcode.matchAll(/shellScript = ("[^\n]+");/g)]
         .map(match => JSON.parse(match[1]))
         .find(script => script.includes('react-native-xcode.sh'));
@@ -43,7 +58,8 @@ try {
     assert.match(release, /minifyEnabled true/, 'Release must produce the required mapping');
     assert.match(plist, /<key>CFBundleShortVersionString<\/key>\s*<string>\$\(MARKETING_VERSION\)<\/string>/);
     assert.match(plist, /<key>CFBundleVersion<\/key>\s*<string>\$\(CURRENT_PROJECT_VERSION\)<\/string>/);
-    assert.match(xcode, /MARKETING_VERSION = 1\.0\.0;/, 'Development builds must retain the Expo application version');
+    assert.deepEqual([...xcode.matchAll(/MARKETING_VERSION = ([^;]+);/g)].map(match => match[1]), [sourceVersion, sourceVersion], 'Both Apple configurations must retain the Expo application version');
+    assert.ok(gradle.includes(`versionName = (System.getenv("MPRLAB_MOBILE_VERSION_NAME") ?: "${sourceVersion}")`), 'Android development builds must retain the Expo application version');
     console.info('Generated native release signing and version contracts passed.');
 } finally {
     await rm(prepared, { recursive: true, force: true });

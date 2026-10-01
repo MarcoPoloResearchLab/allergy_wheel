@@ -12,7 +12,7 @@ export const ParentText = Object.freeze({
     FEEDBACK: 'Open feedback', PRIVACY_TITLE: 'Privacy and support',
     INTRODUCTION: 'Have a question or an idea? Ask an adult to open feedback.',
     LOADING: 'The online service is starting.', READY: 'The online service is ready.', UNAVAILABLE: 'Internet is unavailable or the service could not load. The game still works offline.',
-    PRIVACY: 'Allergy Wheel is free, with no ads, purchases, or account requirement. Game rounds and the selected allergen stay on your device. Google Analytics and LoopAware analytics start automatically when the app opens. They receive visit, network, and device information. Analytics runs separately from the game and does not receive the selected allergen or game results. Advertising personalization and analytics storage are disabled. Google Fonts loads automatically when a connection is available. The game remains playable offline. Feedback requires an adult to pass the parent gate. LoopAware receives the contact details, message, and sentiment that the adult submits. Closing feedback ends that feedback session. For support or a data deletion request, contact support@mprlab.com. This game does not determine whether food is safe to eat.',
+    PRIVACY: 'Allergy Wheel is free, with no ads, purchases, or account requirement. Game rounds and the selected allergen stay on your device. The app sends one automatic startup count to LoopAware. The request contains no allergen selection or game results. LoopAware stores daily totals without visitor or device records. The network connection supplies an IP address during transport. The native app does not use Google Analytics. Google Fonts loads automatically when a connection is available. The game remains playable offline. Feedback requires an adult to pass the parent gate. LoopAware receives the contact details, message, and sentiment that the adult submits. Closing feedback ends that feedback session. For support or a data deletion request, contact support@mprlab.com. This game does not determine whether food is safe to eat.',
     CONSENT: 'Feedback is for adults. Share a question or suggestion with our team.'
 });
 export const FeedbackConfiguration = Object.freeze({
@@ -20,12 +20,9 @@ export const FeedbackConfiguration = Object.freeze({
     INITIALIZATION_TIMEOUT_MS: 10_000
 });
 export const ExternalService = Object.freeze({
-    GOOGLE_TAG: 'https://www.googletagmanager.com/gtag/js?id=G-5CDP19RY2Z',
-    GOOGLE_ID: 'G-5CDP19RY2Z',
-    LOOP_ANALYTICS: 'https://loopaware.mprlab.com/pixel.js?site_id=9931e62f-5a60-48e6-9e31-16de62f62e7d',
+    LOOP_COUNTS: 'https://loopaware-api.mprlab.com/public/sites/9931e62f-5a60-48e6-9e31-16de62f62e7d/visit-counts',
     LOOP_FEEDBACK: 'https://loopaware.mprlab.com/widget.js?site_id=9931e62f-5a60-48e6-9e31-16de62f62e7d',
     FONTS: 'https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap',
-    PAGE: 'https://allergy.mprlab.com/mobile/', PAGE_TITLE: 'Allergy Wheel'
 });
 
 /* File: constants.js */

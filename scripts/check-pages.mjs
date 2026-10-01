@@ -5,7 +5,7 @@ import { readFile, lstat } from 'node:fs/promises';
 
 // Match the gateway repository contract at the selected manifest boundary.
 const manifest = parse(await readFile('.mprlab/deploy/resources.yml', 'utf8'));
-const websites = manifest.mprlab_resources.resources.filter((resource) => resource.kind === 'github_pages');
+const websites = Object.values(manifest.mprlab_resources.resources).filter((resource) => resource.kind === 'github_pages');
 assert.equal(websites.length, 1, 'The game must declare one Pages resource.');
 const website = websites[0];
 assert.match(website.repository, /^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*$/, 'Pages repository must use a canonical lowercase owner/repository identifier.');
