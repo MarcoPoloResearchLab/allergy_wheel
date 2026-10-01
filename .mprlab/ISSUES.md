@@ -1054,7 +1054,9 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Keep this issue limited to analysis and decisions.
 
   Open Decisions:
-  No product choice remains for the owner. The remaining work is technical analysis and validation.
+  On September 8, 2026, the owner selected automatic LoopAware counts for the native game.
+  Remove native Google Analytics. Keep browser Google Analytics and automatic fonts.
+  LoopAware F016 must supply and verify the restricted collector before native integration.
 
   Owner Decisions:
   On September 7, 2026, the owner selected ages 6 and older and all countries.
@@ -1162,3 +1164,27 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   That policy says LoopAware does not knowingly collect personal information from children under 13.
   Verify the automatic analytics payload and permitted child use before the Google audience certification.
   The policy establishes the stated procedure. Actual retention and deletion behavior still require verification.
+
+  Cross-Repository Plan:
+  On September 8, 2026, the owner authorized a plan or implementation for necessary LoopAware changes.
+  LoopAware P001 records the source review and proposed restricted analytics contract.
+  LoopAware F016 owns its implementation, including collection, logs, reports, retention, and removal.
+  The design is in the LoopAware document `.mprlab/CHILD-AUDIENCE-ANALYTICS.md`.
+  The initial LoopAware source stored raw IP addresses, individual visits, and device information.
+  Its request logger also recorded IP addresses and user agents.
+  Client storage isolation does not remove those server records.
+
+  F016 now implements automatic counts without persistent visitor records.
+  LoopAware final CI passed, including 465 browser tests, mobile API checks, audits, and race tests.
+  Gateway B539 passed the real proxy failure log test. Its final CI remains in progress.
+  Native request tests passed for one empty POST, omitted cookies and referrers, automatic fonts, and offline play.
+  A dedicated production site, generated native inputs, and final artifacts remain pending.
+  It cannot control Google Analytics or Google Fonts requests.
+  Verify each retained provider and parent feedback separately before completing the store declarations.
+  Keep P002 open until the selected provider contract and native evidence are complete.
+
+  Current Publication Evidence:
+  The signed Android bundle for build `1788901126` reached Google Play as a draft.
+  The store listing includes three screenshots from that candidate in an Android emulator.
+  Google reports ten of eleven initial setup tasks complete. Data safety remains incomplete.
+  The candidate still uses the existing analytics contract and is not a completed public release.
