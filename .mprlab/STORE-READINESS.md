@@ -13,11 +13,13 @@ Docker checks passed for native preparation, both adapters, and the production A
 The current artifact preparation contains 76 native inputs.
 Simulators, emulators, and automated browsers are sufficient for device acceptance.
 
-B045 records the rejected aggregate count endpoint.
+B045 corrects the rejected aggregate count endpoint.
 The feedback site returned HTTP 409 with `traffic_profile_conflict`.
-The LoopAware form did not save the dedicated aggregate site with valid inputs.
-A dedicated site ID and live collector verification remain required.
-Final `make ci` stopped at the new count-site assertion.
+The count endpoint now uses aggregate site `eaf3654a-9f9b-4e86-9262-558201a6e276`.
+The live collector returned HTTP 204 from the native origin on October 1, 2026.
+The generated package and both preparation records contain the corrected input.
+`make test-mobile` passed in Docker after the correction.
+Final `make ci` passed in Docker.
 
 ## Prepared Store Text
 

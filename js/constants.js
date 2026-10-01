@@ -20,7 +20,7 @@ export const FeedbackConfiguration = Object.freeze({
     INITIALIZATION_TIMEOUT_MS: 10_000
 });
 export const ExternalService = Object.freeze({
-    LOOP_COUNTS: 'https://loopaware-api.mprlab.com/public/sites/9931e62f-5a60-48e6-9e31-16de62f62e7d/visit-counts',
+    LOOP_COUNTS: 'https://loopaware-api.mprlab.com/public/sites/eaf3654a-9f9b-4e86-9262-558201a6e276/visit-counts',
     LOOP_FEEDBACK: 'https://loopaware.mprlab.com/widget.js?site_id=9931e62f-5a60-48e6-9e31-16de62f62e7d',
     FONTS: 'https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap',
 });

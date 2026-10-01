@@ -23,7 +23,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   The contract check stopped before build intent creation and signing.
   Signed artifact and store acceptance remain separate requirements.
 
-- [!] [B045] (P2) Select a dedicated aggregate LoopAware site.
+- [x] [B045] (P2) Select a dedicated aggregate LoopAware site.
   Goal: Accept automatic native counts under the restricted collector contract.
   Evidence: The feedback site returned HTTP 409 with `traffic_profile_conflict` for a count request.
   The new native service test rejects a shared feedback and count site.
@@ -31,12 +31,16 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Use a dedicated site with the `aggregate` traffic profile.
   - Permit the native origin `https://allergy-wheel-parents.invalid`.
   - Verify HTTP 204 through the live collector before artifact preparation.
-  Blocked: The LoopAware creation form did not save the new site with valid inputs.
-  A dedicated site ID is required before the application endpoint can change.
-  Validation: Final `make ci` stopped at the new count-site assertion in `make test-mobile`.
-  The browser tests and source checks passed before this failure.
-  The focused native adapter, preparation, and production bundle tests passed separately.
-  The final log is `/tmp/allergy-review-final-ci.log`.
+  Resolution: The count endpoint now uses site `eaf3654a-9f9b-4e86-9262-558201a6e276`.
+  LoopAware stores daily totals for this site.
+  The primary origin is `https://allergy-wheel-counts.invalid`.
+  The additional traffic origin is `https://allergy-wheel-parents.invalid`.
+  The feedback endpoint retains its existing site.
+  Validation: The live collector returned HTTP 204 from the native origin on October 1, 2026.
+  The saved site and traffic origin remained present after a dashboard reload.
+  `make test-mobile` passed in Docker after the endpoint correction.
+  The generated package and both preparation records now contain the corrected input.
+  Final `make ci` passed in Docker.
 
 - [x] [B043] (P0) Align the Expo SDK 57 dependency contract.
   Goal: Pass the mobile dependency check with the current SDK 57 packages.

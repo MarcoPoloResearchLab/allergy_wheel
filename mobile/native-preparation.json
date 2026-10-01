@@ -45,10 +45,10 @@
     "app.json": "d6acd9fdfb0f2310c2b05e6abf35683044d7961ec63ac5da92c0f55ef4599564",
     "assets/icon.png": "5e939272a30ce30b4bc18c391fe7226812cb905be1f24d1e29b57a23f2b7cabe",
     "constants.js": "e6590b2feb1b7c4d3d46cec6b55d6ab35c9a322001420e1cf317ba816786b249",
-    "generated/analytics.json": "ef62ee60fcc88116cb3b6c6db9656e29df2b592d141b64f566c78f47cd384934",
-    "generated/game.json": "effd336cadd2911c065307e9f05379e90bc1f1e473b30c4e686818a663a103fa",
-    "generated/parents.json": "ae8f0a7e6796d52834f315c3ce76f53dd7d9a42e146225d326f624a464e59d54",
-    "generated/resources.json": "58c37806f4f9751fa4fcd107f2ca99ed9b74aec5a5acae4d5976a6e3fdb0662d",
+    "generated/analytics.json": "5b5d9b9aa6695a5317dae7746d94e3c2a1dbc605552a13c30c48e7338221272a",
+    "generated/game.json": "05b021c10da012eb183d73f113cdb96bd2191a3ed0684e6e0f18712d2f4d6841",
+    "generated/parents.json": "bfddd238ae2419430892cc20fa5fb71c8aabfb23a2c1d886868315cd1fcdb99d",
+    "generated/resources.json": "31f6ff0842afaf18d36b7235d2748db8e5048fae9b86990c07d270bb22b6880f",
     "index.js": "8b71fb58723cdf961ecd2d8a44bca4ceef89b98863e9217842c7a6c9a117a426",
     "ios/.gitignore": "f8042134be9ad24176d8d630255be93f8a0223925ae88c34b603c8989baa8345",
     "ios/.xcode.env": "3c02dca07775b31ce4e77dfb3bb660d7c6e577474d65a6216f1ea9bef54e1ca6",
@@ -76,6 +76,6 @@
     "plugins/withOfflineBuild.cjs": "9125901f5d2d4227316aa71cc36a67f2ecba721d300acfef27c6a8665dca9e5c",
     "plugins/withStoreRelease.cjs": "ab0ea34f16657d2b5bf691e972e13e6df54ffb6b7c3e630a20e8df58cfc3bda4",
     "scripts/verify-native-release.mjs": "34901258b1b9313f078a67d222d003c578776446e7892808c365702f13daacba",
-    "source-preparation.json": "456f05055c068651e81091d78c2babeea6bd80bf7eab3f0c7ab725df1182d32c"
+    "source-preparation.json": "38856b9ca8e9ef4932a49485558296de7825283f42e0499964520e80fadc6c3e"
   }
 }
