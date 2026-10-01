@@ -24,6 +24,19 @@ try {
     assert.equal(await readFile(join(output, 'google/en-US/full-description.txt'), 'utf8'), `${metadata.description}\n`);
     assert.equal(await readFile(join(output, 'apple/en-US/review-notes.txt'), 'utf8'), `${metadata.reviewNotes}\n`);
 
+    for (const relative of [
+        'apple/en-US/description.txt',
+        'google/en-US/full-description.txt',
+        'apple/en-US/review-notes.txt'
+    ]) {
+        const exportedText = await readFile(join(output, relative), 'utf8');
+        assert.doesNotMatch(exportedText, /Google Analytics/i, `${relative}: native Google Analytics is removed.`);
+        assert.match(exportedText, /one startup count to LoopAware/i, `${relative}: disclose automatic aggregate counts.`);
+        assert.match(exportedText, /daily totals without visitor or device records/i, `${relative}: disclose the count data boundary.`);
+        assert.match(exportedText, /Google Fonts/i, `${relative}: disclose automatic fonts.`);
+        assert.match(exportedText, /parental gate/i, `${relative}: disclose guarded feedback.`);
+    }
+
     for (const scenario of [
         { name: 'long-description', change: (value) => { value.google.shortDescription = 'a'.repeat(81); }, diagnostic: /google.shortDescription/ },
         { name: 'long-subtitle', change: (value) => { value.apple.subtitle = 'a'.repeat(31); }, diagnostic: /apple.subtitle/ },
