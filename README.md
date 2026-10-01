@@ -81,7 +81,8 @@ The selected toolchain supports Android 7.0 and later, and iOS 16.4 and later.
 | `make mobile-prepare-store` | Prepare native projects, offline content, dependency locks, and source digests before release. |
 | `make test-native-release` | Verify generated release signing, scheme targets, and version inputs in Docker. |
 | `make test-podfile-config` | Verify native property failures and explicit source dependencies through actual CocoaPods. |
-| `make test-release-adapter` | Verify both gateway build requests and exact retry identities in Docker. |
+| `make test-release-adapter` | Verify both native Gateway requests and exact retry identities in Docker. |
+| `make test-gateway-contract` | Verify the selected mobile manifest and both requests against the installed Gateway without native builds. |
 | `make mobile-native-check` | Verify the retained game and native source in the current checkout. |
 | `make mobile-audit-build` | Audit all mobile runtime and build dependencies in Docker. |
 | `make test-tooling-audit` | Audit the browser test and game packaging dependencies in Docker. |
@@ -122,35 +123,29 @@ Commit the prepared inputs with their source changes before release.
 The iOS bundle phase resolves the physical project directory before it selects the entry file.
 This keeps the entry file inside the Metro project when Xcode uses a symbolic link for the temporary directory.
 
-`scripts/build-ios.sh` uses the shared Gateway Xcode Cloud operation.
-The declaration in `.mprlab/apple-build.json` selects public App Store eligibility.
-Xcode Cloud owns automatic signing and the Apple build number.
-Gateway retains the cloud receipt and artifacts.
-Its publisher verifies the existing App Store Connect build before publication acceptance.
-The retained `mobile/ios/ci_scripts/ci_post_clone.sh` installs Node.js 24 and the locked mobile dependencies.
-It verifies the recorded game and native source before dependency installation.
-CocoaPods uses the retained lockfile with `pod install --deployment`.
-The generated native project declares automatic signing.
-The native bundle phase uses the Node executable selected by the cloud hook.
-The verified `Release` workflow uses Xcode 26.6, macOS Tahoe 26.6.2, and manual branch starts.
-The archive retains the declared App Store eligibility.
-Apple account setup and source authorization passed.
-I005 retains release-version alignment and hosted build acceptance.
-
-`scripts/build-store-artifact.mjs` supplies the Android request to Gateway.
-It uses the allocated release version and a build number from the sealed UTC timestamp.
+`scripts/build-store-artifact.mjs` supplies both native build requests to Gateway.
+Both platform adapters use `mobile-build-operation` with request schema 3.
+The selected manifest uses `build_system: local` and `.mjs` adapter paths.
+iOS uses the prepared Xcode workspace on the build Mac. Gateway owns signing and provisioning.
+Gateway reads iOS private inputs from `configs/.env.allergy-wheel`.
+It imports the base64 PKCS#12 identity into a temporary keychain and uses API credentials for provisioning.
+It removes its private files and keychain after the native build.
+The iOS export method is `app-store-connect`. The declared export intent is `app-store`.
+The adapter uses the allocated release version and a build number from the sealed UTC timestamp.
 An exact retry retains both values.
 The Android keystore stays under the ignored `configs/signing/` directory.
+The native build uses the retained offline game and verifies source preparation before compilation.
+Xcode Cloud is outside the iOS release contract.
 
 The private input is `configs/.env.allergy-wheel`.
-The example file names the Android signing inputs and store API credentials.
+The example file names both platform signing inputs and store API credentials.
 The lifecycle commands clear their inherited credential variables before they load this file.
 They require `GH_TOKEN` for GitHub authentication and use temporary HTTPS Git settings.
 The native Android process does not receive the GitHub token.
 A missing file or a failed shell command in the file stops the command.
 
-Use `make release` for the selected Apple cloud build and Android artifact.
-Use `make publish` to verify the Apple build and submit the Android artifact.
+Use `make release` to build and seal the native IPA and Android bundle.
+Use `make publish` to submit the sealed artifacts to their declared stores.
 An accepted build does not prove store review or public availability.
 F003 retains those separate acceptance requirements.
 
@@ -173,7 +168,7 @@ Version `1.0.0` currently identifies a development build.
 The Android APK uses a development signature.
 The iOS output targets the simulator and cannot be installed on a physical iPhone.
 These files are not store artifacts.
-F001 retains signed AAB and IPA production and real-device acceptance.
+F001 retains signed AAB and IPA production and software acceptance.
 
 Keep changes in `mobile/app.json`, the config plugin, and the JavaScript sources.
 Regenerate native projects after a native configuration change.

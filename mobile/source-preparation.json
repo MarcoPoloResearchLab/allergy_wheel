@@ -21,7 +21,7 @@
     "data/mobile-stores.json": "2d2ace6d72b5332662adab588c9786bffa10d08f24b8fcd680eb647341975eab",
     "data/normalization.json": "d49508a73833264029dc968a10503bc8a4a43c16b11adaf5d4c253a38c2bb602",
     "index.html": "9e58022813b49b604ff4ad8b5ea11714f87e9fcb03b9c1306735c356c003a58e",
-    "js/constants.js": "14c14d9a34c66b29ad292f1be7223ee5e69dcc4bcd7cb7dc14c7a7fc92ff681e",
+    "js/constants.js": "85d25660495efae5bd40fa67adc4c8a8d109d00471afe6007671481428f7e145",
     "js/core/analyticsApp.js": "bb28e2e904e9975819b20061eb0b15a2e47537b1090c4e16d35a36a855eb6f76",
     "js/core/app.js": "00530d170576de4c079305101df006b48c9713970efcef7b307753d0aa65ec1b",
     "js/core/board.js": "6d1e6fe6243a44533cf517079c162ab56be564e5e6e9cfcca39379faf490cc86",
@@ -58,7 +58,7 @@
     "privacy.html": "8a18955213614a78b30ffe66500a98b06b8a335cad1ced0ed0fcc8248135abcb",
     "scripts/build-mobile-game.mjs": "97ee22a5d0ceb08653b8d15ee79ed0c346e8a0e307e4f6b35833dc8ae171be47",
     "scripts/prepare-mobile.sh": "074ce82e5069d9291410bbcf0628cefa9947b386d67b8fe4a2ae5795a19fb178",
-    "scripts/record-native-preparation.mjs": "f752fb1581a32a1cc3287e4b252a6b979b311e7fd77875c4a9b4c67dffc118c3",
+    "scripts/record-native-preparation.mjs": "e3031906e6e0ff2b1e4766246accef5d65a75ec26dec1303989bb9f4e5cee378",
     "scripts/verify-native-release.mjs": "34901258b1b9313f078a67d222d003c578776446e7892808c365702f13daacba"
   }
 }

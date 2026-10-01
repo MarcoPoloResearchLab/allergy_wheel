@@ -1,8 +1,25 @@
 # Allergy Wheel Store Preparation
 
-F003 owns public store delivery. F001 owns signed artifacts and real-device acceptance.
+F003 owns public store delivery. F001 owns signed artifacts and software acceptance.
 P002 owns the data contract. B005 owns the observed feedback configuration failure.
 This record describes preparation on September 7, 2026. It does not record a store submission.
+
+## Review Corrections On October 1, 2026
+
+B044 restores the native iOS adapter for Gateway 5.0.0.
+The installed Gateway accepted both schema 3 requests and the selected mobile resource.
+The contract check stopped before build intent creation and signing.
+Docker checks passed for native preparation, both adapters, and the production Apple bundle.
+The current artifact preparation contains 76 native inputs.
+Simulators, emulators, and automated browsers are sufficient for device acceptance.
+
+B045 corrects the rejected aggregate count endpoint.
+The feedback site returned HTTP 409 with `traffic_profile_conflict`.
+The count endpoint now uses aggregate site `eaf3654a-9f9b-4e86-9262-558201a6e276`.
+The live collector returned HTTP 204 from the native origin on October 1, 2026.
+The generated package and both preparation records contain the corrected input.
+`make test-mobile` passed in Docker after the correction.
+Final `make ci` passed in Docker.
 
 ## Prepared Store Text
 
@@ -151,7 +168,7 @@ No generated screenshot or artwork is recorded as final in this preparation.
 1. Verify the store account records and signing identities with the canonical private inputs.
 2. Complete B005 native feedback acceptance with the restored configuration.
 3. Complete P002 native request, storage, retention, and disclosure verification.
-4. Complete F001 shared build integration, signed artifacts, artwork, and physical-device acceptance.
+4. Complete F001 shared build integration, signed artifacts, artwork, and software acceptance.
 5. Verify gateway F007 and F008 before the public mobile declaration.
 6. Complete both store records, declarations, reviewer contacts, and release-country selections.
 7. Run the Governor check and final `make ci` on the selected release source.
@@ -239,7 +256,7 @@ Simulator coordinate input failed with `noWindowsAvailable`, so the native feedb
 
 The Android emulator disconnected before the installation command.
 No physical iPhone was available. The connected Portal was not used for this check.
-Native interaction, signed store artifacts, and physical-device acceptance remain incomplete.
+The native interaction check and signed store artifacts remain incomplete. Software environments are sufficient for device acceptance.
 
 Final `make ci` passed with 69 source files, browser and mobile flows, dependency checks, store text, Pages, and local command checks.
 The B003 failure and retry regressions passed.

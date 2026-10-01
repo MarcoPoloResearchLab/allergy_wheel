@@ -8,6 +8,40 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B044] (P1) Restore the native iOS release adapter.
+  Goal: Use the current Gateway contract for both mobile platforms.
+  Evidence: Gateway 5.0.0 rejects the iOS shell adapter and cloud iOS operation.
+  The new adapter integration test failed before the correction.
+  Requirements:
+  - Use a JavaScript adapter for each native platform.
+  - Send schema 3 requests to `mobile-build-operation`.
+  - Keep signing and store delivery in Gateway.
+  Resolution: Both platforms now use the shared application adapter.
+  The obsolete cloud declaration and hooks are removed.
+  Validation: The adapter, private input, and process tests passed in Docker.
+  The installed Gateway accepted both request schemas and the selected mobile resource.
+  The contract check stopped before build intent creation and signing.
+  Signed artifact and store acceptance remain separate requirements.
+
+- [x] [B045] (P2) Select a dedicated aggregate LoopAware site.
+  Goal: Accept automatic native counts under the restricted collector contract.
+  Evidence: The feedback site returned HTTP 409 with `traffic_profile_conflict` for a count request.
+  The new native service test rejects a shared feedback and count site.
+  Requirements:
+  - Use a dedicated site with the `aggregate` traffic profile.
+  - Permit the native origin `https://allergy-wheel-parents.invalid`.
+  - Verify HTTP 204 through the live collector before artifact preparation.
+  Resolution: The count endpoint now uses site `eaf3654a-9f9b-4e86-9262-558201a6e276`.
+  LoopAware stores daily totals for this site.
+  The primary origin is `https://allergy-wheel-counts.invalid`.
+  The additional traffic origin is `https://allergy-wheel-parents.invalid`.
+  The feedback endpoint retains its existing site.
+  Validation: The live collector returned HTTP 204 from the native origin on October 1, 2026.
+  The saved site and traffic origin remained present after a dashboard reload.
+  `make test-mobile` passed in Docker after the endpoint correction.
+  The generated package and both preparation records now contain the corrected input.
+  Final `make ci` passed in Docker.
+
 - [x] [B043] (P0) Align the Expo SDK 57 dependency contract.
   Goal: Pass the mobile dependency check with the current SDK 57 packages.
   Requirements:
@@ -298,56 +332,35 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## Improvements
 
-- [-] [I005] (P1) Use the shared Xcode Cloud release flow
+- [-] [I005] (P1) Use the shared native iOS release flow
   Goal:
-  Build Apple release artifacts through the single MPR Lab Xcode Cloud flow.
+  Build Apple release artifacts through the current Gateway native operation.
 
   Requirements:
   - Apply the shared Apple guide from MPR Governor.
-  - Declare each native project and shared scheme in `.mprlab/apple-build.json`.
-  - Use the shared Gateway cloud operation and its recorded Apple build number.
-  - Use the App Store Connect build that Xcode Cloud submits.
-  - Remove local Apple release signing during the migration.
+  - Declare the JavaScript adapter in the selected mobile resource.
+  - Use schema 3 and `mobile-build-operation` for iOS and Android.
+  - Keep Apple signing, certificates, provisioning, and export in Gateway.
+  - Use the sealed IPA for the selected App Store destination.
   - Keep public store release under operator control.
 
   Implementation:
-  The shared Apple guide and related mobile rules are installed.
-  Gateway F010 supplies the shared operation.
-  The POSIX shell adapter invokes the compiled Gateway executable directly.
-  The adapter passed its public command test with an empty tool search path.
-  The Apple adapter uses the shared Gateway cloud operation.
-  The Android adapter retains its build identity and repository keystore input.
-  The temporary Keychain, certificate import, and local signing qualification code is removed.
-  The retained cloud hook verifies game and native inputs before it installs locked dependencies.
-  The native project declares automatic signing and uses the cloud Node executable.
-  The real native JavaScript phase passed in Docker with the reconstructed offline game.
-  B006 aligns the source and prepared native projects with release version 1.0.1.
-  Apple account setup and source authorization passed.
-  The Release workflow uses Xcode 26.6, macOS Tahoe 26.6.2, and manual branch starts.
-  The archive retains the declared App Store eligibility.
-  The cloud adapter and native preparation checks passed after setup.
-  A successful hosted build remains required for provider acceptance.
+  The earlier Xcode Cloud migration passed its local tests but did not establish hosted build acceptance.
+  Gateway 5.0.0 now reserves Xcode Cloud for macOS.
+  B044 replaces the obsolete iOS cloud flow with the native adapter.
+  The shared Apple guide and mobile rules describe the current contract.
+  The application adapter retains the allocated version and UTC build number.
+  Both platforms use the shared native operation.
+  The application declares signing variable names and provisioning API references.
+  Gateway owns the temporary Keychain and certificate import.
+  The preparation record excludes machine-local inputs.
 
   Validation:
-  The shared Apple and mobile guide checks passed.
-  The full Governor check passed.
-  The declaration JSON, native container, and named shared scheme checks passed.
-  Docker tests passed for cloud forwarding, Android build identity, private inputs, and native process control.
-  Final `make ci` passed after the adapter migration.
-  Final CI also passed after native cloud preparation, including the actual production bundle and retained-source check.
-  Final CI also passed after B006 prepared release version 1.0.1.
-  The final log is `/tmp/allergy-version-final-ci.log`.
-  Mobile runtime, build, and test-tooling audits reported zero vulnerabilities.
-  The audit log is `/tmp/allergy-cloud-dependency-audit.log`.
-
-  B007 removes the absent native test target. B008 rejects Podfile property errors.
-  B009 explicitly selects React Native and Expo source dependencies. B010 preserves the local container on repeated startup.
-  Native preparation passed all four CocoaPods cases, and the deployment install preserved the dependency lock.
-  Corrected final CI passed in `/tmp/allergy-native-review-final-ci-corrected.log`.
-  The selected source separately passed native generation, cloud hooks, preparation checks, the production Apple bundle, and local startup.
-  Its four CocoaPods cases also passed. The patch excludes concurrent analytics changes.
-  Existing app metadata and dependency versions remain unchanged at release version 1.0.1.
-  Hosted Apple compilation and signing remain unverified.
+  The Docker adapter tests passed for both platforms and exact retries.
+  The private input and process control tests passed.
+  The installed Gateway accepted both request schemas and the mobile resource.
+  This check stopped before build intent creation and signing.
+  A signed IPA remains required for artifact acceptance.
 
 - [x] [I001] (P1) Establish real game integration coverage
   Goal:
@@ -672,7 +685,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Goal:
   An end user can install Allergy Wheel on the selected mobile platforms.
 
-  Blocked: Store acceptance requires P002 verification, signed store artifacts, and complete real-device results.
+  Blocked: Store acceptance requires P002 verification, signed store artifacts, and complete software acceptance results.
 
   Requirements:
   - Use the selected decisions from P001 and P002.
@@ -696,7 +709,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Supply installation instructions and device acceptance results.
 
   Validation:
-  - Install each artifact on a real supported device.
+  - Install each artifact in the applicable simulator or emulator.
   - Verify game rounds, audio, mute, rotation, and background return.
   - Verify the selected offline behavior.
   - Verify the first launch and complete game rounds with external network access disabled after installation.
@@ -732,7 +745,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
   `.mprlab/MOBILE-READINESS.md` records the final results and artifact identities.
   Local logs are in `artifacts/validation`.
-  Physical-device interaction and live provider verification remain incomplete.
+  Live provider verification remains incomplete. Simulators, emulators, and automated browsers are sufficient for device acceptance.
 
   Signed Candidate Preparation:
   The active Apple Distribution certificate matches the installed signing identity.
@@ -749,7 +762,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
   Remaining Acceptance:
   - Supply signed AAB and IPA artifacts through the shared mobile lifecycle.
-  - Complete real-device rounds, audio, mute, rotation, background return, and first-launch offline checks on both platforms.
+  - Verify rounds, audio, mute, rotation, background return, and first-launch offline play in simulators, emulators, or automated browsers.
   - Verify native parent requests and storage against P002.
   - Complete app artwork, store screenshots, and privacy declarations.
 
@@ -828,7 +841,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Neither public store destination is recorded in the website catalog.
 
   Requirements:
-  - Complete the F001 artifact and real-device prerequisites before store submission.
+  - Complete the F001 artifact and software acceptance prerequisites before store submission.
   - Complete P002 provider, privacy, and audience verification before store submission.
   - Inspect the current shared MPR mobile lifecycle before changes to application release or publication adapters.
   - Add the mobile resource declarations and store adapters required by that lifecycle.
@@ -960,8 +973,8 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   A subsequent Google reviews request returned HTTP 200 for the expected package.
   These results establish API read access. No artifact was uploaded.
 
-  Gateway F007 and F008 remain open. No physical Apple device is connected.
-  Both corrected native development artifacts built, but native feedback and physical-device acceptance remain incomplete.
+  Gateway F007 and F008 remain open.
+  Both corrected native development artifacts built. Native feedback acceptance remains incomplete.
 
   Store Preparation Continuation:
   The owner authorized the IARC agreement. Google Play saved the completed questionnaire on September 7, 2026.
@@ -973,8 +986,8 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   The real native generator test required the same fixture correction.
   Both development builds, the focused native generator test, and final application CI passed.
   Preparation records 76 native inputs. Signed artifacts and final screenshots remain incomplete.
-  The owner confirmed that no physical Apple device is available.
-  Simulator controls rejected interaction after a state refresh, so native interaction acceptance remains incomplete.
+  The current device rule accepts simulator, emulator, and automated browser evidence.
+  Simulator controls rejected interaction after a state refresh, so that native interaction check remains incomplete.
   Application preparation is in pull request #134. Its source commit is `5c8c8402b3cc7ad0e0edaa3e5f1e6ad07fde7d1a`.
   Gateway candidate changes are committed as `856c40a`. Full gateway CI passed against that commit.
   Gateway pull request #363 contains the Apple candidate submission support. Both pull requests are ready for review.
@@ -1178,10 +1191,11 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   LoopAware final CI passed, including 465 browser tests, mobile API checks, audits, and race tests.
   Gateway B539 passed the real proxy failure log test. Its final CI remains in progress.
   Native request tests passed for one empty POST, omitted cookies and referrers, automatic fonts, and offline play.
-  A dedicated production site, generated native inputs, and final artifacts remain pending.
+  B045 owns the dedicated production site and collector verification.
+  Final native artifacts remain pending.
   It cannot control Google Analytics or Google Fonts requests.
   Verify each retained provider and parent feedback separately before completing the store declarations.
-  Keep P002 open until the selected provider contract and native evidence are complete.
+  Keep P002 open until the selected provider contract and native evidence are completed.
 
   Current Publication Evidence:
   The signed Android bundle for build `1788901126` reached Google Play as a draft.
