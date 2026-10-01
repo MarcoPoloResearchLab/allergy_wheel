@@ -11,6 +11,8 @@ TEST_IMAGE = $(COMPOSE_PROJECT_NAME)-tests:local
 
 LOAD_PRIVATE_INPUT = unset ALLERGY_WHEEL_ANDROID_KEYSTORE ALLERGY_WHEEL_ANDROID_STORE_PASSWORD \
     ALLERGY_WHEEL_ANDROID_KEY_ALIAS ALLERGY_WHEEL_ANDROID_KEY_PASSWORD \
+    ALLERGY_WHEEL_APPLE_TEAM ALLERGY_WHEEL_APPLE_PROFILE ALLERGY_WHEEL_APPLE_IDENTITY \
+    ALLERGY_WHEEL_APPLE_CERTIFICATE ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD \
     APP_STORE_CONNECT_API_KEY_ID APP_STORE_CONNECT_API_ISSUER_ID APP_STORE_CONNECT_API_KEY_PATH \
     GH_TOKEN GITHUB_TOKEN; \
     set -a; source "$(REPOSITORY_DIRECTORY)/configs/.env.allergy-wheel"; set +a;
@@ -34,6 +36,7 @@ check: build-test-image
 	$(COMPOSE) config --quiet
 	bash -n "$(REPOSITORY_DIRECTORY)/tests/local-commands.sh"
 	bash -n "$(REPOSITORY_DIRECTORY)/scripts/local-game-url.sh"
+	bash -n "$(REPOSITORY_DIRECTORY)/tests/gateway-contract.sh"
 	git -C "$(REPOSITORY_DIRECTORY)" diff --check
 	docker run --rm --init "$(TEST_IMAGE)" node scripts/check-source.mjs
 
@@ -146,15 +149,15 @@ release publish deploy:
 test-native-release: build-test-image
 	docker run --rm --init "$(TEST_IMAGE)" node tests/native-release.mjs
 
-.PHONY: test-release-adapter test-apple-cloud
-test-apple-cloud: build-test-image
-	docker run --rm --init "$(TEST_IMAGE)" node tests/apple-cloud.mjs
-	docker run --rm --init "$(TEST_IMAGE)" node tests/apple-native-cloud.mjs
-
-test-release-adapter: build-test-image test-apple-cloud
+.PHONY: test-release-adapter
+test-release-adapter: build-test-image
 	docker run --rm --init "$(TEST_IMAGE)" node tests/release-adapter.mjs
 	docker run --rm --init "$(TEST_IMAGE)" node tests/release-entrypoint.mjs
 	docker run --rm --init "$(TEST_IMAGE)" node tests/native-build-process.mjs
+
+.PHONY: test-gateway-contract
+test-gateway-contract: build-test-image
+	bash tests/gateway-contract.sh "$(TEST_IMAGE)" "$(REPOSITORY_DIRECTORY)"
 
 .PHONY: test-native-preparation mobile-native-check
 mobile-native-check: build-test-image
