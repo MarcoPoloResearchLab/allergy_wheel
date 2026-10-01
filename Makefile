@@ -46,7 +46,7 @@ test: build-test-image
 test-local:
 	bash "$(REPOSITORY_DIRECTORY)/tests/local-commands.sh"
 
-ci: check test test-mobile mobile-check mobile-audit test-pages test-store-listings test-native-release test-release-adapter test-native-preparation test-apple-bundle test-local
+ci: check test test-mobile mobile-check mobile-audit test-pages test-store-listings test-feedback-verifier test-native-release test-release-adapter test-native-preparation test-apple-bundle test-local
 
 .PHONY: test-mobile mobile-dependencies mobile-prepare
 
@@ -107,7 +107,7 @@ test-ios-simulator:
 
 .PHONY: release publish deploy
 
-.PHONY: store-listings test-store-listings verify-store-pages verify-feedback
+.PHONY: store-listings test-store-listings test-feedback-verifier verify-store-pages verify-feedback
 .PHONY: store-artwork
 store-artwork: build-test-image
 	mkdir -p artifacts/store-artwork
@@ -119,6 +119,9 @@ store-listings: build-test-image
 
 test-store-listings: build-test-image
 	docker run --rm --init "$(TEST_IMAGE)" node tests/store-listings.mjs
+
+test-feedback-verifier: build-test-image
+	docker run --rm --init --shm-size=1g "$(TEST_IMAGE)" node tests/feedback-verifier.mjs
 
 verify-store-pages: build-test-image
 	docker run --rm --init --shm-size=1g "$(TEST_IMAGE)" node scripts/verify-store-pages.mjs
