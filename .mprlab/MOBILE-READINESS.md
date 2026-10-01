@@ -29,7 +29,7 @@ P001 and P002 record the owner decisions.
 
 The source review inspected Hecate and LoopAware `mobile/package.json` and StillPuzzle `package.json`.
 Each project uses Expo SDK 57 and React Native 0.86.
-The selected dependency lock uses Expo 57.0.20 and React Native 0.86.3.
+The selected dependency lock uses Expo 57.0.26 and React Native 0.86.3.
 The selected adapter uses React Native WebView 13.16.1.
 PWA installation and website APK downloads are outside the selected delivery path.
 
@@ -220,7 +220,7 @@ The language review covers the changed prose only.
 F001 remains open for these concrete results:
 
 - Signed Android AAB and iOS IPA artifacts from the shared mobile lifecycle.
-- Complete real-device rounds, audio, mute, rotation, background return, and first-launch offline checks on both platforms.
+- Verify rounds, audio, mute, rotation, background return, and first-launch offline play in simulators, emulators, or automated browsers.
 - Native parent service request and storage verification.
 - Final app icons, store screenshots, privacy declarations, and the completed P002 provider review.
 
@@ -246,33 +246,23 @@ The revised browser integration first failed because game startup did not load t
 The tests cover automatic service requests, game-storage isolation, denied advertising storage, unavailable services, and the feedback gate.
 These results require native verification before store acceptance.
 
-## Apple Cloud Preparation
+## Native iOS Preparation
 
-I005 connects the retained native project to the shared Xcode Cloud operation.
-The generated project declares automatic signing.
-The clone hook verifies game and native source before it installs the locked mobile dependencies.
-The hook selects Node.js 24, and the workflow requires Xcode 26.6.
+B044 replaces the obsolete iOS cloud adapter with the shared native build contract.
+The application adapter sends both platform requests through Gateway's `mobile-build-operation`.
+The selected manifest uses local builds and `.mjs` adapters. The request schema is 3.
+Gateway owns temporary signing state, provisioning, native execution, and artifact verification.
+The private environment file supplies the team signing identity and App Store Connect API inputs.
+The iOS artifact uses the `app-store-connect` export method and the declared App Store intent.
+The adapter allocates store build numbers from the sealed release timestamp.
 The native phase uses the selected Node executable and the React Native bundler.
-The cloud build consumes the retained offline game resources.
-The source config and prepared native projects use release version 1.0.1.
+The native build consumes the retained offline game resources.
+The source config and prepared native projects use version 1.0.1.
 B006 verifies the source version through the real Expo generator for both platforms.
 B007 removes absent native test targets from the generated shared scheme.
 B008 removes Podfile property error recovery. B009 explicitly selects React Native and Expo source dependencies.
 The selected source dependencies override inherited prebuilt flags.
-Native preparation checks valid, missing, and malformed properties, plus an unavailable prebuilt service, through actual CocoaPods.
-After a source version change, run `make mobile-prepare-store` before the cloud build.
-Apple account setup and source authorization passed.
-A successful hosted build remains required for provider acceptance.
-
-Final `make ci` passed after B006 prepared release version 1.0.1.
-It includes the retained-source check and actual production JavaScript phase in Docker.
-Mobile runtime, build, and test-tooling audits reported zero vulnerabilities.
-The final log is `/tmp/allergy-version-final-ci.log`.
-These checks do not prove a hosted Apple build or physical-device acceptance.
-
-B007 through B010 passed corrected final CI after the native source review.
-The log is `/tmp/allergy-native-review-final-ci-corrected.log`.
-The selected Apple source passed native generation, cloud hooks, preparation checks, the production bundle, and local startup.
-Both source sets passed all four CocoaPods cases. The deployment install preserved the dependency lock.
-Existing dependency versions and app metadata remain unchanged at release version 1.0.1.
-The review patch excludes concurrent analytics changes. Hosted Apple compilation and signing remain unverified.
+Native preparation tests valid, missing, and malformed properties, plus an unavailable prebuilt service, through actual CocoaPods.
+After a native or game source change, run `make mobile-prepare-store` before release.
+Use simulators, emulators, and automated browsers for device validation.
+Signed artifact, store submission, review, and public availability require separate evidence.
