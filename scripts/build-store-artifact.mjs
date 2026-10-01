@@ -19,8 +19,8 @@ for (const name of ['--mobile-dir', '--output', '--release-timestamp']) {
 }
 const sourceRoot = resolve(options.get('--mobile-dir'));
 const output = resolve(options.get('--output'));
-const platform = 'android';
-if (!output.endsWith('.aab')) throw new Error('Android release output must be an AAB.');
+const platform = output.endsWith('.ipa') ? 'ios' : output.endsWith('.aab') ? 'android' : undefined;
+if (!platform) throw new Error('Release output must be an IPA or AAB.');
 if (options.has('--manifest') && resolve(options.get('--manifest')) !== join(dirname(output), `${platform}.json`)) {
     throw new Error('Release manifest must use the gateway platform path.');
 }
@@ -31,29 +31,45 @@ const milliseconds = Date.parse(timestamp);
 if (!Number.isFinite(milliseconds) || new Date(milliseconds).toISOString().replace('.000Z', 'Z') !== timestamp) {
     throw new Error('Release timestamp must use canonical UTC seconds.');
 }
-// The sealed release timestamp allocates the Android store number.
+// The sealed release timestamp allocates one store number for both native platforms.
 const buildNumber = milliseconds / 1000;
 if (!Number.isInteger(buildNumber) || buildNumber < 1 || buildNumber > 2100000000) throw new Error('Release build number exceeds the store range.');
 const gateway = process.env.MPRLAB_GATEWAY_EXECUTABLE;
 if (!gateway || !isAbsolute(gateway)) throw new Error('Release requires the authoritative gateway executable.');
 const config = JSON.parse(await readFile(join(sourceRoot, 'app.json'), 'utf8')).expo;
 const request = {
-    schema_version: 1,
+    schema_version: 3,
     source_root: sourceRoot,
     platform,
     output,
-    application_identifier: config.android.package,
+    application_identifier: platform === 'ios' ? config.ios.bundleIdentifier : config.android.package,
     version: versionMatch[1],
     build_number: String(buildNumber),
     release_timestamp: timestamp,
-    preparation_manifest: 'native-preparation.json',
     verify_script: 'scripts/verify-native-release.mjs',
-    android: {
+    ...(platform === 'android' ? { android: {
         module: 'app',
         version_name_environment: 'MPRLAB_MOBILE_VERSION_NAME',
         version_code_environment: 'MPRLAB_MOBILE_VERSION_CODE',
         signing_environment: ['ALLERGY_WHEEL_ANDROID_KEYSTORE', 'ALLERGY_WHEEL_ANDROID_STORE_PASSWORD', 'ALLERGY_WHEEL_ANDROID_KEY_ALIAS', 'ALLERGY_WHEEL_ANDROID_KEY_PASSWORD']
-    }
+    } } : { ios: {
+        owner: 'allergy-wheel',
+        workspace: 'ios/AllergyWheel.xcworkspace',
+        scheme: 'AllergyWheel',
+        app_name: 'AllergyWheel',
+        entry_file: 'index.js',
+        team_environment: 'ALLERGY_WHEEL_APPLE_TEAM',
+        profile_environment: 'ALLERGY_WHEEL_APPLE_PROFILE',
+        identity_environment: 'ALLERGY_WHEEL_APPLE_IDENTITY',
+        certificate_environment: 'ALLERGY_WHEEL_APPLE_CERTIFICATE',
+        certificate_password_environment: 'ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD',
+        provisioning: {
+            key_id_environment: 'APP_STORE_CONNECT_API_KEY_ID',
+            issuer_id_environment: 'APP_STORE_CONNECT_API_ISSUER_ID',
+            private_key_environment: 'APP_STORE_CONNECT_API_KEY_PATH'
+        },
+        export_intent: 'app-store'
+    } })
 };
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const controller = new AbortController();
@@ -62,8 +78,10 @@ const terminate = () => controller.abort('SIGTERM');
 process.on('SIGINT', interrupt);
 process.on('SIGTERM', terminate);
 try {
-    const keystore = await repositorySigningFile(repositoryRoot, process.env.ALLERGY_WHEEL_ANDROID_KEYSTORE, 'ALLERGY_WHEEL_ANDROID_KEYSTORE');
-    const environment = { ...process.env, ALLERGY_WHEEL_ANDROID_KEYSTORE: keystore };
+    const environment = { ...process.env };
+    if (platform === 'android') {
+        environment.ALLERGY_WHEEL_ANDROID_KEYSTORE = await repositorySigningFile(repositoryRoot, process.env.ALLERGY_WHEEL_ANDROID_KEYSTORE, 'ALLERGY_WHEEL_ANDROID_KEYSTORE');
+    }
     delete environment.GH_TOKEN;
     delete environment.GITHUB_TOKEN;
     process.exitCode = await runNativeBuild(gateway, request, environment, controller.signal);
