@@ -4,8 +4,8 @@
 
 The September 7, 2026 implementation supplies an Expo mobile shell for the existing JavaScript game.
 The local Android development APK and iOS simulator application contain the game resources.
-Store publication did not occur.
-F001 retains native device and store artifact acceptance.
+The current operation status is in `STORE-READINESS.md`. Earlier validation sections describe their recorded source.
+F001 retains software acceptance. Signed store artifacts remain a separate release requirement.
 F002 retains verification of public store destinations.
 
 ## Confirmed Decisions
@@ -151,7 +151,7 @@ After an explicit publication request:
 
 The lifecycle owns the release marker.
 The local Pages test does not create a release marker or prove public publication.
-The current manifest declares only the website.
+The current manifest declares the website and both mobile platforms.
 Signed mobile store artifacts require the mobile lifecycle contract before a store release.
 
 ## Local Validation
@@ -177,7 +177,7 @@ The Android development APK built and opened on a physical Android 9 tablet.
 The device accessibility command returned `null root node`, so automated interaction acceptance did not complete.
 The tablet later returned to another application. Further interaction stopped.
 The iOS simulator application built, installed, and displayed the game.
-Neither observation proves first-launch offline behavior on a real supported iPhone or complete physical-device acceptance.
+Neither observation proves first-launch offline behavior. Automated browsers, simulators, and emulators are sufficient for device acceptance.
 
 ## Final Validation On September 7, 2026
 
@@ -209,20 +209,22 @@ The iOS JavaScript bundle SHA-256 is `92e3309c82bb7c92732de3f8d62a47453645b7f47b
 The latter identifies `main.jsbundle`, not the complete iOS application.
 The iOS receipt records each application file separately.
 
-This validation did not repeat physical-device interaction tests or live provider requests.
-The earlier physical Android launch result remains limited to that earlier artifact.
+This validation did not repeat live provider requests.
+The earlier Android launch result remains limited to that earlier artifact.
 Hosted CI, signed store artifacts, store installation, and public publication remain unverified.
 The Governor and mechanical documentation checks passed for the final validation record.
 The language review covers the changed prose only.
 
 ## Remaining Acceptance
 
-F001 remains open for these concrete results:
+F001 retains the uncovered software behavior and runtime evidence:
 
-- Signed Android AAB and iOS IPA artifacts from the shared mobile lifecycle.
 - Verify rounds, audio, mute, rotation, background return, and first-launch offline play in simulators, emulators, or automated browsers.
 - Native parent service request and storage verification.
-- Final app icons, store screenshots, privacy declarations, and the completed P002 provider review.
+- Complete the P002 provider review.
+
+Signed AAB and IPA artifacts, final screenshots, and store declarations remain operations in `STORE-READINESS.md`.
+B046 owns the native store metadata correction. B047 owns the failed feedback verification command.
 
 F002 remains open until verified store destinations are available.
 Both entries in `data/mobile-stores.json` remain `null`.

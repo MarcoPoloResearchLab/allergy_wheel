@@ -1,8 +1,54 @@
 # Allergy Wheel Store Preparation
 
-F003 owns public store delivery. F001 owns signed artifacts and software acceptance.
-P002 owns the data contract. B005 owns the observed feedback configuration failure.
-This record describes preparation on September 7, 2026. It does not record a store submission.
+F003 owns public store delivery. F001 owns software acceptance. This record retains signed artifact requirements.
+P002 owns the data contract. B046 owns the native store metadata correction.
+Dated sections preserve earlier preparation evidence. The current operation sequence controls remaining work.
+
+## Remaining Work On October 1, 2026
+
+The mobile shell, offline package, shared adapters, store exporter, artwork generator, and website link UI are implemented.
+The latest recorded Android candidate reached Google Play as a draft release with three emulator screenshots.
+That candidate predates the current restricted count contract. Public store availability remains unverified.
+The current source uses version 1.0.1 and declares both mobile platforms in the selected manifest.
+Historical references to absent mobile declarations, Xcode Cloud, or missing preparation records no longer describe this source.
+Earlier Gateway limitations require a current contract verification before publication.
+
+| Issue | Remaining result |
+| --- | --- |
+| B046 | Correct the store description and reviewer notes to remove native Google Analytics. Add exporter integration coverage. |
+| B047 | Repair the failed feedback verifier. Repeat B005 configuration and form behavior in both browser engines. |
+| P002 | Complete provider, support, request, storage, retention, deletion, and disclosure evidence for the selected audience. |
+| F001 | Complete uncovered software behavior and final package qualification. Record signed artifacts separately from code acceptance. |
+| F003 | Complete store declarations, final screenshots, candidate delivery, review, and public release for both platforms. |
+| F002 | Record verified public store URLs, update the catalog, publish the website, and verify its store links. |
+
+The native game uses automatic aggregate LoopAware counts, automatic fonts, and parent feedback.
+Browser Google Analytics remains outside the native data inventory.
+The count site is `eaf3654a-9f9b-4e86-9262-558201a6e276`.
+The live collector returned HTTP 204 on October 1, 2026, as recorded by B045.
+The feedback site is `9931e62f-5a60-48e6-9e31-16de62f62e7d`.
+B005 records September 7 configuration recovery and the real form in Chromium and WebKit without feedback submission.
+The October 1 `make verify-feedback` failed before a provider request because its analytics constant is absent.
+B047 owns the verifier correction. B005 remains open until the required verification passes again.
+Automated browsers, simulators, and emulators are sufficient for device acceptance.
+Browser evidence does not establish native WebView request or storage behavior.
+
+1. Correct B046 and B047, repeat feedback verification, and complete the P002 data contract.
+2. Complete uncovered F001 software behavior on the selected source.
+3. Verify the current Gateway store delivery contract and signing inputs.
+4. Run required validation on the final source and record its commit.
+5. After an explicit release request, build and seal the current signed AAB and IPA through `make release`.
+6. Verify artifact identifiers, versions, build numbers, source digests, and release receipts.
+7. Prepare final screenshots and accurate store metadata, privacy declarations, and country selections.
+8. After an explicit publication request, submit the sealed artifacts through the shared lifecycle.
+9. Record upload, processing, review, and public availability separately for each store.
+10. After F003 verifies a public destination, complete its F002 catalog and website publication steps.
+
+I005 is closed after the Docker adapter, retry, private input, and process control tests passed on October 1.
+Signed IPA acceptance remains pending as a separate release operation.
+A simulator application verifies simulator behavior. It does not establish a signed IPA or App Store installation.
+Public store installation can use available software evidence and publication receipts without a hardware prerequisite.
+This tracker review does not execute a release, publication, or deployment operation.
 
 ## Review Corrections On October 1, 2026
 
@@ -24,7 +70,7 @@ Final `make ci` passed in Docker.
 ## Prepared Store Text
 
 `mobile/store/listing.json` contains the English store text and reviewer instructions.
-The text describes the actual game, offline play, optional parent services, and food-safety limits.
+The text describes game operation and offline play. B046 records incorrect native analytics descriptions.
 The selected support contact is `support@mprlab.com`.
 The public privacy page also supplies the support contact.
 
@@ -163,10 +209,12 @@ Google requires a 512 by 512 pixel store icon and a 1024 by 500 pixel feature gr
 See [Google preview asset requirements](https://support.google.com/googleplay/android-developer/answer/9866151?hl=en).
 No generated screenshot or artwork is recorded as final in this preparation.
 
-## Completion Order
+## Earlier Completion Order
+
+The October 1 operation sequence replaces this earlier sequence. Completed implementation steps remain recorded below.
 
 1. Verify the store account records and signing identities with the canonical private inputs.
-2. Complete B005 native feedback acceptance with the restored configuration.
+2. Use B005 automated browser evidence for feedback configuration and form behavior.
 3. Complete P002 native request, storage, retention, and disclosure verification.
 4. Complete F001 shared build integration, signed artifacts, artwork, and software acceptance.
 5. Verify gateway F007 and F008 before the public mobile declaration.
@@ -255,7 +303,6 @@ The iOS simulator installed and launched the application. Its parent gate was vi
 Simulator coordinate input failed with `noWindowsAvailable`, so the native feedback form check did not complete.
 
 The Android emulator disconnected before the installation command.
-No physical iPhone was available. The connected Portal was not used for this check.
 The native interaction check and signed store artifacts remain incomplete. Software environments are sufficient for device acceptance.
 
 Final `make ci` passed with 69 source files, browser and mobile flows, dependency checks, store text, Pages, and local command checks.
@@ -328,7 +375,6 @@ The full test process also reached the 599-second deadline.
 The application and gateway changes require source review and committed-source validation before the signed release command.
 The gateway Governor check also reports existing differences in its managed policy and plan files.
 No signed artifact or publication operation ran during the recipe revision.
-The latest `xcrun devicectl list devices` check found no physical Apple device.
 
 ## Automatic Service Decision
 
@@ -370,7 +416,6 @@ Both development builds and final application CI passed. No signed app archive w
 Git initially changed the Windows Gradle wrapper line endings when the file entered its index.
 The file attribute now preserves its generated bytes. All 76 native and 57 game input digests match the staged source.
 
-The owner confirmed that no physical Apple device is available.
 Simulator controls rejected interaction after a state refresh. Native interaction and final screenshot capture remain incomplete.
 Signed releases still require source review and committed-source validation of the application and gateway.
 The public privacy page still requires the revised source. P002 and F001 remain open.
