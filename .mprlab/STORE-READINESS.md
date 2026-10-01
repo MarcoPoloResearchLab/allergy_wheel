@@ -1,7 +1,7 @@
 # Allergy Wheel Store Preparation
 
 F003 owns public store delivery. F001 owns software acceptance. This record retains signed artifact requirements.
-P002 owns the data contract. B046 owns the native store metadata correction.
+P002 owns the data contract. B046 corrected the native store metadata source.
 Dated sections preserve earlier preparation evidence. The current operation sequence controls remaining work.
 
 ## Remaining Work On October 1, 2026
@@ -15,8 +15,6 @@ Earlier Gateway limitations require a current contract verification before publi
 
 | Issue | Remaining result |
 | --- | --- |
-| B046 | Correct the store description and reviewer notes to remove native Google Analytics. Add exporter integration coverage. |
-| B047 | Repair the failed feedback verifier. Repeat B005 configuration and form behavior in both browser engines. |
 | P002 | Complete provider, support, request, storage, retention, deletion, and disclosure evidence for the selected audience. |
 | F001 | Complete uncovered software behavior and final package qualification. Record signed artifacts separately from code acceptance. |
 | F003 | Complete store declarations, final screenshots, candidate delivery, review, and public release for both platforms. |
@@ -28,12 +26,15 @@ The count site is `eaf3654a-9f9b-4e86-9262-558201a6e276`.
 The live collector returned HTTP 204 on October 1, 2026, as recorded by B045.
 The feedback site is `9931e62f-5a60-48e6-9e31-16de62f62e7d`.
 B005 records September 7 configuration recovery and the real form in Chromium and WebKit without feedback submission.
-The October 1 `make verify-feedback` failed before a provider request because its analytics constant is absent.
-B047 owns the verifier correction. B005 remains open until the required verification passes again.
+The initial October 1 verifier failed before a provider request because its analytics constant was absent.
+B047 removed that obsolete assertion and added controlled command coverage to CI.
+The corrected live verifier received HTTP 200 and opened both forms in Chromium and WebKit without feedback submission.
+B005, B046, and B047 are closed after final `make ci` passed in Docker.
+The archive preserves their complete evidence and resolution records.
 Automated browsers, simulators, and emulators are sufficient for device acceptance.
 Browser evidence does not establish native WebView request or storage behavior.
 
-1. Correct B046 and B047, repeat feedback verification, and complete the P002 data contract.
+1. Complete the P002 data contract and apply the corrected metadata to the store consoles before submission.
 2. Complete uncovered F001 software behavior on the selected source.
 3. Verify the current Gateway store delivery contract and signing inputs.
 4. Run required validation on the final source and record its commit.
@@ -70,7 +71,8 @@ Final `make ci` passed in Docker.
 ## Prepared Store Text
 
 `mobile/store/listing.json` contains the English store text and reviewer instructions.
-The text describes game operation and offline play. B046 records incorrect native analytics descriptions.
+B046 corrected the descriptions and reviewer notes to describe automatic fonts, aggregate LoopAware counts, and guarded feedback.
+The exporter integration tests reject native Google Analytics descriptions. Console metadata updates remain pending before submission.
 The selected support contact is `support@mprlab.com`.
 The public privacy page also supplies the support contact.
 

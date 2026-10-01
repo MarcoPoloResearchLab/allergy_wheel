@@ -11,106 +11,6 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
-- [ ] [B046] (P1) Correct native analytics descriptions in store metadata
-  Goal:
-  Store descriptions and reviewer instructions must describe the current native analytics contract.
-
-  Evidence:
-  `mobile/store/listing.json` still describes automatic native Google Analytics in `description` and `reviewNotes`.
-  `js/core/gateway.js` sends one empty LoopAware count request. The native app has no Google Analytics integration.
-  Expected: Store text describes aggregate counts, automatic fonts, and parent feedback.
-  Actual: The exported text describes a service removed from the native app.
-
-  Requirements:
-  - Correct both fields against the P002 service decision and current privacy text.
-  - Preserve browser Google Analytics and the selected automatic fonts.
-  - Keep feedback behind the parent gate.
-  - Add integration coverage through the real store exporter for the current service description.
-
-  Validation:
-  - Run the new exporter regression before the metadata correction.
-  - Confirm that the regression fails because the exported native service description is incorrect.
-  - Run `make test-store-listings` after the correction.
-  - Run final `make ci` after all source changes.
-  - Record console metadata updates separately in `STORE-READINESS.md`.
-
-- [ ] [B047] (P1) Repair the feedback verification command after the analytics change
-  Goal:
-  `make verify-feedback` must verify the current feedback configuration and form.
-
-  Evidence:
-  On October 1, 2026, the Docker command failed before a provider request.
-  `scripts/verify-feedback.mjs:16` reads the removed `ExternalService.LOOP_ANALYTICS` constant.
-  `new URL(undefined)` throws `ERR_INVALID_URL`.
-  Expected: The command verifies feedback through Chromium and WebKit without a submission.
-  Actual: An obsolete analytics assertion prevents feedback verification.
-
-  Requirements:
-  - Remove the obsolete shared analytics and feedback site assertion.
-  - Preserve website and parent feedback site agreement.
-  - Preserve the actual provider configuration, parent gate, form, and no-submission checks.
-  - Keep aggregate count verification separate from feedback verification.
-  - Add integration coverage for the command startup contract.
-
-  Validation:
-  - Preserve the failing public command result before the correction.
-  - Run focused command coverage after the correction.
-  - Run `make verify-feedback` in Docker.
-  - Confirm both browser engines open the real form without a feedback submission.
-  - Run final `make ci` after all source changes.
-
-- [!] [B005] (P1) {B047} Restore the configured LoopAware feedback service
-  Review On October 1, 2026:
-  The original HTTP 404 defect is resolved in the recorded provider configuration.
-  September 7 evidence shows the actual packaged parent form in Chromium and WebKit without feedback submission.
-  Automated browsers are sufficient for this configuration and form acceptance.
-  The current `make verify-feedback` fails on a removed analytics constant before any provider request.
-  B047 owns that regression. Keep B005 open until its required verification passes again.
-  Native WebView request and storage qualification remains in P002 and F001.
-
-  Goal:
-  The selected LoopAware site must supply a usable feedback configuration.
-
-  Blocked: B047 prevents the required feedback verifier from reaching the provider on the current source.
-
-  Evidence:
-  On September 7, 2026, the live widget requested `/public/widget-config` for site `de929d14-c425-4a4e-89fe-3d5fbc6e6a93`.
-  The request returned HTTP 404 with both `https://allergy-wheel-parents.invalid` and `https://allergy.mprlab.com` as the Origin header.
-  Both responses contained `Access-Control-Allow-Origin: *`.
-  B003 correctly reports initialization failure, but it cannot restore the provider configuration.
-
-  Requirements:
-  - Verify the site record and its ownership before a configuration change.
-  - Restore the correct configuration through the provider's supported interface.
-  - Change the application site ID only when a verified record requires that correction.
-  - Preserve the parent gate and explicit service selection.
-  - Keep credentials and feedback content outside source and logs.
-
-  Validation:
-  - Verify a successful configuration response for the selected site and mobile origin.
-  - Verify actual widget initialization in both native parent documents.
-  - Verify the form without a live feedback submission.
-  - Preserve the B003 failure and retry regression results.
-  - Record the result in P002 and F003.
-
-  Recovery On September 7, 2026:
-  The signed-in LoopAware dashboard contained no Allergy Wheel record. The old ID returned HTTP 404 with `unknown_site`.
-  The new site is `9931e62f-5a60-48e6-9e31-16de62f62e7d`, with `support@mprlab.com` as its notification contact.
-  Its allowed origins are `https://allergy.mprlab.com` and `https://allergy-wheel-parents.invalid`.
-  Both origins receive HTTP 200 from the new configuration.
-  The website widget and mobile analytics and feedback URLs now use the verified ID.
-
-  The new `make verify-feedback` command failed on HTTP 404 before the source correction.
-  It then opened the real form in Chromium and WebKit from the website embed and generated parent document.
-  The check preserved the parent gate and explicit selection. It allowed provider GET requests only and submitted no feedback.
-  Both corrected development artifacts built. The iOS simulator launched and showed the parent gate.
-  Native feedback interaction and publication of the corrected website remain incomplete.
-
-  Validation Result:
-  Final `make ci` passed with 69 source files, browser and mobile flows, and the existing B003 failure and retry cases.
-  The Governor check, mechanical documentation checks, and changed-prose review passed.
-  The live form check and both native build logs are under `artifacts/validation/b005-*`.
-
 ## Improvements
 
 ## Maintenance
@@ -139,9 +39,9 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Confirm no active, blocked, recurring, or planning work was archived.
 
   Last run: October 1, 2026.
-  The review archived 18 closed entries with their complete records, including the completed I005 implementation.
-  B046 records the native store metadata mismatch. B047 records the failed feedback verifier.
-  B005 remains blocked on B047. Current notes identify remaining work.
+  The archive now contains 21 closed entries with their complete records.
+  B046 corrected store metadata. B047 repaired the verifier. B005 passed live feedback verification.
+  Current notes identify the remaining work.
   The eight recurring entries remain open.
 
 - [ ] [M401R] (P2) Polish open issues
@@ -305,7 +205,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Review On October 1, 2026:
   The Expo shell, offline package, native preparation, and shared build adapters are implemented.
   The current native service contract uses aggregate LoopAware counts, automatic fonts, and parent feedback.
-  Native Google Analytics is removed. B046 owns the incorrect store description.
+  Native Google Analytics is removed. B046 corrected the store description and reviewer instructions.
   Remaining software evidence must cover rotation, background return, and provider requests and storage on the final source.
   Use simulators, emulators, or automated browsers for device acceptance.
   Record behavior specific to a native WebView separately from browser results.
@@ -465,7 +365,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Review On October 1, 2026:
   The selected manifest now declares the website and both mobile platforms.
   Store exporters, artwork generation, native signing configuration, and schema 3 adapters are implemented.
-  P002 and B046 retain privacy and metadata work before the next candidate.
+  P002 retains privacy work before the next candidate. B046 corrected the source metadata.
   Signed artifacts, final screenshots, store declarations, review, and public release remain operational requirements.
   Earlier Gateway and credential observations describe the inspected source at that time.
   Verify the current Gateway publication capability before execution.
@@ -475,7 +375,8 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Goal:
   End users can install the approved Allergy Wheel release from both public stores.
 
-  Blocked: F001 and P002 acceptance, B046 metadata, and remaining store declarations are incomplete. B047 prevents current feedback verification.
+  Blocked: F001 and P002 acceptance and remaining store declarations are incomplete.
+  B046 corrected source metadata. Store console updates remain an operation. B047 and B005 passed focused verification.
 
   Evidence:
   The current Android target creates a development APK.
@@ -646,7 +547,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Browser Google Analytics remains. Online fonts load automatically. Feedback requires the parent gate.
   Provider retention, deletion, proxy logs, support data, and store disclosures still require evidence.
   Separate the native count inventory from the browser analytics inventory.
-  B046 owns the stale store text. Final runtime request and storage evidence remains incomplete.
+  B046 corrected the source store text. Final runtime request and storage evidence remains incomplete.
 
   Goal:
   The mobile design must use an explicit audience and data contract.

@@ -224,7 +224,8 @@ F001 retains the uncovered software behavior and runtime evidence:
 - Complete the P002 provider review.
 
 Signed AAB and IPA artifacts, final screenshots, and store declarations remain operations in `STORE-READINESS.md`.
-B046 owns the native store metadata correction. B047 owns the failed feedback verification command.
+B046 corrected native store metadata. B047 corrected the feedback verification command.
+B005 passed live feedback verification in Chromium and WebKit on October 1, 2026, without feedback submission.
 
 F002 remains open until verified store destinations are available.
 Both entries in `data/mobile-stores.json` remain `null`.

@@ -6,6 +6,133 @@ Current requirements are in `MOBILE-READINESS.md` and `STORE-READINESS.md`.
 
 ## BugFixes
 
+- [x] [B046] (P1) Correct native analytics descriptions in store metadata
+  Goal:
+  Store descriptions and reviewer instructions must describe the current native analytics contract.
+
+  Evidence:
+  `mobile/store/listing.json` still describes automatic native Google Analytics in `description` and `reviewNotes`.
+  `js/core/gateway.js` sends one empty LoopAware count request. The native app has no Google Analytics integration.
+  Expected: Store text describes aggregate counts, automatic fonts, and parent feedback.
+  Actual: The exported text describes a service removed from the native app.
+
+  Requirements:
+  - Correct both fields against the P002 service decision and current privacy text.
+  - Preserve browser Google Analytics and the selected automatic fonts.
+  - Keep feedback behind the parent gate.
+  - Add integration coverage through the real store exporter for the current service description.
+
+  Validation:
+  - Run the new exporter regression before the metadata correction.
+  - Confirm that the regression fails because the exported native service description is incorrect.
+  - Run `make test-store-listings` after the correction.
+  - Run final `make ci` after all source changes.
+  - Record console metadata updates separately in `STORE-READINESS.md`.
+
+  Resolution On October 1, 2026:
+  The store descriptions and reviewer notes now describe automatic fonts and one aggregate LoopAware startup count.
+  The source excludes native Google Analytics and retains guarded feedback.
+  The real exporter regression first failed on the obsolete service description, then passed after the correction.
+  Final `make ci` passed in Docker, including the exporter integration test.
+  Store console metadata updates remain an operation under F003.
+
+- [x] [B047] (P1) Repair the feedback verification command after the analytics change
+  Goal:
+  `make verify-feedback` must verify the current feedback configuration and form.
+
+  Evidence:
+  On October 1, 2026, the Docker command failed before a provider request.
+  `scripts/verify-feedback.mjs:16` reads the removed `ExternalService.LOOP_ANALYTICS` constant.
+  `new URL(undefined)` throws `ERR_INVALID_URL`.
+  Expected: The command verifies feedback through Chromium and WebKit without a submission.
+  Actual: An obsolete analytics assertion prevents feedback verification.
+
+  Requirements:
+  - Remove the obsolete shared analytics and feedback site assertion.
+  - Preserve website and parent feedback site agreement.
+  - Preserve the actual provider configuration, parent gate, form, and no-submission checks.
+  - Keep aggregate count verification separate from feedback verification.
+  - Add integration coverage for the command startup contract.
+
+  Validation:
+  - Preserve the failing public command result before the correction.
+  - Run focused command coverage after the correction.
+  - Run `make verify-feedback` in Docker.
+  - Confirm both browser engines open the real form without a feedback submission.
+  - Run final `make ci` after all source changes.
+
+  Resolution On October 1, 2026:
+  The verifier no longer reads the removed analytics constant or requires a shared feedback and count site.
+  The exported verifier accepts controlled provider responses for isolated integration coverage.
+  The default command retains live provider requests, feedback site agreement, the parent gate, and form verification.
+  Only provider GET requests are permitted. No feedback submission or startup count occurs.
+  The regression first failed with `ERR_INVALID_URL`, then passed in Chromium and WebKit.
+  `make test-feedback-verifier` is included in CI. Final `make ci` passed in Docker.
+
+- [x] [B005] (P1) {B047} Restore the configured LoopAware feedback service
+  Review On October 1, 2026:
+  The original HTTP 404 defect is resolved in the recorded provider configuration.
+  September 7 evidence shows the actual packaged parent form in Chromium and WebKit without feedback submission.
+  Automated browsers are sufficient for this configuration and form acceptance.
+  B047 removed the obsolete analytics assertion. The live verifier now passes in both browser engines.
+  Final CI passed before closure.
+  Native WebView request and storage qualification remains in P002 and F001.
+
+  Goal:
+  The selected LoopAware site must supply a usable feedback configuration.
+
+  Current Validation:
+  The corrected `make verify-feedback` passed on October 1, 2026. Final CI also passed.
+  Both browser engines received HTTP 200 and opened the website and packaged parent forms without feedback submission.
+
+  Evidence:
+  On September 7, 2026, the live widget requested `/public/widget-config` for site `de929d14-c425-4a4e-89fe-3d5fbc6e6a93`.
+  The request returned HTTP 404 with both `https://allergy-wheel-parents.invalid` and `https://allergy.mprlab.com` as the Origin header.
+  Both responses contained `Access-Control-Allow-Origin: *`.
+  B003 correctly reports initialization failure, but it cannot restore the provider configuration.
+
+  Requirements:
+  - Verify the site record and its ownership before a configuration change.
+  - Restore the correct configuration through the provider's supported interface.
+  - Change the application site ID only when a verified record requires that correction.
+  - Preserve the parent gate and explicit service selection.
+  - Keep credentials and feedback content outside source and logs.
+
+  Validation:
+  - Verify a successful configuration response for the selected site and mobile origin.
+  - Verify actual widget initialization in both native parent documents.
+  - Verify the form without a live feedback submission.
+  - Preserve the B003 failure and retry regression results.
+  - Record the result in P002 and F003.
+
+  Recovery On September 7, 2026:
+  The signed-in LoopAware dashboard contained no Allergy Wheel record. The old ID returned HTTP 404 with `unknown_site`.
+  The new site is `9931e62f-5a60-48e6-9e31-16de62f62e7d`, with `support@mprlab.com` as its notification contact.
+  Its allowed origins are `https://allergy.mprlab.com` and `https://allergy-wheel-parents.invalid`.
+  Both origins receive HTTP 200 from the new configuration.
+  The website widget and mobile analytics and feedback URLs now use the verified ID.
+
+  The new `make verify-feedback` command failed on HTTP 404 before the source correction.
+  It then opened the real form in Chromium and WebKit from the website embed and generated parent document.
+  The check preserved the parent gate and explicit selection. It allowed provider GET requests only and submitted no feedback.
+  Both corrected development artifacts built. The iOS simulator launched and showed the parent gate.
+  Native feedback interaction and publication of the corrected website remain incomplete.
+
+  Validation Result:
+  Final `make ci` passed with 69 source files, browser and mobile flows, and the existing B003 failure and retry cases.
+  The Governor check, mechanical documentation checks, and changed-prose review passed.
+  The live form check and both native build logs are under `artifacts/validation/b005-*`.
+
+  Resolution On October 1, 2026:
+  After B047, `make verify-feedback` passed in Docker with the actual LoopAware provider scripts.
+  Chromium and WebKit each verified the website embed and generated parent document.
+  All four cases received HTTP 200 for the expected feedback site and displayed the real form.
+  The parent cases required the gate and separate feedback action before any provider request.
+  No feedback was submitted. Only provider GET requests were permitted.
+  Final `make ci` passed, including the B003 failure, delayed readiness, and retry cases.
+  Automated browser evidence is sufficient for this configuration and form acceptance.
+  P002 and F001 retain native WebView request and storage qualification. F003 retains publication operations.
+
 - [x] [B044] (P1) Restore the native iOS release adapter.
   Goal: Use the current Gateway contract for both mobile platforms.
   Evidence: Gateway 5.0.0 rejects the iOS shell adapter and cloud iOS operation.
