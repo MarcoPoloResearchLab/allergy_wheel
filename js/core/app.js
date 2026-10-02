@@ -7,6 +7,9 @@ import { renderStoreLinks } from '../ui/storeLinks.js';
 import { reportError } from '../utils/logging.js';
 import { bindMobileLifecycle } from '../ui/lifecycle.js';
 import { RuntimeSurface, StoreConfiguration } from '../constants.js';
+import { createBrowserAnalyticsGateway } from './gateway.js';
+import { createBrowserAnalyticsCommandQueue } from '../ui/browserAnalytics.js';
+import { loadExternalScript } from '../ui/externalResources.js';
 import { Wheel } from "./wheel.js";
 import { createListenerBinder } from "../utils/listeners.js";
 import { StateManager } from "./state.js";
@@ -53,6 +56,9 @@ import {
 const stateManager = new StateManager();
 
 if (runtimeSurface === RuntimeSurface.WEB) {
+    createBrowserAnalyticsGateway({ enqueueCommand: createBrowserAnalyticsCommandQueue(), loadAnalytics: loadExternalScript })
+        .enableAnalytics()
+        .catch((error) => reportError('Browser analytics', error));
     loadJson(StoreConfiguration.PATH)
         .then(validateStoreCatalog)
         .then((catalog) => renderStoreLinks(orderStoreLinks(catalog, navigator)))

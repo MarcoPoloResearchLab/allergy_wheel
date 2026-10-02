@@ -10,7 +10,7 @@ F002 retains verification of public store destinations.
 
 ## Confirmed Decisions
 
-P001 and P002 record the owner decisions.
+P001 and F004 retain the owner decisions. P002 preserves the earlier decision history.
 
 | Subject | Contract |
 | --- | --- |
@@ -77,7 +77,7 @@ The mobile game loads online fonts automatically.
 A separate analytics document sends one empty LoopAware count request at application launch.
 The native application has no Google Analytics integration.
 Native counts use a dedicated LoopAware site with an aggregate profile.
-The parent document loads feedback only after the parent gate and feedback selection.
+The parent document loads feedback only after the parent gate, explicit adult agreement, and feedback selection.
 The parent gate uses a multiplication question.
 This gate is a product control. It does not establish legal parental consent or store acceptance.
 
@@ -93,7 +93,7 @@ Its incognito WebView cannot read game-origin storage. Analytics failure does no
 
 | Surface | Data and behavior |
 | --- | --- |
-| Local game | The selected allergen token and label stay in device storage. Catalog and audio requests use packaged data URLs. |
+| Local game | The selected allergen and results stay in session memory. No game preference uses persistent storage. Catalog and audio requests use packaged data URLs. |
 | Native analytics client | Sends one empty JSON object by POST. Omits cookies and referrer. Does not retry a failed or uncertain response. |
 | LoopAware analytics | The collector stores only site ID, UTC date, and request count. Transport processes network information transiently. Proxy logging requires separate verification before production activation. |
 | LoopAware feedback | A separate parent action loads `widget.js`. Submission contains contact details, a message or sentiment, site ID, and source URL. |
@@ -102,7 +102,7 @@ Its incognito WebView cannot read game-origin storage. Analytics failure does no
 | Website | The existing Google Analytics, LoopAware widget, and external fonts remain on the browser game. The mobile privacy page starts no external service. |
 
 The native analytics client uses no visitor identifier, device record, or persistent storage.
-LoopAware retains daily counts for the configured calendar-day window.
+LoopAware retains daily counts for the configured calendar-day window in its source contract.
 The canonical configuration specifies 90 days.
 The native request tests do not prove deployed proxy behavior or store acceptance.
 
@@ -110,7 +110,18 @@ The public mobile privacy page source is `privacy.html`.
 Its intended URL is `https://allergy.mprlab.com/privacy.html` after authorized website publication.
 The same privacy text appears in an expandable section inside the mobile parent area.
 It describes local preferences, automatic services, guarded feedback, support, and the food-safety limit of the game.
-P002 retains provider retention, deletion, store declarations, and runtime data verification before store submission.
+F004 supplies the privacy contract and client evidence. F003 retains production retention, deletion, declarations, and native runtime verification.
+
+## Privacy Implementation On October 1, 2026
+
+F004 implements the current contract from P002. B048 blocks final CI through the existing Expo dependency audit. `PRIVACY-QUALIFICATION.md` supplies the data inventory and remaining production procedure.
+The game retains selection and results only in session memory. The earlier persistent-storage claim was incorrect.
+The parent feedback action now requires explicit adult agreement after the arithmetic gate.
+The browser initializes denied storage before its Google Analytics measurement commands.
+`make test-privacy` checks both browser engines, complete font requests, actual selection, isolated counts, feedback entry, and session reset.
+`make verify-privacy` records live provider requests without feedback submission.
+`make privacy-disclosures` prepares the shared policy and source contract for store review.
+F003 retains production retention, removal, support, native runtime, and store declaration checks.
 
 ## Official Policy Review
 
@@ -221,10 +232,11 @@ F001 retains the uncovered software behavior and runtime evidence:
 
 - Verify rounds, audio, mute, rotation, background return, and first-launch offline play in simulators, emulators, or automated browsers.
 - Native parent service request and storage verification.
-- Complete the P002 provider review.
+- Apply the F004 data contract and complete the F003 production privacy procedure.
 
 Signed AAB and IPA artifacts, final screenshots, and store declarations remain operations in `STORE-READINESS.md`.
-B046 owns the native store metadata correction. B047 owns the failed feedback verification command.
+B046 corrected native store metadata. B047 corrected the feedback verification command.
+B005 passed live feedback verification in Chromium and WebKit on October 1, 2026, without feedback submission.
 
 F002 remains open until verified store destinations are available.
 Both entries in `data/mobile-stores.json` remain `null`.

@@ -6,6 +6,133 @@ Current requirements are in `MOBILE-READINESS.md` and `STORE-READINESS.md`.
 
 ## BugFixes
 
+- [x] [B046] (P1) Correct native analytics descriptions in store metadata
+  Goal:
+  Store descriptions and reviewer instructions must describe the current native analytics contract.
+
+  Evidence:
+  `mobile/store/listing.json` still describes automatic native Google Analytics in `description` and `reviewNotes`.
+  `js/core/gateway.js` sends one empty LoopAware count request. The native app has no Google Analytics integration.
+  Expected: Store text describes aggregate counts, automatic fonts, and parent feedback.
+  Actual: The exported text describes a service removed from the native app.
+
+  Requirements:
+  - Correct both fields against the P002 service decision and current privacy text.
+  - Preserve browser Google Analytics and the selected automatic fonts.
+  - Keep feedback behind the parent gate.
+  - Add integration coverage through the real store exporter for the current service description.
+
+  Validation:
+  - Run the new exporter regression before the metadata correction.
+  - Confirm that the regression fails because the exported native service description is incorrect.
+  - Run `make test-store-listings` after the correction.
+  - Run final `make ci` after all source changes.
+  - Record console metadata updates separately in `STORE-READINESS.md`.
+
+  Resolution On October 1, 2026:
+  The store descriptions and reviewer notes now describe automatic fonts and one aggregate LoopAware startup count.
+  The source excludes native Google Analytics and retains guarded feedback.
+  The real exporter regression first failed on the obsolete service description, then passed after the correction.
+  Final `make ci` passed in Docker, including the exporter integration test.
+  Store console metadata updates remain an operation under F003.
+
+- [x] [B047] (P1) Repair the feedback verification command after the analytics change
+  Goal:
+  `make verify-feedback` must verify the current feedback configuration and form.
+
+  Evidence:
+  On October 1, 2026, the Docker command failed before a provider request.
+  `scripts/verify-feedback.mjs:16` reads the removed `ExternalService.LOOP_ANALYTICS` constant.
+  `new URL(undefined)` throws `ERR_INVALID_URL`.
+  Expected: The command verifies feedback through Chromium and WebKit without a submission.
+  Actual: An obsolete analytics assertion prevents feedback verification.
+
+  Requirements:
+  - Remove the obsolete shared analytics and feedback site assertion.
+  - Preserve website and parent feedback site agreement.
+  - Preserve the actual provider configuration, parent gate, form, and no-submission checks.
+  - Keep aggregate count verification separate from feedback verification.
+  - Add integration coverage for the command startup contract.
+
+  Validation:
+  - Preserve the failing public command result before the correction.
+  - Run focused command coverage after the correction.
+  - Run `make verify-feedback` in Docker.
+  - Confirm both browser engines open the real form without a feedback submission.
+  - Run final `make ci` after all source changes.
+
+  Resolution On October 1, 2026:
+  The verifier no longer reads the removed analytics constant or requires a shared feedback and count site.
+  The exported verifier accepts controlled provider responses for isolated integration coverage.
+  The default command retains live provider requests, feedback site agreement, the parent gate, and form verification.
+  Only provider GET requests are permitted. No feedback submission or startup count occurs.
+  The regression first failed with `ERR_INVALID_URL`, then passed in Chromium and WebKit.
+  `make test-feedback-verifier` is included in CI. Final `make ci` passed in Docker.
+
+- [x] [B005] (P1) {B047} Restore the configured LoopAware feedback service
+  Review On October 1, 2026:
+  The original HTTP 404 defect is resolved in the recorded provider configuration.
+  September 7 evidence shows the actual packaged parent form in Chromium and WebKit without feedback submission.
+  Automated browsers are sufficient for this configuration and form acceptance.
+  B047 removed the obsolete analytics assertion. The live verifier now passes in both browser engines.
+  Final CI passed before closure.
+  Native WebView request and storage qualification remains in P002 and F001.
+
+  Goal:
+  The selected LoopAware site must supply a usable feedback configuration.
+
+  Current Validation:
+  The corrected `make verify-feedback` passed on October 1, 2026. Final CI also passed.
+  Both browser engines received HTTP 200 and opened the website and packaged parent forms without feedback submission.
+
+  Evidence:
+  On September 7, 2026, the live widget requested `/public/widget-config` for site `de929d14-c425-4a4e-89fe-3d5fbc6e6a93`.
+  The request returned HTTP 404 with both `https://allergy-wheel-parents.invalid` and `https://allergy.mprlab.com` as the Origin header.
+  Both responses contained `Access-Control-Allow-Origin: *`.
+  B003 correctly reports initialization failure, but it cannot restore the provider configuration.
+
+  Requirements:
+  - Verify the site record and its ownership before a configuration change.
+  - Restore the correct configuration through the provider's supported interface.
+  - Change the application site ID only when a verified record requires that correction.
+  - Preserve the parent gate and explicit service selection.
+  - Keep credentials and feedback content outside source and logs.
+
+  Validation:
+  - Verify a successful configuration response for the selected site and mobile origin.
+  - Verify actual widget initialization in both native parent documents.
+  - Verify the form without a live feedback submission.
+  - Preserve the B003 failure and retry regression results.
+  - Record the result in P002 and F003.
+
+  Recovery On September 7, 2026:
+  The signed-in LoopAware dashboard contained no Allergy Wheel record. The old ID returned HTTP 404 with `unknown_site`.
+  The new site is `9931e62f-5a60-48e6-9e31-16de62f62e7d`, with `support@mprlab.com` as its notification contact.
+  Its allowed origins are `https://allergy.mprlab.com` and `https://allergy-wheel-parents.invalid`.
+  Both origins receive HTTP 200 from the new configuration.
+  The website widget and mobile analytics and feedback URLs now use the verified ID.
+
+  The new `make verify-feedback` command failed on HTTP 404 before the source correction.
+  It then opened the real form in Chromium and WebKit from the website embed and generated parent document.
+  The check preserved the parent gate and explicit selection. It allowed provider GET requests only and submitted no feedback.
+  Both corrected development artifacts built. The iOS simulator launched and showed the parent gate.
+  Native feedback interaction and publication of the corrected website remain incomplete.
+
+  Validation Result:
+  Final `make ci` passed with 69 source files, browser and mobile flows, and the existing B003 failure and retry cases.
+  The Governor check, mechanical documentation checks, and changed-prose review passed.
+  The live form check and both native build logs are under `artifacts/validation/b005-*`.
+
+  Resolution On October 1, 2026:
+  After B047, `make verify-feedback` passed in Docker with the actual LoopAware provider scripts.
+  Chromium and WebKit each verified the website embed and generated parent document.
+  All four cases received HTTP 200 for the expected feedback site and displayed the real form.
+  The parent cases required the gate and separate feedback action before any provider request.
+  No feedback was submitted. Only provider GET requests were permitted.
+  Final `make ci` passed, including the B003 failure, delayed readiness, and retry cases.
+  Automated browser evidence is sufficient for this configuration and form acceptance.
+  P002 and F001 retain native WebView request and storage qualification. F003 retains publication operations.
+
 - [x] [B044] (P1) Restore the native iOS release adapter.
   Goal: Use the current Gateway contract for both mobile platforms.
   Evidence: Gateway 5.0.0 rejects the iOS shell adapter and cloud iOS operation.
@@ -460,6 +587,170 @@ Current requirements are in `MOBILE-READINESS.md` and `STORE-READINESS.md`.
   Remote execution remains unverified until an authorized push.
 
 ## Planning
+
+- [x] [P002] (P1) Define the child audience and data policy
+  Review On October 1, 2026:
+  The September 8 decision replaces the earlier native Google Analytics requirement.
+  The native app sends one empty count request without cookies, a referrer, or persistent visitor records.
+  B045 verified HTTP 204 from the dedicated aggregate collector on October 1, 2026.
+  Browser Google Analytics remains. Online fonts load automatically. Feedback requires the parent gate.
+  Provider retention, deletion, proxy logs, support data, and store disclosures still require evidence.
+  Separate the native count inventory from the browser analytics inventory.
+  B046 corrected the source store text. Final runtime request and storage evidence remains incomplete.
+
+  Goal:
+  The mobile design must use an explicit audience and data contract.
+
+  Requirements:
+  - Inventory network requests from the game and its external scripts.
+  - Inspect Google Analytics, LoopAware, Google Fonts, and browser storage.
+  - Record the child age group and release countries.
+  - Record decisions for price, advertising, accounts, and measurement.
+  - Define parent information, support links, and any required parental gate.
+  - Verify the applicable store rules against current official sources.
+  - Keep this issue limited to analysis and decisions.
+
+  Open Decisions:
+  On September 8, 2026, the owner selected automatic LoopAware counts for the native game.
+  Remove native Google Analytics. Keep browser Google Analytics and automatic fonts.
+  LoopAware F016 must supply and verify the restricted collector before native integration.
+
+  Owner Decisions:
+  On September 7, 2026, the owner selected ages 6 and older and all countries.
+  The complete game has no charges, advertisements, or in-app purchases.
+  The game must be fully usable without an account.
+  Keep Google Analytics, LoopAware analytics and feedback, and external fonts in the mobile version.
+  Use `support@mprlab.com` as the support contact.
+  The owner initially limited stored data to analytics, then explicitly included LoopAware analytics and feedback.
+  The selected data scope includes feedback contact details and submitted content.
+  These decisions replace the earlier ages 6–8 and no-analytics proposal.
+
+  Service Flow Decision:
+  On September 7, 2026, the owner required fonts and analytics to load automatically without a parental gate.
+  Only feedback requires the parental gate.
+  Remove the analytics and font controls from the parent screen.
+  Keep the selected allergen and game results outside analytics data.
+  This decision replaces the earlier parent-only service design.
+
+  Service Flow Validation:
+  The packaged tests passed automatic font and analytics startup, game-storage isolation, unavailable services, and feedback gate behavior.
+  The real LoopAware form opened in Chromium and WebKit without a feedback submission.
+  Both development artifacts built after correction of the Android version assignment.
+  The rebuilt iOS simulator displayed automatic game fonts and the compact parent screen below the status area.
+  Simulator coordinate input returned `noWindowsAvailable`. Native feedback entry remains unverified.
+  The privacy source and reviewer instructions describe automatic services and guarded feedback.
+
+
+  Later Audience Decision:
+  On September 7, 2026, the owner replaced the temporary 13+ decision with the original ages-six-and-older audience.
+  Remove beer and wine references from the catalog and use child-friendly recipes.
+  Recalculate store ratings after the catalog changes.
+  Apple saved the recalculated 4+ rating after the catalog revision and browser test.
+  Google Play saved the completed IARC questionnaire after the owner authorized its agreement.
+  Its ratings include Everyone and PEGI 3. Younger age groups are selected in the incomplete audience form.
+  The compliance certification requires the remaining provider and native privacy evidence.
+  The parent controls and selected services remain the same.
+
+  Evidence:
+  The source review found Google Analytics, LoopAware, and Google Fonts requests in `index.html`.
+  The game saves the selected allergen token and label in `localStorage`.
+  LoopAware `web/widget.js` sends contact details, a message or sentiment, and the source URL after feedback submission.
+  This source evidence does not establish the deployed widget configuration or all provider data collection.
+  `.mprlab/MOBILE-READINESS.md` contains the initial inventory and official policy sources checked on September 7.
+
+  Remaining Analysis:
+  Define parent access, support data retention, analytics settings, and required consent from the selected audience and services.
+  Prepare the privacy policy URL and store audience declarations.
+  Resolve technical details without another owner decision unless the design requires a change to a selected product requirement.
+  Verify the full request and storage inventory, including external scripts, on the selected mobile runtime.
+  Include LoopAware analytics, feedback data, and support correspondence in the data contract.
+  Verify retained services against Apple child audience rules and Google Play Families requirements.
+  Define accurate privacy disclosures for analytics, external resources, local preferences, and any permitted support data.
+  Keep this issue open until the data contract and its required decisions are completed.
+
+  Deliverables:
+  - Supply a data inventory and the selected policy for each delivery surface.
+  - Update F001 and F002 with the confirmed requirements.
+
+  Validation:
+  - Confirm the inventory includes requests from external scripts and local storage.
+  - Confirm that the design and proposed store declarations describe the same behavior.
+  Implementation Contract:
+  The native game starts fonts and aggregate LoopAware counts automatically. The browser retains Google Analytics.
+  The game retains its preferences locally and excludes allergens and results from analytics data.
+  Feedback requires the parent gate and a separate action in the parent document.
+  Google Analytics defaults deny analytics storage and advertisement storage.
+  Google signals and advertisement personalization are disabled.
+
+  Earlier LoopAware analytics included visit, device, locale, timezone, display, and network data. Native counts replace that collection.
+  LoopAware feedback includes contact details and submitted content.
+  The privacy page source is `privacy.html` and the same text appears in the app.
+  Its public URL remains unverified until website publication.
+  The source inventory and official policy references are in `.mprlab/MOBILE-READINESS.md`.
+
+  Remaining Verification:
+  Verify deployed retention, deletion procedures, Google property settings, and store declarations before store submission.
+  Capture requests and storage on both native platforms with the actual provider scripts.
+  The parent gate and controlled browser tests do not establish legal consent or store acceptance.
+
+  Provider Review Update:
+  The signed-in Google Analytics console verified the configured measurement ID and web stream.
+  Event data retention is two months. User data retention is fourteen months, with reset after new activity enabled.
+  Google signals, user-provided data collection, automatic user-data collection, and granular location and device collection are now disabled.
+  Advertising personalization is allowed in zero of 307 regions.
+  The existing web stream reports inactive consent signals.
+  The deletion control is available, but no deletion request was executed.
+  Native privacy acceptance remains incomplete.
+
+  F003 Preparation Evidence:
+  The live privacy and support page passed the Docker browser check on September 7, 2026.
+  The public text agrees with the current mobile privacy source.
+  B005 records a live HTTP 404 from the selected LoopAware widget configuration.
+  `.mprlab/STORE-READINESS.md` records the remaining declaration evidence and current official policy references.
+  Retention, deletion, property settings, and complete native request captures remain unverified.
+
+  Provider Recovery Evidence:
+  B005 restored the LoopAware configuration for the website and native parent origins.
+  The real form opened in Chromium and WebKit only after the required parent action.
+  No feedback was submitted. Native request captures and deployed retention verification remain incomplete.
+
+  Provider Policy Review:
+  On September 7, 2026, the signed-in LoopAware dashboard showed no visits for the new Allergy Wheel site.
+  The Admin and Traffic sections contained no retention control.
+  The published privacy policy retains data while the account is active and specifies deletion within 30 days after a request.
+  That policy says LoopAware does not knowingly collect personal information from children under 13.
+  Verify the automatic analytics payload and permitted child use before the Google audience certification.
+  The policy establishes the stated procedure. Actual retention and deletion behavior still require verification.
+
+  Cross-Repository Plan:
+  On September 8, 2026, the owner authorized a plan or implementation for necessary LoopAware changes.
+  LoopAware P001 records the source review and proposed restricted analytics contract.
+  LoopAware F016 owns its implementation, including collection, logs, reports, retention, and removal.
+  The design is in the LoopAware document `.mprlab/CHILD-AUDIENCE-ANALYTICS.md`.
+  The initial LoopAware source stored raw IP addresses, individual visits, and device information.
+  Its request logger also recorded IP addresses and user agents.
+  Client storage isolation does not remove those server records.
+
+  F016 now implements automatic counts without persistent visitor records.
+  LoopAware final CI passed, including 465 browser tests, mobile API checks, audits, and race tests.
+  Gateway B539 passed the real proxy failure log test. Its final CI remains in progress.
+  Native request tests passed for one empty POST, omitted cookies and referrers, automatic fonts, and offline play.
+  B045 owns the dedicated production site and collector verification.
+  Final native artifacts remain pending.
+  It cannot control Google Analytics or Google Fonts requests.
+  Verify each retained provider and parent feedback separately before completing the store declarations.
+  Keep P002 open until the selected provider contract and native evidence are completed.
+
+  Current Publication Evidence:
+  The signed Android bundle for build `1788901126` reached Google Play as a draft.
+  The store listing includes three screenshots from that candidate in an Android emulator.
+  Google reports ten of eleven initial setup tasks complete. Data safety remains incomplete.
+  The candidate still uses the existing analytics contract and is not a completed public release.
+
+  Resolution On October 1, 2026:
+  The owner changed this planning task to feature implementation under F004.
+  F004 preserves the selected requirements and owns the client privacy controls and disclosure evidence.
+  F003 retains the separate production qualification requirements.
 
 - [x] [P001] (P1) Select the mobile delivery path and toolchain
   Goal:

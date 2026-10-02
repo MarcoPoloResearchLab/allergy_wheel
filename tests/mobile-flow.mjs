@@ -69,6 +69,7 @@ try {
     await parentPage.getByLabel('Answer').fill(String(numbers[0] * numbers[1]));
     await parentPage.getByRole('button', { name: 'Continue', exact: true }).click();
     assert.equal(await parentPage.getByRole('button', { name: 'Enable analytics for this visit' }).count(), 0);
+    await parentPage.getByRole('checkbox', { name: ParentText.AGREEMENT, exact: true }).check();
     await parentPage.getByRole('button', { name: ParentText.FEEDBACK }).click();
     await parentPage.getByRole('status').filter({ hasText: 'Internet is unavailable' }).waitFor();
     await parentPage.getByText(ParentText.PRIVACY_TITLE, { exact: true }).click();

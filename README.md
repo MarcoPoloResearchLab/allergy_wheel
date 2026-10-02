@@ -96,12 +96,16 @@ The selected toolchain supports Android 7.0 and later, and iOS 16.4 and later.
 | `make store-listings` | Prepare store text and reviewer instructions under `artifacts/store-listings`. |
 | `make store-artwork` | Render the existing wheel as native and Google Play artwork under `artifacts/store-artwork`. |
 | `make test-store-listings` | Verify store text exports, length limits, and public destinations in Docker. |
+| `make test-feedback-verifier` | Verify the feedback command with controlled provider responses in Chromium and WebKit. |
 | `make verify-store-pages` | Verify the live privacy and support page in Docker. |
+| `make test-privacy` | Verify denied browser storage, session selection, service requests, and adult feedback controls in Docker. |
+| `make verify-privacy` | Record live packaged service requests in both browser engines without feedback submission. |
+| `make privacy-disclosures` | Prepare the privacy contract, public text, and candidate store categories for operator review. |
 | `make verify-feedback` | Open the live LoopAware form in Chromium and WebKit without a feedback submission. |
 
 The selected audience is ages six and older. The catalog uses child-friendly recipes without beer or wine references.
 Apple saved a calculated 4+ content rating. Google Play saved Everyone and PEGI 3 ratings after the IARC questionnaire.
-The younger Google audience groups require the P002 compliance certification before their final save.
+The younger Google audience groups require the F003 production privacy certification under the F004 contract before their final save.
 
 The native app icon is `mobile/assets/icon.png`, rendered from the existing wheel artwork.
 Native preparation copies these assets into its container before Expo generates platform icons.
@@ -160,7 +164,7 @@ These native prerequisites are separate from Docker-only browser development.
 1. Run `make mobile-dependencies`.
 2. Run `make mobile-prepare`.
 3. Run `make mobile-android` or `make mobile-ios`.
-4. For multiple Android devices, set `ANDROID_SERIAL` before `make install-android`.
+4. Install the Android build in an emulator or run `make test-ios-simulator` in the booted simulator.
 5. Complete the device acceptance checks in `.mprlab/MOBILE-READINESS.md`.
 
 Each build writes an artifact receipt with its version, source commit, uncommitted-source indicator, and file digests.
@@ -177,16 +181,27 @@ The mobile build does not use a development server, Expo account, or EAS.
 
 Fonts load automatically in the game. Analytics starts automatically in a separate document at application launch.
 Analytics scripts cannot read the selected allergen or game results from the game document.
-Only feedback requires the parent gate. The parent screen keeps detailed privacy text in an expandable section.
+Only feedback requires the parent gate, adult agreement by checkbox, and a separate feedback action. The parent screen keeps detailed privacy text in an expandable section.
 The native modal has its own safe-area provider to keep controls below the device status area.
 The feedback action stays pending until LoopAware supplies its launcher and contact form.
 A script download alone does not establish readiness.
 A script error or a 10-second initialization timeout shows a failure and permits another attempt.
 The packaged mobile tests cover configuration responses of 403 and 404 with the actual widget script.
 They also verify delayed readiness and a successful retry without a feedback submission.
+The feedback verifier has separate controlled and live provider checks.
+`make ci` includes the controlled check through the actual verifier and packaged parent document.
+`make verify-feedback` uses the live provider and permits only GET requests without a feedback submission.
 Its provider scripts use a separate document origin.
 The mobile privacy page is `privacy.html`.
-P002 retains provider configuration and store policy verification before submission.
+F004 supplies the shared privacy contract in `js/constants.js` and its client controls.
+`js/core/gateway.js` queues denied browser consent before the external tag loads.
+`js/ui/browserAnalytics.js` supplies the documented Google tag command queue.
+The game keeps selected allergens and results only in session memory. It does not save persistent preferences.
+`make test-privacy` verifies the actual game, shared privacy UI, and exported disclosure contract.
+`make verify-privacy` writes phased requests and storage evidence to `artifacts/privacy-validation/native-requests.json`.
+`make privacy-disclosures` exports policy text, the data inventory, and store review inputs to `artifacts/privacy-disclosures`.
+F003 keeps the production checks in [.mprlab/PRIVACY-QUALIFICATION.md](.mprlab/PRIVACY-QUALIFICATION.md).
+The gate and agreement do not establish legal parental consent or store acceptance.
 
 ## Website installation and publication
 
@@ -207,6 +222,8 @@ The selected manifest currently declares the website only.
 
 F003 preparation and current store blockers are recorded in `.mprlab/STORE-READINESS.md`.
 The store text source is `mobile/store/listing.json`.
+The exported descriptions and reviewer notes describe automatic fonts, aggregate LoopAware counts, and guarded feedback.
+The exporter integration tests reject native Google Analytics descriptions.
 The store publisher reads private inputs from the ignored `configs/.env.allergy-wheel` file.
 The corresponding example file lists the required names without credential values.
 The store text export does not upload content or prove submission readiness.
