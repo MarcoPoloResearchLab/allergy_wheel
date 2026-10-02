@@ -46,7 +46,7 @@ test: build-test-image
 test-local:
 	bash "$(REPOSITORY_DIRECTORY)/tests/local-commands.sh"
 
-ci: check test test-mobile mobile-check mobile-audit test-pages test-store-listings test-feedback-verifier test-native-release test-release-adapter test-native-preparation test-apple-bundle test-local
+ci: check test test-mobile mobile-check mobile-audit test-pages test-store-listings test-feedback-verifier test-privacy test-native-release test-release-adapter test-native-preparation test-apple-bundle test-local
 
 .PHONY: test-mobile mobile-dependencies mobile-prepare
 
@@ -108,6 +108,18 @@ test-ios-simulator:
 .PHONY: release publish deploy
 
 .PHONY: store-listings test-store-listings test-feedback-verifier verify-store-pages verify-feedback
+.PHONY: test-privacy privacy-disclosures verify-privacy
+test-privacy: build-test-image
+	docker run --rm --init --shm-size=1g "$(TEST_IMAGE)" node tests/privacy-contract.mjs
+
+privacy-disclosures: build-test-image
+	mkdir -p artifacts/privacy-disclosures
+	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY)/artifacts/privacy-disclosures:/output" "$(TEST_IMAGE)" node scripts/prepare-privacy-disclosures.mjs --output /output
+
+verify-privacy: build-test-image
+	mkdir -p artifacts/privacy-validation
+	docker run --rm --init --shm-size=1g --volume "$(REPOSITORY_DIRECTORY)/artifacts/privacy-validation:/output" "$(TEST_IMAGE)" node scripts/verify-privacy.mjs --output /output/native-requests.json
+
 .PHONY: store-artwork
 store-artwork: build-test-image
 	mkdir -p artifacts/store-artwork
