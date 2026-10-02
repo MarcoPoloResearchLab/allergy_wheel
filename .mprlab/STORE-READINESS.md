@@ -1,7 +1,7 @@
 # Allergy Wheel Store Preparation
 
 F003 owns public store delivery. F001 owns software acceptance. This record retains signed artifact requirements.
-P002 owns the data contract. B046 corrected the native store metadata source.
+F004 supplies the data contract. P002 preserves the decision history. B046 corrected the native store metadata source.
 Dated sections preserve earlier preparation evidence. The current operation sequence controls remaining work.
 
 ## Remaining Work On October 1, 2026
@@ -15,9 +15,9 @@ Earlier Gateway limitations require a current contract verification before publi
 
 | Issue | Remaining result |
 | --- | --- |
-| P002 | Complete provider, support, request, storage, retention, deletion, and disclosure evidence for the selected audience. |
+| F004 | Client implementation is completed. B048 blocks required final CI. |
 | F001 | Complete uncovered software behavior and final package qualification. Record signed artifacts separately from code acceptance. |
-| F003 | Complete store declarations, final screenshots, candidate delivery, review, and public release for both platforms. |
+| F003 | Complete production privacy qualification, store declarations, screenshots, candidate delivery, review, and public release. |
 | F002 | Record verified public store URLs, update the catalog, publish the website, and verify its store links. |
 
 The native game uses automatic aggregate LoopAware counts, automatic fonts, and parent feedback.
@@ -34,7 +34,7 @@ The archive preserves their complete evidence and resolution records.
 Automated browsers, simulators, and emulators are sufficient for device acceptance.
 Browser evidence does not establish native WebView request or storage behavior.
 
-1. Complete the P002 data contract and apply the corrected metadata to the store consoles before submission.
+1. Apply the F004 contract and complete the production privacy procedure in `PRIVACY-QUALIFICATION.md` before submission.
 2. Complete uncovered F001 software behavior on the selected source.
 3. Verify the current Gateway store delivery contract and signing inputs.
 4. Run required validation on the final source and record its commit.
@@ -50,6 +50,17 @@ Signed IPA acceptance remains pending as a separate release operation.
 A simulator application verifies simulator behavior. It does not establish a signed IPA or App Store installation.
 Public store installation can use available software evidence and publication receipts without a hardware prerequisite.
 This tracker review does not execute a release, publication, or deployment operation.
+
+## Privacy Implementation On October 1, 2026
+
+F004 replaces P002 as the implementation issue. B048 prevents required final CI from passing. P002 preserves the original decisions and earlier qualification observations.
+`PRIVACY-QUALIFICATION.md` contains the current inventory, source evidence, and production procedure.
+The current public text and native parent text use one source contract.
+Native feedback requires adult agreement after the parent gate. Browser analytics starts with denied storage.
+Game selection uses session memory, without persistent preferences. The previous persistent-storage description was incorrect.
+F003 retains deployed logs, retention execution, feedback removal, support procedures, native captures, and final store declarations.
+Earlier P002 statements describe their recorded source and do not override the current contract.
+The earlier Android candidate requires replacement with the current source before certification.
 
 ## Review Corrections On October 1, 2026
 
