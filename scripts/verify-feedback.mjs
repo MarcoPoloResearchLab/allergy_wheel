@@ -60,6 +60,9 @@ export async function verifyFeedback({ routeProviderRequest = (route) => route.c
                         await page.getByLabel(ParentText.ANSWER).fill(String(factors[0] * factors[1]));
                         await page.getByRole('button', { name: ParentText.CONTINUE, exact: true }).click();
                         assert.deepEqual(requests, [], 'The parent gate must not start a provider request.');
+                        assert.equal(await page.getByRole('button', { name: ParentText.FEEDBACK, exact: true }).isEnabled(), false);
+                        await page.getByRole('checkbox', { name: ParentText.AGREEMENT, exact: true }).check();
+                        assert.deepEqual(requests, [], 'Adult agreement must not start a provider request.');
                         await page.getByRole('button', { name: ParentText.FEEDBACK, exact: true }).click();
                     }
                     const response = await configResponse;
