@@ -34,6 +34,7 @@ export async function runFeedbackFlow(browser, parentSource) {
         const factors = (await page.locator('#parent-question').innerText()).match(/\d+/g).map(Number);
         await page.getByLabel(ParentText.ANSWER).fill(String(factors[0] * factors[1]));
         await page.getByRole('button', { name: ParentText.CONTINUE, exact: true }).click();
+        await page.getByRole('checkbox', { name: ParentText.AGREEMENT, exact: true }).check();
         const button = page.getByRole('button', { name: ParentText.FEEDBACK, exact: true });
         const configRequest = page.waitForRequest(widgetConfigUrl);
         await button.click();

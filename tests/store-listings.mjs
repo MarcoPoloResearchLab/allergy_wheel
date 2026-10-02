@@ -35,6 +35,7 @@ try {
         assert.match(exportedText, /daily totals without visitor or device records/i, `${relative}: disclose the count data boundary.`);
         assert.match(exportedText, /Google Fonts/i, `${relative}: disclose automatic fonts.`);
         assert.match(exportedText, /parental gate/i, `${relative}: disclose guarded feedback.`);
+        assert.match(exportedText, /adult agreement/i, `${relative}: disclose the required adult agreement.`);
     }
 
     for (const scenario of [
