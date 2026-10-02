@@ -2,7 +2,7 @@
 
 /* global window */
 
-import { LoadJsonErrorMessage, StorageKey } from "../constants.js";
+import { LoadJsonErrorMessage } from "../constants.js";
 
 /** @typedef {import("../types.js").NormalizationRule} NormalizationRule */
 
@@ -79,36 +79,6 @@ export class NormalizationEngine {
         }
         return union;
     }
-}
-
-/* persistence of selection */
-
-/**
- * Persists the currently selected allergen token and label in localStorage.
- *
- * @param {string} tokenValue - Selected allergen token.
- * @param {string} [labelValue] - Human-readable allergen label.
- */
-export function persistSelectedAllergen(tokenValue, labelValue) {
-    try {
-        if (!tokenValue) return;
-        window.localStorage.setItem(StorageKey.SELECTED_ALLERGEN_TOKEN, tokenValue);
-        window.localStorage.setItem(StorageKey.SELECTED_ALLERGEN_LABEL, labelValue || "");
-    } catch {}
-}
-
-/**
- * Restores a previously persisted allergen selection from localStorage.
- *
- * @returns {{ token: string, label: string } | null} Restored selection or null when unavailable.
- */
-export function restorePersistedAllergen() {
-    try {
-        const token = window.localStorage.getItem(StorageKey.SELECTED_ALLERGEN_TOKEN);
-        const label = window.localStorage.getItem(StorageKey.SELECTED_ALLERGEN_LABEL);
-        if (token) return { token, label: label || token };
-    } catch {}
-    return null;
 }
 
 /* rng utilities */

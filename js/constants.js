@@ -6,14 +6,60 @@ export const StoreText = Object.freeze({ PRIVACY: 'Mobile privacy and support', 
 export const RuntimeSurface = Object.freeze({ WEB: 'web', MOBILE: 'mobile' });
 export const LifecycleEvent = 'allergy-wheel:lifecycle';
 export const LifecycleState = Object.freeze({ ACTIVE: 'active', BACKGROUND: 'background', INACTIVE: 'inactive' });
+export const BrowserAnalytics = Object.freeze({
+    MEASUREMENT_ID: 'G-5CDP19RY2Z',
+    SCRIPT_URL: 'https://www.googletagmanager.com/gtag/js?id=G-5CDP19RY2Z',
+    DEFAULT_CONSENT: Object.freeze({ analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' }),
+    CONFIG: Object.freeze({ allow_google_signals: false, allow_ad_personalization_signals: false })
+});
+
+export const PrivacyContract = Object.freeze({
+    audience: Object.freeze({ minimumAge: 6, countries: 'all-available', price: 'free', advertisements: false, purchases: false, accountRequired: false }),
+    native: Object.freeze({
+        googleAnalytics: false,
+        counts: Object.freeze({ storedFields: Object.freeze(['siteId', 'utcDate', 'requestCount']), retentionDays: 90, requestBody: '{}', cookies: false, referrer: false, identifiers: false, deletion: 'site-deletion', transport: 'IP address processed to deliver the request' }),
+        fonts: Object.freeze({ automatic: true, hosts: Object.freeze(['fonts.googleapis.com', 'fonts.gstatic.com']), data: Object.freeze(['IP address', 'browser request headers']), retention: 'provider-managed; no fixed period verified' }),
+        feedback: Object.freeze({ adultAgreementRequired: true, data: Object.freeze(['adult contact details', 'message', 'sentiment', 'site ID', 'source URL']), retention: 'while the operator account is active', deletionDays: 30, deletionEvidence: 'provider policy; live deletion not executed' }),
+        preferences: Object.freeze({ data: Object.freeze(['selected allergen token', 'selected allergen label']), persistentStorage: false, retention: 'current game session only', deletion: 'restart or reload the game; clear legacy app or website storage through system settings' })
+    }),
+    browser: Object.freeze({ googleAnalytics: true, analyticsStorage: 'denied', advertisementStorage: 'denied', googleSignals: false, advertisementPersonalization: false, feedbackLoadsAutomatically: true }),
+    support: Object.freeze({ contact: 'support@mprlab.com', data: Object.freeze(['contact details', 'message']), purpose: 'answer support and deletion requests', retention: 'operator-managed; no fixed period verified', deletion: 'request through support@mprlab.com' }),
+    storeCertification: 'not-certified',
+    storeReview: Object.freeze({
+        status: 'operator-review-required',
+        sources: Object.freeze({ apple: 'https://developer.apple.com/app-store/app-privacy-details/', google: 'https://support.google.com/googleplay/android-developer/answer/10787469' }),
+        candidateMappings: Object.freeze([
+            Object.freeze({ surface: 'native counts', apple: 'Product Interaction or Other Usage Data', google: 'App activity: App interactions or Other actions', review: 'Aggregate startup totals remain off-device usage data; verify retention and exact console category.' }),
+            Object.freeze({ surface: 'adult feedback contact', apple: 'Email Address or Other User Contact Info', google: 'Personal info: Email address or other contact type', review: 'Use the actual contact fields. The optional-disclosure exception requires all provider and store conditions.' }),
+            Object.freeze({ surface: 'adult feedback content', apple: 'Customer Support or Other User Content', google: 'App activity: Other user-generated content', review: 'Review message and sentiment fields. Do not request child health details.' }),
+            Object.freeze({ surface: 'transport IP and headers', apple: 'Review real-time-only collection exclusion', google: 'Review current ephemeral processing guidance and actual IP use', review: 'Verify provider and proxy retention. Do not infer location collection from transport IP alone.' }),
+            Object.freeze({ surface: 'site ID and source URL', apple: 'Review actual association and URL use', google: 'Review actual association and URL use', review: 'A site ID identifies this app configuration. Do not classify it as a user identifier without evidence.' }),
+            Object.freeze({ surface: 'support email', apple: 'Customer Support if collected through the app', google: 'Review data sent by the app versus an external email client', review: 'Public policy covers operator correspondence. Do not automatically classify all external email as app collection.' })
+        ]),
+        unresolved: Object.freeze(['provider processing roles and sharing classification', 'data linkage and tracking answers', 'ephemeral processing and font data use', 'optional versus required collection', 'retention and deletion execution', 'child audience and country declarations'])
+    }),
+    qualification: Object.freeze(['deployed proxy logs', 'deployed retention execution', 'feedback deletion execution', 'support retention and deletion', 'native WebView requests and storage', 'store declarations and child-audience acceptance']),
+    sections: Object.freeze([
+        'Allergy Wheel is for ages six and older in available countries. The complete game is free, with no ads, purchases, or account requirement. This game does not determine whether food is safe to eat.',
+        'Game rounds and the selected allergen stay in memory on your device during the current session. The game does not save these choices in local storage. Restart or reload the game to remove the selection. You can clear any older app or website storage through operating system or browser settings.',
+        'The native app sends one automatic startup count to LoopAware with an empty JSON object and no cookies or referrer. It sends no allergen selection, game results, or visitor identifier. LoopAware stores daily totals without visitor or device records. Its policy retains daily counts for up to 90 UTC calendar days. The site operator can delete the site to remove its counts. Network transport processes an IP address to deliver each request.',
+        'The native app does not use Google Analytics. Google Fonts loads automatically when online. Google receives your IP address and browser request headers for its stylesheet and font files. Google controls its retention. The game remains playable offline with a system font.',
+        'Feedback is optional and intended for adults. An adult must pass the parent gate and agree to feedback data processing before the LoopAware form loads. Do not include a child\'s personal information. A submission contains adult contact details, a message or sentiment, the site ID, and the parent page URL. The parent gate and agreement do not establish legal parental consent for children.',
+        'LoopAware\'s policy retains feedback while the operator account is active. It states that account and associated data deletion requests are completed within 30 days. Closing the feedback area ends the local session. Contact support@mprlab.com for a feedback deletion request.',
+        'Support correspondence can contain contact details and message text. We use it to answer support and deletion requests. Support retention is managed by the operator, and no fixed period is verified in this app. Contact support@mprlab.com to request deletion.',
+        'The browser website separately loads Google Analytics and the LoopAware feedback widget automatically. Google Analytics starts with analytics and advertisement storage denied, Google signals disabled, and advertisement personalization disabled. Denied storage does not prevent all measurement requests. The native app contract does not describe website analytics.'
+    ])
+});
+
 export const ParentText = Object.freeze({
     TITLE: 'For parents', ANSWER: 'Answer', CONTINUE: 'Continue', QUESTION: 'To continue, multiply',
     INCORRECT: 'Please ask an adult to answer the question.',
     FEEDBACK: 'Open feedback', PRIVACY_TITLE: 'Privacy and support',
     INTRODUCTION: 'Have a question or an idea? Ask an adult to open feedback.',
     LOADING: 'The online service is starting.', READY: 'The online service is ready.', UNAVAILABLE: 'Internet is unavailable or the service could not load. The game still works offline.',
-    PRIVACY: 'Allergy Wheel is free, with no ads, purchases, or account requirement. Game rounds and the selected allergen stay on your device. The app sends one automatic startup count to LoopAware. The request contains no allergen selection or game results. LoopAware stores daily totals without visitor or device records. The network connection supplies an IP address during transport. The native app does not use Google Analytics. Google Fonts loads automatically when a connection is available. The game remains playable offline. Feedback requires an adult to pass the parent gate. LoopAware receives the contact details, message, and sentiment that the adult submits. Closing feedback ends that feedback session. For support or a data deletion request, contact support@mprlab.com. This game does not determine whether food is safe to eat.',
-    CONSENT: 'Feedback is for adults. Share a question or suggestion with our team.'
+    PRIVACY: PrivacyContract.sections.join('\n\n'),
+    CONSENT: 'Feedback is for adults. Share a question or suggestion with our team.',
+    AGREEMENT: 'I am an adult and agree to LoopAware processing my contact details, message, and sentiment for feedback. I will not include a child\'s personal information.'
 });
 export const FeedbackConfiguration = Object.freeze({
     BUBBLE_ID: 'mp-feedback-bubble', PANEL_ID: 'mp-feedback-panel', CONTACT_ID: 'mp-feedback-contact',
@@ -438,11 +484,6 @@ export const AudioErrorMessage = Object.freeze({
 export const WheelErrorMessage = Object.freeze({
     MISSING_CANVAS: "Wheel requires a canvas element with a 2d context",
     MISSING_CONTEXT: "Wheel could not acquire a 2d drawing context"
-});
-
-export const StorageKey = Object.freeze({
-    SELECTED_ALLERGEN_TOKEN: "allergyWheel.selectedAllergenToken",
-    SELECTED_ALLERGEN_LABEL: "allergyWheel.selectedAllergenLabel"
 });
 
 export const MenuMessage = Object.freeze({

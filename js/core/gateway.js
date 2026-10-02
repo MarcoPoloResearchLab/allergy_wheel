@@ -1,5 +1,18 @@
 // @ts-check
-import { ExternalService } from '../constants.js';
+import { ExternalService, BrowserAnalytics } from '../constants.js';
+
+/** Configure denied browser storage before the external analytics script starts. */
+export function createBrowserAnalyticsGateway({ enqueueCommand, loadAnalytics }) {
+    return Object.freeze({
+        async enableAnalytics() {
+            enqueueCommand('consent', 'default', BrowserAnalytics.DEFAULT_CONSENT);
+            enqueueCommand('set', 'ads_data_redaction', true);
+            enqueueCommand('js', new Date());
+            enqueueCommand('config', BrowserAnalytics.MEASUREMENT_ID, BrowserAnalytics.CONFIG);
+            await loadAnalytics(BrowserAnalytics.SCRIPT_URL);
+        }
+    });
+}
 
 /** Send one startup count through the restricted LoopAware collector. */
 export function createAnalyticsGateway({ sendRequest = globalThis.fetch.bind(globalThis) } = {}) {
