@@ -13,7 +13,7 @@
     }
   },
   "scripts": {
-    "prepare:native": "expo prebuild --no-install --platform all",
+    "prepare:native": "expo prebuild --no-install --platform all && node scripts/prepare-android-build-policy.mjs",
     "check:expo": "expo install --check",
     "export": "expo export --platform all"
   },

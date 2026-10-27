@@ -1,7 +1,7 @@
 // @ts-check
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { mkdtemp, cp, readFile, rm, mkdir, writeFile, symlink } from 'node:fs/promises';
+import { mkdtemp, cp, readFile, rm, mkdir, writeFile, symlink, copyFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -10,7 +10,7 @@ const prepared = await mkdtemp(join(tmpdir(), 'allergy-native-'));
 try {
     const autolinking = JSON.parse(execFileSync(process.execPath, [resolve('mobile/node_modules/expo-modules-autolinking/bin/expo-modules-autolinking'), 'resolve', '--json', '--platform', 'ios', '--project-root', resolve('mobile')], { encoding: 'utf8' }));
     assert.deepEqual(autolinking.configuration?.buildFromSource, ['expo-modules-core'], 'ExpoModulesCore must use source so its podspec checksum does not depend on the checkout path.');
-    for (const name of ['app.json', 'package.json', 'package-lock.json', 'plugins', 'assets']) {
+    for (const name of ['app.json', 'package.json', 'package-lock.json', 'plugins', 'assets', 'scripts']) {
         await cp(resolve('mobile', name), join(prepared, name), { recursive: true });
     }
     const configPath = join(prepared, 'app.json');
@@ -19,8 +19,8 @@ try {
     config.expo.version = sourceVersion;
     await writeFile(configPath, JSON.stringify(config));
     // Use the real Expo generator and application plugins with installed container dependencies.
-    execFileSync(process.execPath, [resolve('mobile/node_modules/expo/bin/cli'), 'prebuild', '--no-install', '--platform', 'all'], {
-        cwd: prepared, env: { ...process.env, NODE_PATH: resolve('mobile/node_modules'), CI: '1' }, stdio: 'inherit'
+    execFileSync('npm', ['run', 'prepare:native'], {
+        cwd: prepared, env: { ...process.env, PATH: resolve('mobile/node_modules/.bin') + ':' + process.env.PATH, NODE_PATH: resolve('mobile/node_modules'), CI: '1' }, stdio: 'inherit'
     });
     const gradle = await readFile(join(prepared, 'android/app/build.gradle'), 'utf8');
     const plist = await readFile(join(prepared, 'ios/AllergyWheel/Info.plist'), 'utf8');
@@ -33,6 +33,33 @@ try {
     const properties = JSON.parse(await readFile(join(prepared, 'ios/Podfile.properties.json'), 'utf8'));
     assert.equal(properties['ios.buildReactNativeFromSource'], 'true');
     assert.equal(properties.EXPO_USE_PRECOMPILED_MODULES, 'false');
+    const tools = join(prepared, 'controlled-java');
+    await mkdir(tools);
+    const java = join(tools, 'java'), javaLog = join(prepared, 'java-arguments.json');
+    await copyFile(process.execPath, java);
+    await writeFile(java, `#!${process.execPath}
+require('node:fs').writeFileSync(${JSON.stringify(javaLog)}, JSON.stringify(process.argv.slice(2)));
+`);
+    const callerArguments = ['--no-daemon', ':app:bundleRelease', '--max-workers=2', '--parallel', '-PreactNativeArchitectures=arm64-v8a', '-Dorg.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=1g'];
+    for (const pass of [1, 2]) {
+        if (pass === 2) {
+            const policyProperties = join(prepared, 'android/gradle.properties');
+            let seeded = await readFile(policyProperties, 'utf8');
+            seeded = seeded.replace(/^org\.gradle\.jvmargs=.*$/m, 'org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m');
+            seeded += '\norg.gradle.workers.max=7\n';
+            await writeFile(policyProperties, seeded);
+            execFileSync(process.execPath, [join(prepared, 'scripts/prepare-android-build-policy.mjs')], { cwd: prepared });
+            assert.match(await readFile(policyProperties, 'utf8'), /^org\.gradle\.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=1g$/m);
+            assert.match(await readFile(policyProperties, 'utf8'), /^org\.gradle\.workers\.max=7$/m);
+        }
+        execFileSync('/bin/sh', [join(prepared, 'android/gradlew'), ...callerArguments], {
+            cwd: join(prepared, 'android'), env: { PATH: tools + ':/usr/bin:/bin', JAVA_HOME: '' },
+        });
+        const javaArguments = JSON.parse(await readFile(javaLog, 'utf8'));
+        assert.deepEqual(javaArguments.slice(javaArguments.indexOf('-jar') + 2), ['-Pkotlin.compiler.execution.strategy=in-process', ...callerArguments], 'Generated launcher must supply one compiler strategy and preserve caller arguments.');
+        assert.match(await readFile(join(prepared, 'android/gradle.properties'), 'utf8'), /-XX:MaxMetaspaceSize=1g/);
+    }
+
 
     const require = createRequire(resolve('mobile/package.json'));
     const project = require('xcode').project(join(prepared, 'ios/AllergyWheel.xcodeproj/project.pbxproj'));
