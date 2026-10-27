@@ -4,13 +4,12 @@ import { mkdtemp, mkdir, writeFile, readFile, rm, copyFile } from 'node:fs/promi
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
-import { parse } from 'yaml';
 
-const manifest = parse(await readFile('.mprlab/deploy/resources.yml', 'utf8'));
-assert.equal(manifest.mprlab_resources.resources.mobile.build.ios, 'scripts/build-store-artifact.mjs');
+// The current delivery selects the website. Native request coverage uses this public adapter fixture.
+const nativeBuildFixture = Object.freeze({ android: 'scripts/build-store-artifact.mjs', ios: 'scripts/build-store-artifact.mjs' });
 const exportDirectory = process.env.ALLERGY_TEST_GATEWAY_FIXTURE;
 const directory = await mkdtemp(join(exportDirectory ?? tmpdir(), 'allergy-release-'));
-const adapter = join(directory, 'scripts/build-store-artifact.mjs');
+const adapter = join(directory, nativeBuildFixture.ios);
 try {
     await mkdir(join(directory, 'scripts'));
     for (const file of ['build-store-artifact.mjs', 'repository-signing-file.mjs', 'native-build-process.mjs']) {

@@ -65,11 +65,27 @@ cat > "$install/manifest.yml" <<'PLAYBOOK'
   vars_files:
     - "{{ lookup('env', 'ALLERGY_GATEWAY_RUNTIME') }}/deploy/ansible/playbooks/vars/app-lifecycle-contract.yml"
   vars:
-    mprlab_resource: "{{ (lookup('file', '/workspace/.mprlab/deploy/resources.yml') | from_yaml).mprlab_resources.resources.mobile | combine({'id': 'mobile'}) }}"
+    mprlab_resource:
+      id: mobile
+      kind: mobile_application
+      source: mobile
+      build_system: local
+      build:
+        android: scripts/build-store-artifact.mjs
+        ios: scripts/build-store-artifact.mjs
+      android:
+        package_name: com.mprlab.allergywheel
+        destination: google_play
+        track: production
+      ios:
+        bundle_identifier: com.mprlab.allergywheel
+        app_store_id: '6809568034'
+        destination: app_store
+        track: production
   tasks:
     - ansible.builtin.include_tasks: "{{ lookup('env', 'ALLERGY_GATEWAY_RUNTIME') }}/deploy/ansible/playbooks/tasks/validate-selected-app-resource.yml"
 PLAYBOOK
 "$MPRLAB_GATEWAY_EXECUTABLE" bootstrap-run --repo-root "$install/application" --operation app-release -- \
     "$(dirname "$runtime")/toolchain/bin/ansible-playbook" --inventory localhost, --connection local --extra-vars "@$install/schema.json" "$install/manifest.yml"
-printf '%s\n' 'Installed Gateway accepted the current selected mobile declaration and both native request schemas.'
+printf '%s\n' 'Installed Gateway accepted the public mobile fixture and both native request schemas.'
 CONTAINER

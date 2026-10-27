@@ -99,7 +99,7 @@ Its incognito WebView cannot read game-origin storage. Analytics failure does no
 | LoopAware analytics | The collector stores only site ID, UTC date, and request count. Transport processes network information transiently. Proxy logging requires separate verification before production activation. |
 | LoopAware feedback | A separate parent action loads `widget.js`. Submission contains contact details, a message or sentiment, site ID, and source URL. |
 | External fonts | The game loads Google Fonts automatically when online. The game uses the system sans-serif font offline. |
-| Support | User correspondence to `support@mprlab.com` can contain contact details and message text. |
+| Support | The address is informational. The game does not send email or collect support correspondence. |
 | Website | The existing Google Analytics, LoopAware widget, and external fonts remain on the browser game. The mobile privacy page starts no external service. |
 
 The native analytics client uses no visitor identifier, device record, or persistent storage.
@@ -122,7 +122,7 @@ The browser initializes denied storage before its Google Analytics measurement c
 `make test-privacy` checks both browser engines, complete font requests, actual selection, isolated counts, feedback entry, and session reset.
 `make verify-privacy` records live provider requests without feedback submission.
 `make privacy-disclosures` prepares the shared policy and source contract for store review.
-F003 retains production retention, removal, support, native runtime, and store declaration checks.
+F003 retains production retention, removal, native runtime, and store declaration checks.
 
 ## Official Policy Review
 

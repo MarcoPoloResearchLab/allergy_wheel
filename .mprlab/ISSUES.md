@@ -280,7 +280,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Run final `make ci` and the document checks.
 
   Production Qualification:
-  F003 keeps deployed proxy logs, retention execution, feedback and support deletion, native runtime captures, and store declarations.
+  F003 keeps deployed proxy logs, retention execution, feedback deletion, native runtime captures, and store declarations.
   Its procedure must preserve these exact remaining checks from P002.
   Publication and global legal certification are outside this implementation issue.
 
@@ -458,7 +458,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Goal:
   End users can install the approved Allergy Wheel release from both public stores.
 
-  Blocked: F001 and F004 acceptance and remaining store declarations are incomplete.
+  Blocked: F001 software acceptance, production privacy qualification, and store declarations remain incomplete.
   B046 corrected source metadata. Store console updates remain an operation. B047 and B005 passed focused verification.
 
   Evidence:
@@ -471,13 +471,13 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
   Production Privacy Procedure:
   `PRIVACY-QUALIFICATION.md` preserves the remaining P002 production checks.
-  Verify deployed proxy logs, retention execution, feedback deletion, support procedures, native captures, and store declarations.
+  Verify deployed proxy logs, retention execution, feedback deletion, native captures, and store declarations.
   Verify browser Google property settings and the public policy against the selected candidate.
   Use synthetic adult data for removal checks. Keep the store certification incomplete until the required evidence passes.
 
   Requirements:
   - Complete the F001 artifact and software acceptance prerequisites before store submission.
-  - Complete F004 provider, privacy, and audience verification before store submission.
+  - Complete production provider, privacy, and audience verification before store submission.
   - Inspect the current shared MPR mobile lifecycle before changes to application release or publication adapters.
   - Add the mobile resource declarations and store adapters required by that lifecycle.
   - Keep application identifiers, native configuration, store records, and publisher inputs in agreement.
