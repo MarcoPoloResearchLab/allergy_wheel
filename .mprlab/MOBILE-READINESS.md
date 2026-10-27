@@ -281,3 +281,13 @@ Native preparation tests valid, missing, and malformed properties, plus an unava
 After a native or game source change, run `make mobile-prepare-store` before release.
 Use simulators, emulators, and automated browsers for device validation.
 Signed artifact, store submission, review, and public availability require separate evidence.
+
+## iOS Scene Lifecycle
+
+B050 selects the Expo scene lifecycle for Xcode 27 and iOS 27.
+The source plugin sets `ios.enableSceneSupport` to `true`.
+It keeps `ios.buildReactNativeFromSource` at `true` and `usePrecompiledModules` at `false`.
+Run `make mobile-prepare-store` after a native config or dependency change.
+The real Expo generator test verifies `EXExpoAppSceneDelegate` and `ExpoReactNativeFactoryProvider`.
+Simulator startup evidence remains separate from signed store artifacts.
+The unsigned version 1.0.1 simulator build displayed the game on iOS 27.0 with the iOS 27.1 SDK.

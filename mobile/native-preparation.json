@@ -37,6 +37,10 @@
       "node-forge": {
         "declared": "file:vendor/node-forge",
         "resolved": "1.4.0"
+      },
+      "expo-build-properties": {
+        "declared": "~57.0.22",
+        "resolved": "57.0.22"
       }
     },
     "devDependencies": {
