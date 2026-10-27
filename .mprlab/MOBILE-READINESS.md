@@ -29,7 +29,7 @@ P001 and F004 retain the owner decisions. P002 preserves the earlier decision hi
 
 The source review inspected Hecate and LoopAware `mobile/package.json` and StillPuzzle `package.json`.
 Each project uses Expo SDK 57 and React Native 0.86.
-The selected dependency lock uses Expo 57.0.26 and React Native 0.86.3.
+The selected dependency lock uses Expo 57.0.31 and React Native 0.86.3.
 The selected adapter uses React Native WebView 13.16.1.
 PWA installation and website APK downloads are outside the selected delivery path.
 
@@ -57,7 +57,8 @@ The browser uses the existing JavaScript ES modules and CDN dependencies.
 The mobile build uses esbuild to create a separate JavaScript bundle.
 It embeds catalogs, images, styles, and audio in the generated HTML.
 It does not change browser resource paths.
-The resource record contains SHA-256 values for the game document and packaged files.
+The resource record lists the packaged resource paths.
+Each native build packages the current captured game source.
 
 The game WebView loads the packaged document without a development server.
 The native shell handles safe areas and device orientation.
@@ -114,7 +115,7 @@ F004 supplies the privacy contract and client evidence. F003 retains production 
 
 ## Privacy Implementation On October 1, 2026
 
-F004 implements the current contract from P002. B048 blocks final CI through the existing Expo dependency audit. `PRIVACY-QUALIFICATION.md` supplies the data inventory and remaining production procedure.
+F004 implements the current contract from P002. B048 is resolved. Final CI passed on October 26, 2026. `PRIVACY-QUALIFICATION.md` supplies the data inventory and remaining production procedure.
 The game retains selection and results only in session memory. The earlier persistent-storage claim was incorrect.
 The parent feedback action now requires explicit adult agreement after the arithmetic gate.
 The browser initializes denied storage before its Google Analytics measurement commands.

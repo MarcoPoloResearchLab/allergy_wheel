@@ -5,131 +5,134 @@ import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 
-const signingNames = [
-    'ALLERGY_WHEEL_ANDROID_KEYSTORE',
-    'ALLERGY_WHEEL_ANDROID_STORE_PASSWORD',
-    'ALLERGY_WHEEL_ANDROID_KEY_ALIAS',
-    'ALLERGY_WHEEL_ANDROID_KEY_PASSWORD',
-    'ALLERGY_WHEEL_APPLE_TEAM',
-    'ALLERGY_WHEEL_APPLE_PROFILE',
-    'ALLERGY_WHEEL_APPLE_IDENTITY',
-    'ALLERGY_WHEEL_APPLE_CERTIFICATE',
-    'ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD',
-    'APP_STORE_CONNECT_API_KEY_ID',
-    'APP_STORE_CONNECT_API_ISSUER_ID',
-    'APP_STORE_CONNECT_API_KEY_PATH',
-    'GH_TOKEN'
-];
+if (process.argv[2] === '--captured-adapter') {
+    for (const platform of ['android', 'ios']) await testCapturedAdapter(platform);
+}
+else await testMakeEntrypoints();
+
+async function testMakeEntrypoints() {
 const fixtureRoot = await mkdtemp(join(tmpdir(), 'allergy-release-entrypoint-'));
 try {
     const applicationRoot = join(fixtureRoot, 'application with spaces');
-    const gatewayRoot = join(fixtureRoot, 'mprlab-gateway');
     const receiptPath = join(fixtureRoot, 'gateway.json');
-    const inputPath = join(applicationRoot, 'configs/.env.allergy-wheel');
     await mkdir(join(applicationRoot, 'configs'), { recursive: true });
-    await mkdir(gatewayRoot);
     await copyFile(resolve('Makefile'), join(applicationRoot, 'Makefile'));
     const initialized = spawnSync('git', ['init', '--quiet', applicationRoot], { encoding: 'utf8' });
     assert.equal(initialized.status, 0, initialized.stderr);
-
-    // Capture the subprocess boundary; the application Make entry point stays real.
-    await writeFile(join(gatewayRoot, 'Makefile'), [
-        '.PHONY: app-release app-publish app-deploy',
-        'app-release app-publish app-deploy:',
-        '\t@node capture.mjs "$@" "$(MPRLAB_APP_ROOT)"',
-        ''
-    ].join('\n'));
-    await writeFile(join(gatewayRoot, 'capture.mjs'), `
-import { writeFileSync } from 'node:fs';
-const names = ${JSON.stringify(signingNames)};
-writeFileSync(process.env.TEST_GATEWAY_RECEIPT, JSON.stringify({
-    target: process.argv[2],
-    applicationRoot: process.argv[3],
-    signing: Object.fromEntries(names.map(name => [name, process.env[name] ?? null])),
+    // This file must never execute. The selected manifest owns private inputs.
+    await writeFile(join(applicationRoot, 'configs/.env.allergy-wheel'), 'exit 79\n');
+    for (const target of ['release', 'publish', 'deploy']) {
+        await writeFile(join(applicationRoot, `app-${target}`), `
+const fs = require('node:fs');
+fs.writeFileSync(process.env.TEST_GATEWAY_RECEIPT, JSON.stringify({
+    args: process.argv.slice(1), ci: process.env.CI,
+    signing: process.env.ALLERGY_WHEEL_ANDROID_KEYSTORE,
     git: Object.fromEntries(Object.entries(process.env).filter(([name]) => name.startsWith('GIT_CONFIG_'))),
-    githubFallback: process.env.GITHUB_TOKEN ?? null
+    stdin: fs.readFileSync(0, 'utf8')
 }));
-process.exit(Number(process.env.TEST_GATEWAY_EXIT ?? 0));
+process.exit(Number(process.env.TEST_GATEWAY_EXIT || 0));
 `);
-    const inheritedValues = Object.fromEntries(signingNames.map(name => [name, 'inherited-stale-value']));
-    const environment = { ...process.env, ...inheritedValues, GITHUB_TOKEN: 'stale alternate token', TEST_GATEWAY_RECEIPT: receiptPath };
-    const signingValues = Object.fromEntries(signingNames.map(name => [name, `fixture ${name} $literal; "quoted"`]));
-    const inputContents = signingNames.map(name => `${name}='${signingValues[name]}'`).join('\n') + '\n';
-    await writeFile(inputPath, inputContents);
-
-    /** Run the real application command against the local gateway boundary. */
-    function runLifecycle(target, overrides = {}) {
         const result = spawnSync('make', ['--no-print-directory', target], {
-            cwd: applicationRoot, env: { ...environment, ...overrides }, encoding: 'utf8'
+            cwd: applicationRoot, input: 'operator input must not reach Gateway', encoding: 'utf8',
+            env: { ...process.env, MPRLAB_GATEWAY_EXECUTABLE: process.execPath,
+                TEST_GATEWAY_RECEIPT: receiptPath, ALLERGY_WHEEL_ANDROID_KEYSTORE: 'ambient input',
+                GIT_CONFIG_COUNT: '1', GIT_CONFIG_KEY_0: 'fixture.key', GIT_CONFIG_VALUE_0: 'operator value' }
         });
-        if (result.error) throw result.error;
-        return result;
+        assert.equal(result.status, 0, result.stderr);
+        const receipt = JSON.parse(await readFile(receiptPath, 'utf8'));
+        assert.deepEqual(receipt.args, [join(applicationRoot, `app-${target}`), '--app-root', applicationRoot]);
+        assert.equal(receipt.ci, '1');
+        assert.equal(receipt.stdin, '');
+        assert.equal(receipt.signing, 'ambient input');
+        assert.deepEqual(receipt.git, { GIT_CONFIG_COUNT: '1', GIT_CONFIG_KEY_0: 'fixture.key', GIT_CONFIG_VALUE_0: 'operator value' });
+        const failed = spawnSync('make', ['--no-print-directory', target], {
+            cwd: applicationRoot, encoding: 'utf8',
+            env: { ...process.env, MPRLAB_GATEWAY_EXECUTABLE: process.execPath,
+                TEST_GATEWAY_RECEIPT: receiptPath, TEST_GATEWAY_EXIT: '47' }
+        });
+        assert.notEqual(failed.status, 0);
+        assert.match(failed.stderr, /Error 47/);
     }
-
-    const released = runLifecycle('release');
-    assert.equal(released.status, 0, released.stderr);
-    const receipt = JSON.parse(await readFile(receiptPath, 'utf8'));
-    assert.equal(receipt.target, 'app-release');
-    assert.equal(receipt.applicationRoot, applicationRoot);
-    assert.equal(receipt.git.GIT_CONFIG_KEY_0, 'url.https://github.com/.insteadOf');
-    assert.equal(receipt.git.GIT_CONFIG_VALUE_0, 'git@github.com:');
-    assert.equal(receipt.git.GIT_CONFIG_VALUE_2, '');
-    assert.equal(receipt.git.GIT_CONFIG_VALUE_3, '!gh auth git-credential');
-    assert.equal(receipt.githubFallback, null);
-    for (const address of ['git@github.com:example/fixture.git', 'ssh://git@github.com/example/fixture.git']) {
-        const configured = spawnSync('git', ['remote', 'add', 'portable-test', address], { cwd: applicationRoot, encoding: 'utf8' });
-        assert.equal(configured.status, 0, configured.stderr);
-        const remote = spawnSync('git', ['remote', 'get-url', 'portable-test'], { cwd: applicationRoot, env: { ...process.env, ...receipt.git }, encoding: 'utf8' });
-        assert.equal(remote.status, 0, remote.stderr);
-        assert.equal(remote.stdout.trim(), 'https://github.com/example/fixture.git');
-        assert.equal(spawnSync('git', ['remote', 'remove', 'portable-test'], { cwd: applicationRoot }).status, 0);
-    }
-    assert.deepEqual(receipt.signing, signingValues, 'Release must export signing inputs from the repository private file.');
-    for (const value of Object.values(signingValues)) {
-        assert.ok(!(released.stdout + released.stderr).includes(value), 'Signing values must stay out of command output.');
-    }
-
-    for (const omittedName of signingNames) {
-        await writeFile(inputPath, inputContents.split('\n').filter(line => !line.startsWith(`${omittedName}=`)).join('\n'));
-        const incomplete = runLifecycle('release');
-        if (omittedName === 'GH_TOKEN') {
-            assert.notEqual(incomplete.status, 0, 'Missing repository GitHub input must stop before saved-login lookup');
-            continue;
-        }
-        assert.equal(incomplete.status, 0, incomplete.stderr);
-        const incompleteReceipt = JSON.parse(await readFile(receiptPath, 'utf8'));
-        assert.equal(incompleteReceipt.signing[omittedName], null, `${omittedName} must not retain an inherited value.`);
-    }
-
-    await writeFile(inputPath, 'false\n');
-    await rm(receiptPath);
-    const invalid = runLifecycle('release');
-    assert.notEqual(invalid.status, 0, 'A failed private input command must stop release.');
-    await assert.rejects(readFile(receiptPath), { code: 'ENOENT' });
-
-    await rm(inputPath);
-    const missing = runLifecycle('release');
-    assert.notEqual(missing.status, 0, 'A missing private input must stop release before gateway delegation.');
-    await assert.rejects(readFile(receiptPath), { code: 'ENOENT' });
-    for (const target of ['publish', 'deploy']) {
-        const delegated = runLifecycle(target);
-        assert.notEqual(delegated.status, 0, 'Each lifecycle phase requires the repository environment file');
-        await assert.rejects(readFile(receiptPath), { code: 'ENOENT' });
-        await writeFile(inputPath, inputContents);
-        const loaded = runLifecycle(target);
-        assert.equal(loaded.status, 0, loaded.stderr);
-        const delegatedReceipt = JSON.parse(await readFile(receiptPath, 'utf8'));
-        assert.equal(delegatedReceipt.target, `app-${target}`);
-        assert.deepEqual(delegatedReceipt.signing, signingValues);
-        await rm(inputPath);
-        await rm(receiptPath);
-    }
-
-    await writeFile(inputPath, inputContents);
-    const failure = runLifecycle('release', { TEST_GATEWAY_EXIT: '47' });
-    assert.notEqual(failure.status, 0, 'A gateway failure must fail the application command.');
-    assert.match(failure.stderr, /Error 47/);
-    console.info('Lifecycle commands load repository credentials and use temporary HTTPS Git authentication settings.');
+    console.info('Lifecycle Make commands use the installed Gateway and preserve its input authority.');
 } finally {
     await rm(fixtureRoot, { recursive: true, force: true });
+}
+
+}
+
+/** Qualify the actual adapter with the installed runtime and a real input capture. */
+async function testCapturedAdapter(platform) {
+    const root = await mkdtemp(join(tmpdir(), 'allergy-captured-adapter-'));
+    try {
+        const gateway = process.env.MPRLAB_GATEWAY_EXECUTABLE;
+        assert.ok(gateway, 'Select the physical installed Gateway executable.');
+        await mkdir(join(root, '.mprlab/deploy'), { recursive: true });
+        await mkdir(join(root, 'configs/signing'), { recursive: true });
+        await mkdir(join(root, 'scripts'));
+        for (const name of ['build-store-artifact.mjs', 'repository-signing-file.mjs', 'native-build-process.mjs']) {
+            await copyFile(resolve('scripts', name), join(root, 'scripts', name));
+        }
+        await mkdir(join(root, 'mobile'));
+        await copyFile(resolve('mobile/app.json'), join(root, 'mobile/app.json'));
+        for (const name of ['package.json', 'package-lock.json', 'scripts/verify-native-release.mjs', 'android/gradlew', 'android/app/build.gradle',
+            'ios/Podfile', 'ios/Podfile.lock', 'index.js', 'ios/AllergyWheel.xcworkspace/contents.xcworkspacedata']) {
+            const path = join(root, 'mobile', name);
+            await mkdir(resolve(path, '..'), { recursive: true });
+            await writeFile(path, name.endsWith('.json') ? '{"type":"module"}\n' : 'native request decoder fixture');
+        }
+        const selected = join(root, '.mprlab/deploy/.env');
+        const signing = join(root, 'configs/signing/selected.keystore');
+        await writeFile(signing, 'synthetic signing boundary');
+        const names = ['ALLERGY_WHEEL_ANDROID_KEYSTORE', 'ALLERGY_WHEEL_ANDROID_KEY_ALIAS',
+            'ALLERGY_WHEEL_ANDROID_KEY_PASSWORD', 'ALLERGY_WHEEL_ANDROID_STORE_PASSWORD',
+            'ALLERGY_WHEEL_APPLE_TEAM', 'ALLERGY_WHEEL_APPLE_PROFILE', 'ALLERGY_WHEEL_APPLE_IDENTITY',
+            'ALLERGY_WHEEL_APPLE_CERTIFICATE', 'ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD',
+            'APP_STORE_CONNECT_API_KEY_ID', 'APP_STORE_CONNECT_API_ISSUER_ID', 'APP_STORE_CONNECT_API_KEY_PATH'];
+        await writeFile(selected, names.map(name => `${name}=${name === 'ALLERGY_WHEEL_ANDROID_KEYSTORE' ? signing : 'synthetic-input'}\n`).join(''));
+        await writeFile(join(root, '.mprlab/deploy/resources.yml'), `mprlab_resources:
+  owner: allergy-capture-fixture
+  environment_file: .mprlab/deploy/.env
+  inputs:
+${names.map(name => `    ${name}: ${'${'}${name}}\n`).join('')}  ci:
+    enabled: false
+  release:
+    scheme: semver
+  defaults:
+    timeouts:
+      startup: 30s
+      completion: 1m
+      readiness: 30s
+      request: 30s
+      shutdown: 30s
+  resources:
+    private:
+      kind: private_values
+      bindings:
+        signing: ALLERGY_WHEEL_ANDROID_KEYSTORE
+`);
+        const runner = join(root, 'run.mjs');
+        await writeFile(runner, `
+import { writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+writeFileSync(${JSON.stringify(selected)}, 'ALLERGY_WHEEL_ANDROID_KEYSTORE=changed-file-value\\n');
+const result = spawnSync(process.execPath, [${JSON.stringify(join(root, 'scripts/build-store-artifact.mjs'))},
+    '--mobile-dir', ${JSON.stringify(join(root, 'mobile'))}, '--output', ${JSON.stringify(join(root, platform === 'android' ? 'android.aab' : 'ios.ipa'))},
+    '--release-timestamp', '2026-09-07T20:00:00Z'], {
+    env: { ...process.env, ALLERGY_WHEEL_ANDROID_KEYSTORE: '/changed-process-value',
+        MPRLAB_ARTIFACT_VERSION: 'v1.2.3', MPRLAB_MOBILE_BUILD_INTENT: 'invalid-relative-intent',
+        MPRLAB_APPLICATION_LIFECYCLE_LOCK: 'exclusive', MPRLAB_LIFECYCLE_OPERATION: 'release' },
+    input: '', encoding: 'utf8'
+});
+process.stdout.write(result.stdout); process.stderr.write(result.stderr); process.exit(result.status ?? 1);
+`);
+        const result = spawnSync(gateway, ['bootstrap-run', '--repo-root', root, '--operation', 'app-release', '--', process.execPath, runner], {
+            cwd: root, input: '', encoding: 'utf8', env: { ...process.env, MPRLAB_GATEWAY_EXECUTABLE: gateway }
+        });
+        assert.equal(result.status, 2, result.stderr);
+        assert.match(result.stderr, /mobile build requires an absolute MPRLAB_MOBILE_BUILD_INTENT/);
+        assert.doesNotMatch(result.stderr, /changed-file-value|changed-process-value|Signing input/);
+        console.info(`Actual ${platform} adapter passes the installed native request decoder after file and ambient changes.`);
+    } finally {
+        await rm(root, { recursive: true, force: true });
+    }
 }

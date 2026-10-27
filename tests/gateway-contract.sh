@@ -2,43 +2,74 @@
 set -euo pipefail
 test_image="$1"
 repository="$2"
-gateway_launcher="$(command -v mprlab-gateway)"
-gateway_runtime="$(mprlab-gateway version --json | python3 -c 'import json, pathlib, sys; metadata=json.load(sys.stdin); root=pathlib.Path(sys.argv[1]).resolve().parent; print(root / "releases" / metadata["version"] / metadata["platform"] / "runtime")' "$gateway_launcher")"
-gateway_executable="$gateway_runtime/bin/mprlab-gateway"
-gateway_ansible="$(dirname "$gateway_runtime")/toolchain/bin/ansible-playbook"
-fixture="$(mktemp -d "${TMPDIR:-/tmp}/allergy-gateway-contract.XXXXXX")"
-fixture="$(cd "$fixture" && pwd -P)"
-trap 'rm -rf "$fixture"' EXIT
-
-# Generate requests through the application adapter in Docker at host-visible paths.
-docker run --rm --init --volume "$fixture:$fixture" \
-    --env "ALLERGY_TEST_GATEWAY_FIXTURE=$fixture" "$test_image" node tests/release-adapter.mjs
-for platform in android ios; do
-    set +e
-    env -i PATH="$PATH" HOME="$HOME" \
-        MPRLAB_GATEWAY_EXECUTABLE="$gateway_executable" \
-        MPRLAB_APPLICATION_LIFECYCLE_LOCK=exclusive MPRLAB_LIFECYCLE_OPERATION=release \
-        "$gateway_executable" mobile-build-operation < "$fixture/$platform.json" > "$fixture/$platform.log" 2>&1
-    result=$?
-    set -e
-    if [ "$result" = 0 ] || ! rg -q '^mobile build requires an absolute MPRLAB_MOBILE_BUILD_INTENT$' "$fixture/$platform.log"; then
-        cat "$fixture/$platform.log" >&2
-        exit 1
-    fi
-done
-
-# Use the installed contract validator; it checks the actual selected declaration.
-cat > "$fixture/manifest.yml" <<'YAML'
+: "${MPRLAB_GATEWAY_TEST_ARCHIVE:?Select the published Gateway archive for this container platform}"
+: "${MPRLAB_GATEWAY_TEST_VERSION:?Select the exact published Gateway version}"
+docker run --rm --init --interactive \
+    --volume "$MPRLAB_GATEWAY_TEST_ARCHIVE:/gateway-runtime.tar.gz:ro" \
+    --volume "$repository/Makefile:/workspace/Makefile:ro" \
+    --volume "$repository/tests:/workspace/tests:ro" \
+    --volume "$repository/scripts:/workspace/scripts:ro" \
+    --env MPRLAB_GATEWAY_TEST_VERSION "$test_image" bash -se <<'CONTAINER'
+seed="$(mktemp -d)"
+install="$(mktemp -d)"
+trap 'rm -rf "$seed" "$install"' EXIT
+mkdir -p "$install/application/.mprlab/deploy"
+cat > "$install/application/.mprlab/deploy/resources.yml" <<'MANIFEST'
+mprlab_resources:
+  owner: allergy-runtime-fixture
+  inputs:
+    synthetic: fixture
+  ci:
+    enabled: false
+  release:
+    scheme: semver
+  defaults:
+    timeouts:
+      startup: 30s
+      completion: 1m
+      readiness: 30s
+      request: 30s
+      shutdown: 30s
+  resources:
+    private:
+      kind: private_values
+      bindings:
+        synthetic: synthetic
+MANIFEST
+tar -xzf /gateway-runtime.tar.gz -C "$seed"
+"$seed/bin/mprlab-gateway" install --version "$MPRLAB_GATEWAY_TEST_VERSION" \
+    --archive /gateway-runtime.tar.gz --repo-root "$install/application" \
+    --install-root "$install/install" --bin-root "$install/bin" --cache-root "$install/cache" > "$install/identity.json"
+MPRLAB_GATEWAY_EXECUTABLE="$(node --input-type=module - "$install/identity.json" "$install/install" <<'IDENTITY'
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+const identity = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+assert.equal(identity.version, process.env.MPRLAB_GATEWAY_TEST_VERSION);
+assert.match(identity.platform, /^linux-(amd64|arm64)$/);
+process.stdout.write(join(process.argv[3], 'releases', identity.version, identity.platform, 'runtime/bin/mprlab-gateway'));
+IDENTITY
+)"
+export MPRLAB_GATEWAY_EXECUTABLE
+node tests/release-entrypoint.mjs --captured-adapter
+runtime="$(dirname "$(dirname "$MPRLAB_GATEWAY_EXECUTABLE")")"
+export ALLERGY_GATEWAY_RUNTIME="$runtime"
+node --input-type=module - "$runtime/internal/manifest/schema.json" "$install/schema.json" <<'SCHEMA'
+import { readFileSync, writeFileSync } from 'node:fs';
+writeFileSync(process.argv[3], JSON.stringify({ mprlab_manifest_schema: JSON.parse(readFileSync(process.argv[2], 'utf8')) }));
+SCHEMA
+cat > "$install/manifest.yml" <<'PLAYBOOK'
 ---
 - hosts: localhost
   gather_facts: false
   vars_files:
     - "{{ lookup('env', 'ALLERGY_GATEWAY_RUNTIME') }}/deploy/ansible/playbooks/vars/app-lifecycle-contract.yml"
   vars:
-    mprlab_resource: "{{ (lookup('file', lookup('env', 'ALLERGY_REPOSITORY') + '/.mprlab/deploy/resources.yml') | from_yaml).mprlab_resources.resources.mobile | combine({'id': 'mobile'}) }}"
+    mprlab_resource: "{{ (lookup('file', '/workspace/.mprlab/deploy/resources.yml') | from_yaml).mprlab_resources.resources.mobile | combine({'id': 'mobile'}) }}"
   tasks:
     - ansible.builtin.include_tasks: "{{ lookup('env', 'ALLERGY_GATEWAY_RUNTIME') }}/deploy/ansible/playbooks/tasks/validate-selected-app-resource.yml"
-YAML
-ALLERGY_GATEWAY_RUNTIME="$gateway_runtime" ALLERGY_REPOSITORY="$repository" \
-    "$gateway_ansible" --inventory localhost, --connection local "$fixture/manifest.yml"
-printf '%s\n' 'Installed Gateway accepted both request schemas and the mobile declaration. No build intent or signing operation was created.'
+PLAYBOOK
+"$MPRLAB_GATEWAY_EXECUTABLE" bootstrap-run --repo-root "$install/application" --operation app-release -- \
+    "$(dirname "$runtime")/toolchain/bin/ansible-playbook" --inventory localhost, --connection local --extra-vars "@$install/schema.json" "$install/manifest.yml"
+printf '%s\n' 'Installed Gateway accepted the current selected mobile declaration and both native request schemas.'
+CONTAINER

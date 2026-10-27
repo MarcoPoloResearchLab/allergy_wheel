@@ -15,7 +15,7 @@ Earlier Gateway limitations require a current contract verification before publi
 
 | Issue | Remaining result |
 | --- | --- |
-| F004 | Client implementation is completed. B048 blocks required final CI. |
+| F004 | Implementation and final CI passed on October 26, 2026. F003 retains production privacy qualification. |
 | F001 | Complete uncovered software behavior and final package qualification. Record signed artifacts separately from code acceptance. |
 | F003 | Complete production privacy qualification, store declarations, screenshots, candidate delivery, review, and public release. |
 | F002 | Record verified public store URLs, update the catalog, publish the website, and verify its store links. |
@@ -53,7 +53,7 @@ This tracker review does not execute a release, publication, or deployment opera
 
 ## Privacy Implementation On October 1, 2026
 
-F004 replaces P002 as the implementation issue. B048 prevents required final CI from passing. P002 preserves the original decisions and earlier qualification observations.
+F004 replaces P002 as the implementation issue. B048 is resolved. Final CI passed on October 26, 2026. P002 preserves the original decisions and earlier qualification observations.
 `PRIVACY-QUALIFICATION.md` contains the current inventory, source evidence, and production procedure.
 The current public text and native parent text use one source contract.
 Native feedback requires adult agreement after the parent gate. Browser analytics starts with denied storage.

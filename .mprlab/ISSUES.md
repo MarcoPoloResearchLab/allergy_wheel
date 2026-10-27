@@ -11,7 +11,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
-- [!] [B048] (P1) Restore the mobile dependency audit after the node-forge advisory
+- [x] [B048] (P1) Restore the mobile dependency audit after the node-forge advisory
   Goal:
   The locked Expo dependencies pass the required mobile audit without a known high-severity finding.
 
@@ -20,7 +20,8 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   The finding is `GHSA-86w9-cpqp-85rv`, through `node-forge`, Expo CLI, and Expo code-signing certificates.
   The dependency source did not change during F004.
 
-  Blocked: The published advisory lists no patched version. The npm registry still lists `node-forge` 1.4.0 as latest.
+  Historical Blocker On October 1, 2026:
+  The published advisory lists no patched version. The npm registry still lists `node-forge` 1.4.0 as latest.
   The current Expo certificate package also requires `node-forge` 1.4.0.
   The suggested forced fix downgrades Expo to 44.0.6 and violates the selected SDK 57 contract.
   Upstream PR 1152 remains open without maintainer review.
@@ -36,6 +37,14 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   [GitHub advisory](https://github.com/advisories/GHSA-86w9-cpqp-85rv) records affected versions through 1.4.0 and no patched version.
   [Upstream correction](https://github.com/digitalbazaar/forge/pull/1152) remains proposed.
   The final CI log is `artifacts/validation/f004-ci.log`.
+
+  Resolution On October 26, 2026:
+  The vendored node-forge correction implements the reviewed upstream RSA correction.
+  The audit verifies each installed copy through its actual signature behavior.
+  Expo certificate consumers, ordinary installation, and installation without scripts passed.
+  Unknown advisories, invalid reports, missing copies, and expired reviews remain failures.
+  The review expires on November 12, 2026.
+  Native preparation and final `make ci` passed.
 
 ## Improvements
 
@@ -227,11 +236,13 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## Features
 
-- [!] [F004] (P1) {B045,B046,B047,B005,B048} Implement the child audience privacy contract
+- [x] [F004] (P1) {B045,B046,B047,B005,B048} Implement the child audience privacy contract
   Goal:
   The application supplies accurate privacy information, adult feedback controls, and data verification commands.
 
-  Blocked: B048 prevents required final CI from passing. Client implementation and focused privacy checks are completed.
+  Resolution On October 26, 2026:
+  B048 is resolved. Final `make ci` passed, including Chromium and WebKit privacy checks.
+  F003 retains production privacy qualification.
 
   Implementation On October 1, 2026:
   The shared policy, adult agreement, browser defaults, data inventory, and store review preparation are implemented.
@@ -240,7 +251,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   The initial consent-default regression and store agreement regression failed before their corrections.
   Final CI passed game and mobile flows, then stopped at the existing dependency audit finding.
   `PRIVACY-QUALIFICATION.md` preserves the evidence limits and production procedure.
-  Keep this issue unresolved until B048 and final CI pass.
+  The October 26, 2026 validation completes the implementation acceptance criteria.
 
   Migration:
   The owner requested implementation of P002 on October 1, 2026.

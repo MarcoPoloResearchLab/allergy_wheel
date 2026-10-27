@@ -1,8 +1,110 @@
 ---
 mprlab_resources:
   owner: allergy-wheel
+  environment_file: configs/.env.allergy-wheel
+  inputs:
+    ALLERGY_WHEEL_ANDROID_KEYSTORE: ${ALLERGY_WHEEL_ANDROID_KEYSTORE}
+    ALLERGY_WHEEL_ANDROID_KEY_ALIAS: ${ALLERGY_WHEEL_ANDROID_KEY_ALIAS}
+    ALLERGY_WHEEL_ANDROID_KEY_PASSWORD: ${ALLERGY_WHEEL_ANDROID_KEY_PASSWORD}
+    ALLERGY_WHEEL_ANDROID_STORE_PASSWORD: ${ALLERGY_WHEEL_ANDROID_STORE_PASSWORD}
+    ALLERGY_WHEEL_APPLE_CERTIFICATE: ${ALLERGY_WHEEL_APPLE_CERTIFICATE}
+    ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD: ${ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD}
+    ALLERGY_WHEEL_APPLE_IDENTITY: ${ALLERGY_WHEEL_APPLE_IDENTITY}
+    ALLERGY_WHEEL_APPLE_PROFILE: ${ALLERGY_WHEEL_APPLE_PROFILE}
+    ALLERGY_WHEEL_APPLE_TEAM: ${ALLERGY_WHEEL_APPLE_TEAM}
+    APP_STORE_CONNECT_API_ISSUER_ID: ${APP_STORE_CONNECT_API_ISSUER_ID}
+    APP_STORE_CONNECT_API_KEY_ID: ${APP_STORE_CONNECT_API_KEY_ID}
+    APP_STORE_CONNECT_API_KEY_PATH: ${APP_STORE_CONNECT_API_KEY_PATH}
+    GOOGLE_PLAY_SERVICE_ACCOUNT_KEY_PATH: ${GOOGLE_PLAY_SERVICE_ACCOUNT_KEY_PATH}
+    DEPLOY_SUDO_PASSWORD_TUTOSH: ${DEPLOY_SUDO_PASSWORD_TUTOSH}
+  ci:
+    enabled: true
+    command:
+      '0': make
+      '1': ci
+  defaults:
+    timeouts:
+      startup: 2m
+      completion: 30m
+      readiness: 5m
+      request: 30s
+      shutdown: 30s
+  hosts:
+    tutosh:
+      ansible_become_password: DEPLOY_SUDO_PASSWORD_TUTOSH
   release:
     scheme: semver
+  operations:
+    ci:
+      timeouts:
+        completion: 2h
+      polling:
+        initial: 2s
+        maximum: 15s
+        increment: 2s
+        multiplier: 2
+        attempt_limit: 60
+    app-plan-release:
+      timeouts:
+        completion: 2m
+      polling:
+        initial: 2s
+        maximum: 15s
+        increment: 2s
+        multiplier: 2
+        attempt_limit: 60
+    app-plan-publish:
+      timeouts:
+        completion: 2m
+      polling:
+        initial: 2s
+        maximum: 15s
+        increment: 2s
+        multiplier: 2
+        attempt_limit: 60
+    app-plan-deploy:
+      timeouts:
+        completion: 2m
+      polling:
+        initial: 2s
+        maximum: 15s
+        increment: 2s
+        multiplier: 2
+        attempt_limit: 60
+    app-release:
+      timeouts:
+        completion: 2h
+      polling:
+        initial: 2s
+        maximum: 15s
+        increment: 2s
+        multiplier: 2
+        attempt_limit: 60
+    app-publish:
+      timeouts:
+        completion: 4h
+      polling:
+        initial: 2s
+        maximum: 15s
+        increment: 2s
+        multiplier: 2
+        attempt_limit: 60
+    app-deploy:
+      timeouts:
+        completion: 20m
+      polling:
+        initial: 2s
+        maximum: 15s
+        increment: 2s
+        multiplier: 2
+        attempt_limit: 60
+    app_lifecycle.repository_read:
+      polling:
+        initial: 2s
+        maximum: 15s
+        increment: 2s
+        multiplier: 2
+        attempt_limit: 60
   resources:
     website:
       kind: github_pages

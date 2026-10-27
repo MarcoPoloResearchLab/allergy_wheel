@@ -8,25 +8,25 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		3DD8B9623E260D2ECF3C0334 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450B077B350A60383BF6E5AD /* ExpoModulesProvider.swift */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		40FDE2DFC32F92D316DDD089 /* libPods-AllergyWheel.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E70638679E4361BD12042FD /* libPods-AllergyWheel.a */; };
-		489313A8F9A7924E9FDD63C0 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A13ECFF21B963324D7D02D2 /* ExpoModulesProvider.swift */; };
-		AB3AD1000E95464BD4C1E372 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C60DFD00B3DE79F944C27162 /* PrivacyInfo.xcprivacy */; };
+		43AA88201950633DC34C9EDB /* libPods-AllergyWheel.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 60605E6777E92B42E46F339F /* libPods-AllergyWheel.a */; };
+		47321396A34A2DB546CE8791 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 06E360C8415D21F60DAFC52D /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		10D2936E530207DBB127F296 /* Pods-AllergyWheel.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AllergyWheel.debug.xcconfig"; path = "Target Support Files/Pods-AllergyWheel/Pods-AllergyWheel.debug.xcconfig"; sourceTree = "<group>"; };
+		06E360C8415D21F60DAFC52D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = AllergyWheel/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* AllergyWheel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AllergyWheel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = AllergyWheel/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AllergyWheel/Info.plist; sourceTree = "<group>"; };
-		3A13ECFF21B963324D7D02D2 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-AllergyWheel/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		3E70638679E4361BD12042FD /* libPods-AllergyWheel.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AllergyWheel.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		6E7E937C344C2F3E1585C344 /* Pods-AllergyWheel.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AllergyWheel.release.xcconfig"; path = "Target Support Files/Pods-AllergyWheel/Pods-AllergyWheel.release.xcconfig"; sourceTree = "<group>"; };
+		450B077B350A60383BF6E5AD /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-AllergyWheel/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		4D117BEE290496CBA13A69D9 /* Pods-AllergyWheel.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AllergyWheel.debug.xcconfig"; path = "Target Support Files/Pods-AllergyWheel/Pods-AllergyWheel.debug.xcconfig"; sourceTree = "<group>"; };
+		50C03CE003513E579871F412 /* Pods-AllergyWheel.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AllergyWheel.release.xcconfig"; path = "Target Support Files/Pods-AllergyWheel/Pods-AllergyWheel.release.xcconfig"; sourceTree = "<group>"; };
+		60605E6777E92B42E46F339F /* libPods-AllergyWheel.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AllergyWheel.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = AllergyWheel/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		C60DFD00B3DE79F944C27162 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = AllergyWheel/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = AllergyWheel/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* AllergyWheel-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "AllergyWheel-Bridging-Header.h"; path = "AllergyWheel/AllergyWheel-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				40FDE2DFC32F92D316DDD089 /* libPods-AllergyWheel.a in Frameworks */,
+				43AA88201950633DC34C9EDB /* libPods-AllergyWheel.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,15 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				C60DFD00B3DE79F944C27162 /* PrivacyInfo.xcprivacy */,
+				06E360C8415D21F60DAFC52D /* PrivacyInfo.xcprivacy */,
+			);
+			name = AllergyWheel;
+			sourceTree = "<group>";
+		};
+		14D5D1F7B6F77E0994E143F4 /* AllergyWheel */ = {
+			isa = PBXGroup;
+			children = (
+				450B077B350A60383BF6E5AD /* ExpoModulesProvider.swift */,
 			);
 			name = AllergyWheel;
 			sourceTree = "<group>";
@@ -62,9 +70,27 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				3E70638679E4361BD12042FD /* libPods-AllergyWheel.a */,
+				60605E6777E92B42E46F339F /* libPods-AllergyWheel.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		48047809C6D8162A3A48D0E7 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				14D5D1F7B6F77E0994E143F4 /* AllergyWheel */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
+		76327778BADDC0049B4822CB /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				4D117BEE290496CBA13A69D9 /* Pods-AllergyWheel.debug.xcconfig */,
+				50C03CE003513E579871F412 /* Pods-AllergyWheel.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -81,8 +107,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				CAEE71C82FED05280998D003 /* Pods */,
-				DED42C5F763A0F3A8818422C /* ExpoModulesProviders */,
+				76327778BADDC0049B4822CB /* Pods */,
+				48047809C6D8162A3A48D0E7 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -97,14 +123,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8F9A536BBFEB802392F94EB5 /* AllergyWheel */ = {
-			isa = PBXGroup;
-			children = (
-				3A13ECFF21B963324D7D02D2 /* ExpoModulesProvider.swift */,
-			);
-			name = AllergyWheel;
-			sourceTree = "<group>";
-		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -112,24 +130,6 @@
 			);
 			name = Supporting;
 			path = AllergyWheel/Supporting;
-			sourceTree = "<group>";
-		};
-		CAEE71C82FED05280998D003 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				10D2936E530207DBB127F296 /* Pods-AllergyWheel.debug.xcconfig */,
-				6E7E937C344C2F3E1585C344 /* Pods-AllergyWheel.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		DED42C5F763A0F3A8818422C /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				8F9A536BBFEB802392F94EB5 /* AllergyWheel */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AllergyWheel" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				CDF6F7282AE4A23938E13CDE /* [Expo] Configure project */,
+				816E61CE4C5AFF3E9387B683 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				08A0B26A0B187300397466C1 /* [CP] Embed Pods Frameworks */,
+				9A9975874F7C364695427433 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				AB3AD1000E95464BD4C1E372 /* PrivacyInfo.xcprivacy in Resources */,
+				47321396A34A2DB546CE8791 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -219,26 +219,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "set -e\nPROJECT_ROOT=\"$(cd \"$PROJECT_DIR/..\" && pwd -P)\"\nexport PROJECT_ROOT\nexport ENTRY_FILE=\"$PROJECT_ROOT/index.js\"\nexport CLI_PATH=\"$PROJECT_ROOT/node_modules/react-native/scripts/bundle.js\"\nexport BUNDLE_COMMAND=bundle\nexport FORCE_BUNDLING=1\nexport NODE_BINARY=\"$(command -v node)\"\nif [ -f \"$PROJECT_DIR/.xcode.env.local\" ]; then\n  . \"$PROJECT_DIR/.xcode.env.local\"\nfi\n/bin/bash \"$PROJECT_DIR/../node_modules/react-native/scripts/react-native-xcode.sh\"\n";
-		};
-		08A0B26A0B187300397466C1 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AllergyWheel/Pods-AllergyWheel-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoModulesJSI/ExpoModulesJSI.framework/ExpoModulesJSI",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermesvm.framework/hermesvm",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoModulesJSI.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermesvm.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AllergyWheel/Pods-AllergyWheel-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
 		};
 		08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -298,7 +278,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AllergyWheel/Pods-AllergyWheel-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		CDF6F7282AE4A23938E13CDE /* [Expo] Configure project */ = {
+		816E61CE4C5AFF3E9387B683 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -322,6 +302,26 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-AllergyWheel/expo-configure-project.sh\"\n";
 		};
+		9A9975874F7C364695427433 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-AllergyWheel/Pods-AllergyWheel-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoModulesJSI/ExpoModulesJSI.framework/ExpoModulesJSI",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermesvm.framework/hermesvm",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExpoModulesJSI.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermesvm.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AllergyWheel/Pods-AllergyWheel-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -330,7 +330,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				489313A8F9A7924E9FDD63C0 /* ExpoModulesProvider.swift in Sources */,
+				3DD8B9623E260D2ECF3C0334 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -339,7 +339,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 10D2936E530207DBB127F296 /* Pods-AllergyWheel.debug.xcconfig */;
+			baseConfigurationReference = 4D117BEE290496CBA13A69D9 /* Pods-AllergyWheel.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -377,7 +377,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6E7E937C344C2F3E1585C344 /* Pods-AllergyWheel.release.xcconfig */;
+			baseConfigurationReference = 50C03CE003513E579871F412 /* Pods-AllergyWheel.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

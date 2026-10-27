@@ -1,12 +1,17 @@
-FROM mcr.microsoft.com/playwright:v1.55.1-noble@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c
+FROM mcr.microsoft.com/playwright:v1.55.1-noble@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c AS dependency-tools
 
-RUN apt-get update && apt-get install --yes --no-install-recommends make && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install --yes --no-install-recommends make python3-venv && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
+
+FROM dependency-tools AS tests
 COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY mobile/package.json mobile/package-lock.json ./mobile/
+COPY mobile/vendor ./mobile/vendor
+COPY mobile/scripts ./mobile/scripts
+COPY mobile/config ./mobile/config
 RUN cd mobile && npm ci
 
 COPY .mprlab/deploy/resources.yml ./.mprlab/deploy/resources.yml

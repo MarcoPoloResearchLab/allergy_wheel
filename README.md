@@ -78,15 +78,15 @@ The selected toolchain supports Android 7.0 and later, and iOS 16.4 and later.
 | `make mobile-package` | Write embedded game and parent documents to `mobile/generated`. |
 | `make mobile-dependencies` | Install locked native build dependencies through Docker. |
 | `make mobile-prepare` | Generate Android and iOS projects from Expo configuration. |
-| `make mobile-prepare-store` | Prepare native projects, offline content, dependency locks, and source digests before release. |
+| `make mobile-prepare-store` | Prepare native projects, offline content, and dependency versions before release. |
 | `make test-native-release` | Verify generated release signing, scheme targets, and version inputs in Docker. |
 | `make test-podfile-config` | Verify native property failures and explicit source dependencies through actual CocoaPods. |
 | `make test-release-adapter` | Verify both native Gateway requests and exact retry identities in Docker. |
-| `make test-gateway-contract` | Verify the selected mobile manifest and both requests against the installed Gateway without native builds. |
+| `make test-gateway-contract` | Verify both native requests and captured Android input with an installed published Gateway runtime. |
 | `make mobile-native-check` | Verify the retained game and native source in the current checkout. |
 | `make mobile-audit-build` | Audit all mobile runtime and build dependencies in Docker. |
 | `make test-tooling-audit` | Audit the browser test and game packaging dependencies in Docker. |
-| `make test-native-preparation` | Verify prepared input records and rejection of changed game or native source in Docker. |
+| `make test-native-preparation` | Verify native configuration and current game source packaging in Docker. |
 | `make test-apple-bundle` | Rebuild the offline game and run the actual native JavaScript bundle phase in Docker. |
 | `make mobile-android` | Build `artifacts/android/allergy-wheel-development.apk`. |
 | `make mobile-ios` | Build the iOS simulator application under `artifacts/ios`. |
@@ -112,13 +112,13 @@ Native preparation copies these assets into its container before Expo generates 
 
 Store preparation records generated native source and embedded game data under `mobile`.
 Build caches, private keys, and machine-local inputs remain excluded from Git.
-`mobile/native-preparation.json` binds each prepared native input to its content digest.
+`mobile/native-preparation.json` records application identifiers, native configuration, and dependency versions.
 The iOS configuration explicitly selects React Native and Expo source dependencies from their locked versions.
 The source selection overrides inherited prebuilt flags and remains unchanged when a prebuilt service is unavailable.
 CocoaPods rejects missing or malformed native properties.
 The application plugin removes absent test targets from the generated shared scheme.
-`mobile/source-preparation.json` binds the embedded game to its source files.
-Run `make mobile-prepare-store` after a native configuration or game source change.
+Each native build packages the current captured game source after dependency installation.
+Run `make mobile-prepare-store` after a native configuration or dependency change.
 This command installs the locked host dependencies before CocoaPods prepares the native project.
 It then runs `make test-podfile-config` with Ruby and CocoaPods on the native preparation host.
 The four cases cover valid, missing, and malformed properties, plus an unavailable prebuilt service.
@@ -131,7 +131,8 @@ This keeps the entry file inside the Metro project when Xcode uses a symbolic li
 Both platform adapters use `mobile-build-operation` with request schema 3.
 The selected manifest uses `build_system: local` and `.mjs` adapter paths.
 iOS uses the prepared Xcode workspace on the build Mac. Gateway owns signing and provisioning.
-Gateway reads iOS private inputs from `configs/.env.allergy-wheel`.
+The selected manifest declares `configs/.env.allergy-wheel` as its environment file.
+Gateway captures the declared private inputs before it starts the adapter.
 It imports the base64 PKCS#12 identity into a temporary keychain and uses API credentials for provisioning.
 It removes its private files and keychain after the native build.
 The iOS export method is `app-store-connect`. The declared export intent is `app-store`.
@@ -141,12 +142,25 @@ The Android keystore stays under the ignored `configs/signing/` directory.
 The native build uses the retained offline game and verifies source preparation before compilation.
 Xcode Cloud is outside the iOS release contract.
 
-The private input is `configs/.env.allergy-wheel`.
 The example file names both platform signing inputs and store API credentials.
-The lifecycle commands clear their inherited credential variables before they load this file.
-They require `GH_TOKEN` for GitHub authentication and use temporary HTTPS Git settings.
+The installed Gateway resolves the manifest inputs once.
+The Android adapter reads its keystore path from that capture.
+It validates the private file under the original application root.
 The native Android process does not receive the GitHub token.
-A missing file or a failed shell command in the file stops the command.
+
+For runtime qualification, select the exact published Gateway version and its matching Linux archive:
+
+```sh
+MPRLAB_GATEWAY_TEST_VERSION=v7.0.3 \
+MPRLAB_GATEWAY_TEST_ARCHIVE=/absolute/path/mprlab-gateway-v7.0.3-linux-arm64.tar.gz \
+make test-gateway-contract
+```
+
+Use the archive for the test container platform.
+The test installs the archive in a temporary directory.
+It uses public bootstrap capture and the physical runtime executable.
+The test changes the selected file and process inputs after capture.
+Both native requests must reach the intent check without a native build.
 
 Use `make release` to build and seal the native IPA and Android bundle.
 Use `make publish` to submit the sealed artifacts to their declared stores.
@@ -217,14 +231,15 @@ The Pages test checks this identifier, the publication branch, and agreement wit
 The live Pages source still uses `master`.
 I002 records the prepared publication contract.
 Use the publication procedure in `.mprlab/MOBILE-READINESS.md` only after an explicit deployment request.
-The repository `release`, `publish`, and `deploy` targets delegate to the sibling MPR gateway.
-The selected manifest currently declares the website only.
+The repository `release`, `publish`, and `deploy` targets invoke the installed Gateway with an explicit application root.
+Set `MPRLAB_GATEWAY_EXECUTABLE` to select its executable.
+The selected manifest declares the website and mobile store destinations.
 
 F003 preparation and current store blockers are recorded in `.mprlab/STORE-READINESS.md`.
 The store text source is `mobile/store/listing.json`.
 The exported descriptions and reviewer notes describe automatic fonts, aggregate LoopAware counts, and guarded feedback.
 The exporter integration tests reject native Google Analytics descriptions.
-The store publisher reads private inputs from the ignored `configs/.env.allergy-wheel` file.
+The store publisher uses the private inputs captured from the selected manifest.
 The corresponding example file lists the required names without credential values.
 The store text export does not upload content or prove submission readiness.
 

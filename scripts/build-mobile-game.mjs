@@ -1,8 +1,8 @@
 // @ts-check
-import { build } from 'esbuild';
+import { createRequire } from 'node:module';
+const { build } = createRequire(new URL('../mobile/package.json', import.meta.url))('esbuild');
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
-import { createHash } from 'node:crypto';
 
 const root = resolve(import.meta.dirname, '..');
 const output = resolve(root, 'mobile/generated');
@@ -21,7 +21,7 @@ async function embedResource(resourcePath) {
         const mimeType = mimeTypes[extname(absolutePath)];
         if (!mimeType) throw new Error(`Unsupported mobile resource: ${resourcePath}`);
         if (mimeType === mimeTypes['.json']) JSON.parse(bytes.toString('utf8'));
-        resources.set(normalizedPath, { uri: `data:${mimeType};base64,${bytes.toString('base64')}`, sha256: createHash('sha256').update(bytes).digest('hex') });
+        resources.set(normalizedPath, { uri: `data:${mimeType};base64,${bytes.toString('base64')}` });
     }
     return resources.get(normalizedPath).uri;
 }
@@ -61,7 +61,7 @@ html = html.replace('<script src="js/core/app.js" type="module"></script>', `<sc
 await mkdir(output, { recursive: true });
 await writeFile(resolve(output, 'game.html'), html);
 await writeFile(resolve(output, 'game.json'), JSON.stringify({ html }));
-await writeFile(resolve(output, 'resources.json'), JSON.stringify({ documentSha256: createHash('sha256').update(html).digest('hex'), resources: [...resources].map(([path, resource]) => ({ path, sha256: resource.sha256 })) }, null, 2));
+await writeFile(resolve(output, 'resources.json'), JSON.stringify({ resources: [...resources.keys()].sort() }, null, 2));
 const parentBundle = await build({ absWorkingDir: root, entryPoints: ['js/core/parentsApp.js'], bundle: true, write: false, format: 'iife', target: ['safari16.4', 'chrome107'] });
 const parentScript = Buffer.from(parentBundle.outputFiles[0].contents).toString('base64');
 const parentHtml = (await readFile(resolve(root, 'mobile/parents.html'), 'utf8')).replace('<!-- parent-entry -->', `<script src="data:text/javascript;base64,${parentScript}"></script>`);

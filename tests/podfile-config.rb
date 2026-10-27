@@ -4,12 +4,12 @@ require 'open3'
 require 'tmpdir'
 
 mobile = File.expand_path('../mobile', __dir__)
-record = JSON.parse(File.read(File.join(mobile, 'native-preparation.json')))
+fixture_inputs = %w[package.json app.json ios/Podfile ios/Podfile.properties.json ios/AllergyWheel.xcodeproj/project.pbxproj]
 failures = []
 
 %w[valid missing malformed unavailable-prebuilt-service].each do |condition|
   Dir.mktmpdir('allergy-podfile-') do |fixture|
-    record.fetch('files').each_key do |name|
+    fixture_inputs.each do |name|
       destination = File.join(fixture, name)
       FileUtils.mkdir_p(File.dirname(destination))
       FileUtils.cp(File.join(mobile, name), destination)
