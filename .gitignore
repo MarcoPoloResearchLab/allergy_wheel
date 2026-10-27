@@ -20,3 +20,4 @@ bin/
 # BEGIN MPRLAB-GOVERNANCE
 /.mprlab/*-PLAN.md
 # END MPRLAB-GOVERNANCE
+mobile/android/.kotlin/
