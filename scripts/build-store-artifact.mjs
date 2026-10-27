@@ -1,7 +1,6 @@
 // @ts-check
 import { readFile } from 'node:fs/promises';
 import { resolve, dirname, join, isAbsolute } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { repositorySigningFile } from './repository-signing-file.mjs';
 import { runNativeBuild } from './native-build-process.mjs';
 
@@ -71,7 +70,6 @@ const request = {
         export_intent: 'app-store'
     } })
 };
-const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const controller = new AbortController();
 const interrupt = () => controller.abort('SIGINT');
 const terminate = () => controller.abort('SIGTERM');
@@ -80,7 +78,7 @@ process.on('SIGTERM', terminate);
 try {
     const environment = { ...process.env };
     if (platform === 'android') {
-        environment.ALLERGY_WHEEL_ANDROID_KEYSTORE = await repositorySigningFile(repositoryRoot, process.env.ALLERGY_WHEEL_ANDROID_KEYSTORE, 'ALLERGY_WHEEL_ANDROID_KEYSTORE');
+        environment.ALLERGY_WHEEL_ANDROID_KEYSTORE = await repositorySigningFile(gateway, 'ALLERGY_WHEEL_ANDROID_KEYSTORE');
     }
     delete environment.GH_TOKEN;
     delete environment.GITHUB_TOKEN;

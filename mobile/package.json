@@ -18,19 +18,25 @@
     "export": "expo export --platform all"
   },
   "dependencies": {
-    "expo": "~57.0.26",
+    "expo": "~57.0.31",
     "expo-system-ui": "~57.0.4",
     "react": "19.2.3",
     "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-webview": "13.16.1"
+    "react-native-webview": "13.16.1",
+    "node-forge": "file:vendor/node-forge"
   },
   "devDependencies": {
     "@react-native-community/cli": "20.2.0",
-    "@react-native/metro-config": "0.86.3"
+    "@react-native/metro-config": "0.86.3",
+    "esbuild": "0.28.1"
   },
   "overrides": {
+    "@expo/cli@57.0.32": {
+      "zod": "4.6.7"
+    },
     "uuid": "11.1.1",
-    "brace-expansion": "5.0.12"
+    "brace-expansion": "5.0.12",
+    "node-forge": "$node-forge"
   }
 }

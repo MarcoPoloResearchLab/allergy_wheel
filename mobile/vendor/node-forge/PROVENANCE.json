@@ -1,0 +1,16 @@
+{
+  "upstream_package": "node-forge",
+  "upstream_version": "1.4.0",
+  "source": "https://registry.npmjs.org/node-forge/1.4.0",
+  "advisory": "GHSA-86w9-cpqp-85rv",
+  "upstream_fix_reference": "https://github.com/digitalbazaar/forge/pull/1152",
+  "review_after": "2026-11-12",
+  "maintenance_owner": "Marco Polo Research Lab LLC, Allergy Wheel maintainers",
+  "owned_changes": [
+    "lib/rsa.js: require exact nested DigestAlgorithm element count",
+    "lib/rsa.js: require empty algorithm NULL parameters",
+    "package.json: omit upstream development dependencies/scripts and absent browser distribution files; retain upstream runtime identity and browser mappings"
+  ],
+  "correction": "RSA-CORRECTION.patch",
+  "package_identity": "Original upstream name and version retained. This local correction is not a published upstream fix."
+}

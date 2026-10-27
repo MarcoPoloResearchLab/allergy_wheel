@@ -32,7 +32,7 @@ export async function runAutomaticServicesFlow(browser, gameSource, parentSource
         await gamePage.goto(MobileLocation.GAME);
         await gamePage.locator('#loading[hidden]').waitFor({ state: 'attached' });
         assert.ok(requests.includes(ExternalService.FONTS), 'The game must load fonts without a parent action.');
-        await gamePage.evaluate(() => localStorage.setItem('selectedAllergen', 'peanuts'));
+        await gamePage.evaluate(() => localStorage.setItem('privacy-boundary-sentinel', 'private-game-value'));
         const analyticsPage = await context.newPage();
         await analyticsPage.goto(MobileLocation.ANALYTICS);
         await analyticsPage.waitForFunction(() => ['ready', 'unavailable'].includes(document.documentElement.dataset.analyticsState));

@@ -81,11 +81,20 @@ export function renderParentPanel(gateway) {
     actions.append(consent);
     const feedbackButton = document.createElement('button');
     feedbackButton.textContent = ParentText.FEEDBACK;
+    feedbackButton.disabled = true;
+    const agreementLabel = document.createElement('label');
+    const agreement = document.createElement('input');
+    agreement.type = 'checkbox';
+    agreementLabel.append(agreement, document.createTextNode(ParentText.AGREEMENT));
+    agreement.addEventListener('change', () => { feedbackButton.disabled = !agreement.checked; });
+    actions.append(agreementLabel);
     feedbackButton.addEventListener('click', async () => {
+        if (!agreement.checked) return;
         feedbackButton.disabled = true;
+        agreement.disabled = true;
         status.textContent = ParentText.LOADING;
         try { await gateway.openFeedback(); status.textContent = ParentText.READY; }
-        catch { status.textContent = ParentText.UNAVAILABLE; feedbackButton.disabled = false; }
+        catch { status.textContent = ParentText.UNAVAILABLE; agreement.disabled = false; feedbackButton.disabled = !agreement.checked; }
     });
     actions.append(feedbackButton);
     form.addEventListener('submit', (event) => {
@@ -94,7 +103,7 @@ export function renderParentPanel(gateway) {
         form.hidden = true;
         actions.hidden = false;
         status.textContent = '';
-        actions.querySelector('button').focus();
+        agreement.focus();
     });
     form.append(question, label, submit);
     main.append(form, actions, status);

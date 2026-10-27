@@ -6,6 +6,9 @@ mobile_container=$(docker create --env CI=1 --workdir /native "$mobile_test_imag
 trap 'docker rm -f "$mobile_container" >/dev/null' EXIT
 docker cp "$mobile_repository/mobile/package.json" "$mobile_container:/native/package.json"
 docker cp "$mobile_repository/mobile/package-lock.json" "$mobile_container:/native/package-lock.json"
+docker cp "$mobile_repository/mobile/vendor" "$mobile_container:/native/vendor"
+docker cp "$mobile_repository/mobile/scripts" "$mobile_container:/native/scripts"
+docker cp "$mobile_repository/mobile/config" "$mobile_container:/native/config"
 docker cp "$mobile_repository/mobile/app.json" "$mobile_container:/native/app.json"
 docker cp "$mobile_repository/mobile/plugins" "$mobile_container:/native/plugins"
 docker cp "$mobile_repository/mobile/assets" "$mobile_container:/native/assets"

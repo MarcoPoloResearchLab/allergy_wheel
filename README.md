@@ -78,15 +78,15 @@ The selected toolchain supports Android 7.0 and later, and iOS 16.4 and later.
 | `make mobile-package` | Write embedded game and parent documents to `mobile/generated`. |
 | `make mobile-dependencies` | Install locked native build dependencies through Docker. |
 | `make mobile-prepare` | Generate Android and iOS projects from Expo configuration. |
-| `make mobile-prepare-store` | Prepare native projects, offline content, dependency locks, and source digests before release. |
+| `make mobile-prepare-store` | Prepare native projects, offline content, and dependency versions before release. |
 | `make test-native-release` | Verify generated release signing, scheme targets, and version inputs in Docker. |
 | `make test-podfile-config` | Verify native property failures and explicit source dependencies through actual CocoaPods. |
 | `make test-release-adapter` | Verify both native Gateway requests and exact retry identities in Docker. |
-| `make test-gateway-contract` | Verify the selected mobile manifest and both requests against the installed Gateway without native builds. |
+| `make test-gateway-contract` | Verify both native requests and captured Android input with an installed published Gateway runtime. |
 | `make mobile-native-check` | Verify the retained game and native source in the current checkout. |
 | `make mobile-audit-build` | Audit all mobile runtime and build dependencies in Docker. |
 | `make test-tooling-audit` | Audit the browser test and game packaging dependencies in Docker. |
-| `make test-native-preparation` | Verify prepared input records and rejection of changed game or native source in Docker. |
+| `make test-native-preparation` | Verify native configuration and current game source packaging in Docker. |
 | `make test-apple-bundle` | Rebuild the offline game and run the actual native JavaScript bundle phase in Docker. |
 | `make mobile-android` | Build `artifacts/android/allergy-wheel-development.apk`. |
 | `make mobile-ios` | Build the iOS simulator application under `artifacts/ios`. |
@@ -96,25 +96,29 @@ The selected toolchain supports Android 7.0 and later, and iOS 16.4 and later.
 | `make store-listings` | Prepare store text and reviewer instructions under `artifacts/store-listings`. |
 | `make store-artwork` | Render the existing wheel as native and Google Play artwork under `artifacts/store-artwork`. |
 | `make test-store-listings` | Verify store text exports, length limits, and public destinations in Docker. |
+| `make test-feedback-verifier` | Verify the feedback command with controlled provider responses in Chromium and WebKit. |
 | `make verify-store-pages` | Verify the live privacy and support page in Docker. |
+| `make test-privacy` | Verify denied browser storage, session selection, service requests, and adult feedback controls in Docker. |
+| `make verify-privacy` | Record live packaged service requests in both browser engines without feedback submission. |
+| `make privacy-disclosures` | Prepare the privacy contract, public text, and candidate store categories for operator review. |
 | `make verify-feedback` | Open the live LoopAware form in Chromium and WebKit without a feedback submission. |
 
 The selected audience is ages six and older. The catalog uses child-friendly recipes without beer or wine references.
 Apple saved a calculated 4+ content rating. Google Play saved Everyone and PEGI 3 ratings after the IARC questionnaire.
-The younger Google audience groups require the P002 compliance certification before their final save.
+The younger Google audience groups require the F003 production privacy certification under the F004 contract before their final save.
 
 The native app icon is `mobile/assets/icon.png`, rendered from the existing wheel artwork.
 Native preparation copies these assets into its container before Expo generates platform icons.
 
 Store preparation records generated native source and embedded game data under `mobile`.
 Build caches, private keys, and machine-local inputs remain excluded from Git.
-`mobile/native-preparation.json` binds each prepared native input to its content digest.
+`mobile/native-preparation.json` records application identifiers, native configuration, and dependency versions.
 The iOS configuration explicitly selects React Native and Expo source dependencies from their locked versions.
 The source selection overrides inherited prebuilt flags and remains unchanged when a prebuilt service is unavailable.
 CocoaPods rejects missing or malformed native properties.
 The application plugin removes absent test targets from the generated shared scheme.
-`mobile/source-preparation.json` binds the embedded game to its source files.
-Run `make mobile-prepare-store` after a native configuration or game source change.
+Each native build packages the current captured game source after dependency installation.
+Run `make mobile-prepare-store` after a native configuration or dependency change.
 This command installs the locked host dependencies before CocoaPods prepares the native project.
 It then runs `make test-podfile-config` with Ruby and CocoaPods on the native preparation host.
 The four cases cover valid, missing, and malformed properties, plus an unavailable prebuilt service.
@@ -127,7 +131,8 @@ This keeps the entry file inside the Metro project when Xcode uses a symbolic li
 Both platform adapters use `mobile-build-operation` with request schema 3.
 The selected manifest uses `build_system: local` and `.mjs` adapter paths.
 iOS uses the prepared Xcode workspace on the build Mac. Gateway owns signing and provisioning.
-Gateway reads iOS private inputs from `configs/.env.allergy-wheel`.
+The selected manifest declares `configs/.env.allergy-wheel` as its environment file.
+Gateway captures the declared private inputs before it starts the adapter.
 It imports the base64 PKCS#12 identity into a temporary keychain and uses API credentials for provisioning.
 It removes its private files and keychain after the native build.
 The iOS export method is `app-store-connect`. The declared export intent is `app-store`.
@@ -137,12 +142,25 @@ The Android keystore stays under the ignored `configs/signing/` directory.
 The native build uses the retained offline game and verifies source preparation before compilation.
 Xcode Cloud is outside the iOS release contract.
 
-The private input is `configs/.env.allergy-wheel`.
 The example file names both platform signing inputs and store API credentials.
-The lifecycle commands clear their inherited credential variables before they load this file.
-They require `GH_TOKEN` for GitHub authentication and use temporary HTTPS Git settings.
+The installed Gateway resolves the manifest inputs once.
+The Android adapter reads its keystore path from that capture.
+It validates the private file under the original application root.
 The native Android process does not receive the GitHub token.
-A missing file or a failed shell command in the file stops the command.
+
+For runtime qualification, select the exact published Gateway version and its matching Linux archive:
+
+```sh
+MPRLAB_GATEWAY_TEST_VERSION=v7.0.3 \
+MPRLAB_GATEWAY_TEST_ARCHIVE=/absolute/path/mprlab-gateway-v7.0.3-linux-arm64.tar.gz \
+make test-gateway-contract
+```
+
+Use the archive for the test container platform.
+The test installs the archive in a temporary directory.
+It uses public bootstrap capture and the physical runtime executable.
+The test changes the selected file and process inputs after capture.
+Both native requests must reach the intent check without a native build.
 
 Use `make release` to build and seal the native IPA and Android bundle.
 Use `make publish` to submit the sealed artifacts to their declared stores.
@@ -160,7 +178,7 @@ These native prerequisites are separate from Docker-only browser development.
 1. Run `make mobile-dependencies`.
 2. Run `make mobile-prepare`.
 3. Run `make mobile-android` or `make mobile-ios`.
-4. For multiple Android devices, set `ANDROID_SERIAL` before `make install-android`.
+4. Install the Android build in an emulator or run `make test-ios-simulator` in the booted simulator.
 5. Complete the device acceptance checks in `.mprlab/MOBILE-READINESS.md`.
 
 Each build writes an artifact receipt with its version, source commit, uncommitted-source indicator, and file digests.
@@ -177,16 +195,27 @@ The mobile build does not use a development server, Expo account, or EAS.
 
 Fonts load automatically in the game. Analytics starts automatically in a separate document at application launch.
 Analytics scripts cannot read the selected allergen or game results from the game document.
-Only feedback requires the parent gate. The parent screen keeps detailed privacy text in an expandable section.
+Only feedback requires the parent gate, adult agreement by checkbox, and a separate feedback action. The parent screen keeps detailed privacy text in an expandable section.
 The native modal has its own safe-area provider to keep controls below the device status area.
 The feedback action stays pending until LoopAware supplies its launcher and contact form.
 A script download alone does not establish readiness.
 A script error or a 10-second initialization timeout shows a failure and permits another attempt.
 The packaged mobile tests cover configuration responses of 403 and 404 with the actual widget script.
 They also verify delayed readiness and a successful retry without a feedback submission.
+The feedback verifier has separate controlled and live provider checks.
+`make ci` includes the controlled check through the actual verifier and packaged parent document.
+`make verify-feedback` uses the live provider and permits only GET requests without a feedback submission.
 Its provider scripts use a separate document origin.
 The mobile privacy page is `privacy.html`.
-P002 retains provider configuration and store policy verification before submission.
+F004 supplies the shared privacy contract in `js/constants.js` and its client controls.
+`js/core/gateway.js` queues denied browser consent before the external tag loads.
+`js/ui/browserAnalytics.js` supplies the documented Google tag command queue.
+The game keeps selected allergens and results only in session memory. It does not save persistent preferences.
+`make test-privacy` verifies the actual game, shared privacy UI, and exported disclosure contract.
+`make verify-privacy` writes phased requests and storage evidence to `artifacts/privacy-validation/native-requests.json`.
+`make privacy-disclosures` exports policy text, the data inventory, and store review inputs to `artifacts/privacy-disclosures`.
+F003 keeps the production checks in [.mprlab/PRIVACY-QUALIFICATION.md](.mprlab/PRIVACY-QUALIFICATION.md).
+The gate and agreement do not establish legal parental consent or store acceptance.
 
 ## Website installation and publication
 
@@ -202,12 +231,15 @@ The Pages test checks this identifier, the publication branch, and agreement wit
 The live Pages source still uses `master`.
 I002 records the prepared publication contract.
 Use the publication procedure in `.mprlab/MOBILE-READINESS.md` only after an explicit deployment request.
-The repository `release`, `publish`, and `deploy` targets delegate to the sibling MPR gateway.
-The selected manifest currently declares the website only.
+The repository `release`, `publish`, and `deploy` targets invoke the installed Gateway with an explicit application root.
+Set `MPRLAB_GATEWAY_EXECUTABLE` to select its executable.
+The selected manifest declares the website and mobile store destinations.
 
 F003 preparation and current store blockers are recorded in `.mprlab/STORE-READINESS.md`.
 The store text source is `mobile/store/listing.json`.
-The store publisher reads private inputs from the ignored `configs/.env.allergy-wheel` file.
+The exported descriptions and reviewer notes describe automatic fonts, aggregate LoopAware counts, and guarded feedback.
+The exporter integration tests reject native Google Analytics descriptions.
+The store publisher uses the private inputs captured from the selected manifest.
 The corresponding example file lists the required names without credential values.
 The store text export does not upload content or prove submission readiness.
 

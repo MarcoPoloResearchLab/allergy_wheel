@@ -29,7 +29,19 @@ try {
     // The subprocess boundary represents the gateway; the application request stays real.
     await writeFile(join(mobile, 'mobile-build-operation'), `let body='';process.stdin.on('data',data=>body+=data);process.stdin.on('end',()=>{process.stdout.write(body);process.exit(Number(process.env.TEST_GATEWAY_EXIT||0));});`);
     const timestamp = '2026-09-07T20:00:00Z';
-    const environment = { ...process.env, MPRLAB_GATEWAY_EXECUTABLE: process.execPath, MPRLAB_ARTIFACT_VERSION: 'v1.2.3', ALLERGY_WHEEL_ANDROID_KEYSTORE: join(directory, 'configs/signing/android.p12') };
+    await writeFile(join(directory, 'private-environment-operation'), `
+const assert = require('node:assert/strict');
+let body = '';
+process.stdin.on('data', data => body += data);
+process.stdin.on('end', () => {
+    assert.deepEqual(JSON.parse(body), { root: process.env.MPRLAB_APP_ROOT, keys: ['ALLERGY_WHEEL_ANDROID_KEYSTORE'] });
+    process.stdout.write(JSON.stringify({ ALLERGY_WHEEL_ANDROID_KEYSTORE: process.env.TEST_CAPTURED_SIGNING_PATH }));
+});
+`);
+    const environment = { ...process.env, MPRLAB_GATEWAY_EXECUTABLE: process.execPath,
+        MPRLAB_APP_ROOT: directory, MPRLAB_ARTIFACT_VERSION: 'v1.2.3',
+        TEST_CAPTURED_SIGNING_PATH: join(directory, 'configs/signing/android.p12'),
+        ALLERGY_WHEEL_ANDROID_KEYSTORE: '/stale-ambient-signing-path' };
     for (const [platform, extension] of [['android', 'aab'], ['ios', 'ipa']]) {
         const output = join(directory, `${platform}.${extension}`);
         const args = [adapter, '--mobile-dir', mobile, '--output', output, '--release-timestamp', timestamp];

@@ -135,6 +135,20 @@ Give each term one meaning. Use the same term for the same concept in all docume
 - `test fixture`: Temporary data or markup for one test.
 - `test stub`: A substitute for a real component in a test.
 
+- `adult agreement`: The parent checkbox that authorizes optional adult feedback processing for the current visit.
+- `aggregate count`: A daily application total without a persistent visitor record.
+- `cookie`: Browser data that can accompany a network request.
+- `data inventory`: The recorded data fields, requests, storage, purposes, retention, and removal for each application surface.
+- `data retention`: The period or condition for which a service keeps data.
+- `deletion`: Removal of stored application or provider data.
+- `persistent storage`: Browser or application data storage that survives the current JavaScript document state.
+- `privacy qualification`: Evidence about actual provider, native runtime, and store declaration behavior.
+- `proxy log`: A request record produced by the network gateway.
+- `referrer`: A browser header that identifies the source of a request.
+- `request header`: HTTP metadata sent with a request.
+- `session memory`: Gameplay state that exists only in the active JavaScript document.
+- `storage isolation`: The separation that prevents one document origin from access to another origin's browser data.
+
 ## MPR Lab Technical Verbs
 
 - `archive`: Move completed history from the active issue tracker to durable storage.

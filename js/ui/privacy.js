@@ -8,6 +8,7 @@ export function renderPrivacyInformation(main) {
     const privacy = document.createElement('p');
     privacy.id = 'privacy-text';
     privacy.textContent = ParentText.PRIVACY;
+    privacy.style.whiteSpace = 'pre-line';
     main.append(title, privacy);
 }
 
@@ -19,6 +20,7 @@ export function renderPrivacyDetails(main) {
     const privacy = document.createElement('p');
     privacy.id = 'privacy-text';
     privacy.textContent = ParentText.PRIVACY;
+    privacy.style.whiteSpace = 'pre-line';
     details.append(summary, privacy);
     main.append(details);
 }
