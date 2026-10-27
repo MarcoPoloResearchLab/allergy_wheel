@@ -182,11 +182,11 @@ These native prerequisites are separate from Docker-only browser development.
 5. Complete the device acceptance checks in `.mprlab/MOBILE-READINESS.md`.
 
 Each build writes an artifact receipt with its version, source commit, uncommitted-source indicator, and file digests.
-Version `1.0.0` currently identifies a development build.
+Version `1.0.1` currently identifies a development build.
 The Android APK uses a development signature.
 The iOS output targets the simulator and cannot be installed on a physical iPhone.
 These files are not store artifacts.
-F001 retains signed AAB and IPA production and software acceptance.
+F001 records completed software acceptance, and F003 retains signed AAB and IPA production and public store delivery.
 
 Keep changes in `mobile/app.json`, the config plugin, and the JavaScript sources.
 Regenerate native projects after a native configuration change.

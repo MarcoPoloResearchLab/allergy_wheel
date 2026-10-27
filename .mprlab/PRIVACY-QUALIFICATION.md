@@ -2,7 +2,32 @@
 
 F004 owns the client implementation and verification commands. P002 preserves the full earlier decision history.
 F003 owns the production checks and store declarations below. F001 owns native software acceptance.
-The review date is October 1, 2026. This record does not certify legal consent, country approval, or store acceptance.
+The first review date was October 1, 2026. This record does not certify legal consent, country approval, or store acceptance.
+
+## Current Qualification On October 27, 2026
+
+F001 software acceptance is completed. F003 retains provider qualification and store delivery.
+F001 CI passed Chromium and WebKit game, privacy, offline, audio lifecycle, and phone and tablet layout checks before B052.
+Version 1.0.1 displayed the game in an iOS 27 simulator and an Android 17 emulator.
+Native observations recorded storage and font and count resource history.
+The later native UI checks passed parent controls, selection, mute, Stop, results, and Spin Again on both platforms.
+At startup, Android game local and session storage key lists were empty.
+Analytics localStorage access was denied, and its session storage keys were empty.
+At startup, iOS game and analytics local and session storage key lists were empty.
+Exact native startup methods, request headers, bodies, and referrers were not captured.
+Source request tests and native observations supply the accepted software evidence with these limits.
+No further inspector or hardware check is required.
+
+The inspected LoopAware runtime selects 90-day aggregate retention. No expired aggregate rows were observed.
+Source code removes expired counts at startup and every 24 hours.
+The collector and proxy log observations for aggregate counts contained no IP address, request headers, or visitor identifiers.
+The new LoopAware deployment and scoped synthetic site removal remain pending.
+Feedback IP and User-Agent remain retained fields. The 30-day account deletion period remains a provider policy claim.
+Website release v1.0.3 passed verification with the prior public privacy notice.
+The B052 purpose and safeguard text remains unpublished. Its next website activation requires a new public verification.
+Store declarations are saved. Apple privacy publication still requires user approval for its legal attestation.
+These results do not establish signed artifacts, store review, or public availability.
+Dated sections below preserve their earlier evidence. This section and the production procedure control current qualification.
 
 ## Current Audience And Services
 
@@ -93,29 +118,35 @@ The Kids Category decision remains separate from the selected audience and ratin
 [Google Play Families requirements](https://support.google.com/googleplay/android-developer/answer/9893335) apply when the declared audience includes children.
 [Google Data safety guidance](https://support.google.com/googleplay/android-developer/answer/10787469) requires accurate declarations for off-device data and external code.
 [Google consent guidance](https://developers.google.com/tag-platform/security/guides/consent) explains denied defaults before measurement configuration.
-[Google Fonts data practices](https://fonts.googleblog.com/2022/11/your-privacy-and-google-fonts.html) describe network data received for font delivery.
+[Google Fonts privacy FAQ](https://fonts.google.com/faq#privacy) describes unauthenticated requests and IP use for font delivery and security.
+Google states that Fonts requests do not set cookies or include Google account credentials.
+Google states that it does not use Fonts data for end-user profiles or targeted advertisements.
+The public policy attributes these statements to Google. The FAQ gives no fixed retention period.
 These sources establish review requirements. They do not establish this application's completed store certification.
+
+B052 makes the count purpose and restricted log safeguards explicit in the shared policy.
+Startup totals measure use and help maintain the app. The count service does not create visitor profiles.
+The collector and proxy log exclusions apply to aggregate counts. They do not describe retained feedback IP and User-Agent fields.
+These statements preserve the current provider observations and their limits. They do not establish a legal exception or certification.
 
 Feedback IP and User-Agent are retained fields, separate from count and font transport data.
 Site removal checks do not verify account deletion timing. The 30-day account deletion period remains a provider policy claim.
 
 ## Production Procedure Before Store Certification
 
-1. Capture game, counts, fonts, and adult feedback requests in Android emulators and iOS simulators.
-2. Record request bodies, cookies, referrers, storage, and session reset with actual provider scripts.
-3. Compare those captures with the exported contract and both store candidates.
-4. Inspect the deployed LoopAware collector profile and proxy configuration.
-5. Verify that aggregate collector proxy logs omit persistent IP addresses, headers, and visitor identifiers.
-6. Verify the deployed retention job and removal of daily counts outside the selected window.
-7. Create isolated test sites under the existing operator account. Record synthetic feedback and counts before removal.
-8. Delete only those test sites through the public `DeleteSite` operation. Compare scoped database records before and after removal.
-9. Verify the current Google property settings, consent signals, retention, and deletion procedure for the browser website.
-10. Compare the live public policy with the candidate's exported policy after website publication.
-11. Complete Apple App Privacy and Google Data safety from the verified native inventory.
-12. Review the selected child age groups, countries, and selected providers against current official store rules.
-13. Record each declaration, certification, and store response separately from implementation acceptance.
+1. Use the recorded source, browser, and native evidence with its stated observation limits.
+2. Compare the current disclosure exports and saved store answers with the native data inventory.
+3. Complete the new LoopAware deployment before the remaining synthetic removal check.
+4. Use only operator-owned isolated test sites and synthetic adult feedback and counts for that check.
+5. Delete only those sites through `DeleteSite`. Compare scoped database records before and after removal.
+6. Keep site removal evidence separate from the 30-day account deletion policy claim.
+7. Keep the dated browser Google property evidence separate from the native inventory.
+8. Compare the public policy and the final candidate's source contract.
+9. Complete the store data, audience, country, and provider declarations from the verified inventory.
+10. Obtain user approval for the legal attestation before Apple privacy publication.
+11. Record declaration saves, privacy publication, certification, review, and public availability as separate results.
 
 Use the available software environments for device acceptance. No hardware test is required.
 Use synthetic adult data for provider removal checks. Do not remove the production site or customer records.
 Until those checks pass, keep the store certification incomplete and retain the concrete missing result under F003.
-The current missing results are deployed logs, retention execution, feedback deletion, native captures, and store declarations.
+The remaining results are the new LoopAware deployment, scoped synthetic site removal, and final store declarations and certification.

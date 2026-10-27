@@ -11,6 +11,23 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B052] (P1) Clarify service purposes and count safeguards
+  Goal:
+  Describe aggregate count use and the attributed Google Fonts practices in the shared privacy policy.
+
+  Requirements:
+  - Describe the count purpose and restricted collector and proxy logs.
+  - Keep feedback metadata and its retention separate from count safeguards.
+  - Attribute Google Fonts purposes and safeguards to the current provider FAQ.
+  - Preserve the unknown font retention period and separate store certification decision.
+
+  Validation:
+  The public browser regression failed before the source correction because the count purpose was absent.
+  Focused Chromium and WebKit checks passed with the disclosure export and public policy parity check.
+  Final `make ci` passed with the pinned Gateway runtime, CI mode, and closed stdin.
+  Provider qualification and legal certification remain separate decisions.
+  The B052 notice is not published. Website activation remains a separate operation.
+
 - [x] [B051] (P1) Select the Android compiler policy
   Goal:
   Use the selected Kotlin execution policy in each generated Android launcher.
@@ -341,7 +358,17 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Its procedure must preserve these exact remaining checks from P002.
   Publication and global legal certification are outside this implementation issue.
 
-- [!] [F001] (P1) {P001,F004,I001,I003} Prepare the first mobile game package
+- [x] [F001] (P1) {P001,F004,I001,I003} Prepare the first mobile game package
+  Resolution On October 27, 2026:
+  Software acceptance is completed for version 1.0.1 in iOS 27 simulators, Android 17 emulators, Chromium, and WebKit.
+  Current native flows passed parent controls, selection, mute, Stop, results, and Spin Again.
+  Browser and packaged checks covered offline phone and tablet rounds, rotation layouts, audio lifecycle, and external service failure.
+  Current cumulative CI passed. Native storage and font and count resource observations supplement the source request tests.
+  Exact native startup request methods, headers, bodies, and referrers were not captured. This remains an evidence limit.
+  The accepted software evidence requires no further inspector or hardware gate.
+  The README supplies development build and installation commands. `MOBILE-READINESS.md` records acceptance and artifact identities.
+  F003 retains provider qualification, signed artifacts, final store assets, attestation, review, and public availability.
+
   Review On October 1, 2026:
   The Expo shell, offline package, native preparation, and shared build adapters are implemented.
   The current native service contract uses aggregate LoopAware counts, automatic fonts, and parent feedback.
@@ -353,8 +380,6 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
   Goal:
   An end user can install Allergy Wheel on the selected mobile platforms.
-
-  Blocked: F004 verification and the uncovered software behavior require complete acceptance evidence.
 
   Requirements:
   - Use the selected decisions from P001 and F004.
@@ -429,7 +454,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   The integration tests first failed, then passed after the source changes.
   These results do not establish signed artifacts or device acceptance.
 
-  Remaining Software Acceptance:
+  Earlier Software Acceptance:
   - Verify rounds, audio, mute, rotation, background return, and first-launch offline play in simulators, emulators, or automated browsers.
   - Verify native parent requests and storage against F004.
   Release Operations:
@@ -502,6 +527,18 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Close this issue after both website installation paths pass.
 
 - [!] [F003] (P1) {F001,F004,I002,B046} Publish Allergy Wheel to Google Play and the Apple App Store
+  Current Review On October 27, 2026:
+  F001 software acceptance is completed. The current manifest selects only the website.
+  The website release v1.0.3 and current public policy passed verification.
+  Google saved seven reviewed data types with required Diagnostics. No review submission is recorded.
+  Google saved 178 countries and regions and the declaration that the app uses no Advertising ID.
+  Its saved audience remains `13+`.
+  Complete the selected ages-six-and-older audience form and certification after LoopAware qualification.
+  Apple saved six reviewed data types with `No Tracking` answers. Its final privacy publication requires a legal attestation.
+  User approval for that action remains pending. Saved answers do not establish publication or store review.
+  The external archive preserves the exact mobile declaration for later restoration after provider and metadata readiness.
+  Native developer artifact identities remain separate from signed store receipts.
+
   Review On October 1, 2026:
   The selected manifest now declares the website and both mobile platforms.
   Store exporters, artwork generation, native signing configuration, and schema 3 adapters are implemented.
@@ -515,21 +552,23 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Goal:
   End users can install the approved Allergy Wheel release from both public stores.
 
-  Blocked: F001 software acceptance, production privacy qualification, and store declarations remain incomplete.
+  Blocked: The new LoopAware deployment and scoped synthetic site removal remain pending.
+  Final store assets, legal attestation approval, signed artifacts, review, and public release remain operations.
   B046 corrected source metadata. Store console updates remain an operation. B047 and B005 passed focused verification.
 
   Evidence:
   The current Android target creates a development APK.
   The current iOS target creates a simulator application.
   Local CI and development builds passed, but those results do not establish store readiness.
-  The September 7 preparation initially declared only the website. The current manifest also declares both mobile platforms.
+  The current manifest selects only the website. The mobile declaration remains in the external archive.
   Both platforms use the application identifier `com.mprlab.allergywheel`.
   Neither public store destination is recorded in the website catalog.
 
   Production Privacy Procedure:
   `PRIVACY-QUALIFICATION.md` preserves the remaining P002 production checks.
-  Verify deployed proxy logs, retention execution, feedback deletion, native captures, and store declarations.
-  Verify browser Google property settings and the public policy against the selected candidate.
+  Use the accepted source, browser, and native evidence with its recorded observation limits.
+  Complete the new LoopAware deployment, scoped synthetic site removal, and final store declarations.
+  Keep browser Google property history separate from the native inventory. Verify the current public policy.
   Use isolated test sites under the existing operator account with synthetic adult feedback and counts.
   Use public `DeleteSite` and compare scoped database records before and after removal.
   Keep the 30-day account deletion period as a provider policy claim.
