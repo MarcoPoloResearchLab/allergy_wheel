@@ -8,18 +8,18 @@ Dated sections preserve earlier preparation evidence. The current operation sequ
 
 F001 software acceptance is completed with the native observation limits in `PRIVACY-QUALIFICATION.md`.
 F001 CI passed before B052. Actual iOS 27 and Android 17 game interactions passed.
-The native development artifacts use version 1.0.1. Website release v1.0.3 passed verification with the prior privacy notice.
-The B052 purpose and safeguard text remains unpublished. Its next website activation requires a new public verification.
-The selected manifest contains only the website. Its explicit environment file is `configs/.env.allergy-wheel`.
+The native development artifacts use version 1.0.1. Website release v1.0.4 and the B052 notice passed public verification.
+The unchanged website deployment retry passed in 22.272 seconds.
+The selected manifest declares the website and both mobile platforms. Its explicit environment file is `configs/.env.allergy-wheel`.
 No credential migration is required. `.mprlab/deploy/resources.yml` remains the only deployment specification.
 
 Google saved seven reviewed data types, with Diagnostics required. No current review submission is recorded.
 Google saved all 178 countries and regions and the declaration that the app uses no Advertising ID.
 Its saved target audience remains `13+`. The selected product audience remains ages six and older.
-Complete the younger audience form and certification after LoopAware qualification.
+Complete the younger audience form and obtain user approval for its final certification.
 Apple saved six reviewed data types. Diagnostics use `App Functionality` and linked data. Aggregate analytics are unlinked.
 Each type has a saved `No Tracking` answer. Its final privacy publication requires a legal attestation.
-User approval for that action remains pending. Saved declarations remain separate from publication and review.
+The user approved that action. Provider publication remains unverified. Saved declarations remain separate from publication and review.
 
 Current native phone screenshots are in `artifacts/layout`.
 Android captures cover selection, wheel, results, and the parent area at 1080 by 2424 pixels.
@@ -38,17 +38,23 @@ These descriptions remove the stale native Google Analytics claim.
 The saved asset declaration selects `Do not label assets` for raw app captures and deterministic SVG rendering.
 This choice does not establish the original SVG's creative authorship.
 
-1. Complete the new LoopAware deployment and scoped synthetic site removal under F003.
-2. Confirm saved metadata and screenshots. Complete the required store declarations and attestation.
-3. Restore only the exact archived `mobile` mapping in `resources.yml` after provider, software, and metadata readiness.
+Production LoopAware v1.1.9 supplies the accepted privacy, count retention, and redacted log evidence.
+Approved synthetic site deletion passed on October 27. The selected site, count row, and feedback row were removed.
+All 27 preexisting unrelated sites were preserved. This check excludes operational logs, email logs, and account deletion timing.
+A newer LoopAware deployment remains a separate pending operation. It is not a prerequisite for this provider check.
+
+1. Use the recorded scoped deletion and preservation acceptance on qualified LoopAware v1.1.9 under F003.
+2. Confirm saved metadata and screenshots.
+3. Preserve the restored exact `mobile` mapping in `resources.yml`.
 4. Keep the archive outside application configuration. Preserve the current website, inputs, environment file, and execution policy.
 5. Run selected-manifest validation, Governor, and final CI on the restored source.
-6. Build and seal the signed AAB and IPA through the canonical lifecycle.
-7. Publish those sealed artifacts. Record upload, processing, review, and public availability separately.
+6. After technical qualification, build and seal the signed AAB and IPA through the canonical lifecycle.
+7. Complete required declarations and approved attestations before publication. Publish only those sealed artifacts.
+   Record upload, processing, review, and public availability separately.
 8. Keep F003 open until both public destinations are verified. Then complete the F002 website link work.
 
 The external `allergy-mobile-declaration-exact.yml` archive preserves the removed mobile mapping.
-It is evidence for the later source change, not another deployment specification.
+Its exact mobile declaration is restored in the selected manifest. The archive remains evidence, not another deployment specification.
 Current native qualification uses semantic identity, version, build, signing, and provider results.
 Dated sections below preserve earlier observations and do not replace this current operation sequence.
 
@@ -101,12 +107,11 @@ This tracker review does not execute a release, publication, or deployment opera
 
 ## Website Privacy Publication On October 26, 2026
 
-The current manifest selects only the website for this bounded delivery.
+That bounded delivery selected only the website. Website v1.0.4 now serves the B052 notice.
+The current manifest restores the exact archived mobile declaration after scoped LoopAware deletion qualification.
 The native application source and its adapter tests remain in the repository.
-Publish the current privacy page before store artifact submission.
-Use the canonical `make release && make publish && make deploy` command.
-Verify the public policy through `make verify-store-pages` after deployment.
-Restore the mobile declaration through a subsequent source change after the required LoopAware and native privacy checks.
+Public `make verify-store-pages` passed for v1.0.4. The unchanged website deployment retry passed in 22.272 seconds.
+Use the canonical lifecycle for subsequent signed artifacts. Keep artifact preparation separate from provider publication approval.
 Keep Google Play production submission separate because it can start store review.
 The support address is informational. Application qualification has no external mailbox retention requirement.
 Optional adult feedback retains its separate provider contact, retention, and deletion contract.

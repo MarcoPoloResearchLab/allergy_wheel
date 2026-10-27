@@ -26,7 +26,8 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Focused Chromium and WebKit checks passed with the disclosure export and public policy parity check.
   Final `make ci` passed with the pinned Gateway runtime, CI mode, and closed stdin.
   Provider qualification and legal certification remain separate decisions.
-  The B052 notice is not published. Website activation remains a separate operation.
+  Website release v1.0.4 activated the B052 notice. The live public policy verification passed.
+  The unchanged website deployment retry passed in 22.272 seconds.
 
 - [x] [B051] (P1) Select the Android compiler policy
   Goal:
@@ -528,15 +529,15 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 - [!] [F003] (P1) {F001,F004,I002,B046} Publish Allergy Wheel to Google Play and the Apple App Store
   Current Review On October 27, 2026:
-  F001 software acceptance is completed. The current manifest selects only the website.
-  The website release v1.0.3 and current public policy passed verification.
+  F001 software acceptance is completed. The selected manifest declares the website and both mobile platforms.
+  Website release v1.0.4 and the B052 notice passed public verification.
   Google saved seven reviewed data types with required Diagnostics. No review submission is recorded.
   Google saved 178 countries and regions and the declaration that the app uses no Advertising ID.
   Its saved audience remains `13+`.
-  Complete the selected ages-six-and-older audience form and certification after LoopAware qualification.
+  Complete the selected ages-six-and-older audience form and certification after provider removal qualification.
   Apple saved six reviewed data types with `No Tracking` answers. Its final privacy publication requires a legal attestation.
-  User approval for that action remains pending. Saved answers do not establish publication or store review.
-  The external archive preserves the exact mobile declaration for later restoration after provider and metadata readiness.
+  The user approved that action. Provider publication remains unverified. Saved answers do not establish publication or store review.
+  The selected manifest restores the exact archived mobile declaration. Technical qualification and publication approvals remain separate results.
   Native developer artifact identities remain separate from signed store receipts.
 
   Review On October 1, 2026:
@@ -552,25 +553,30 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Goal:
   End users can install the approved Allergy Wheel release from both public stores.
 
-  Blocked: The new LoopAware deployment and scoped synthetic site removal remain pending.
-  Final store assets, legal attestation approval, signed artifacts, review, and public release remain operations.
-  B046 corrected source metadata. Store console updates remain an operation. B047 and B005 passed focused verification.
+  Blocked: Google child audience certification requires user approval before provider publication.
+  Production LoopAware v1.1.9 supplies accepted privacy, count retention, and redacted log evidence.
+  A newer LoopAware deployment remains a separate pending operation, not a prerequisite for this provider check.
+  Required screenshots and corrected descriptions are saved in both stores.
+  Apple privacy publication has user approval but remains unverified. Signed artifacts, review, and public release remain operations.
+  B046 corrected source metadata. B047 and B005 passed focused verification.
 
   Evidence:
   The current Android target creates a development APK.
   The current iOS target creates a simulator application.
   Local CI and development builds passed, but those results do not establish store readiness.
-  The current manifest selects only the website. The mobile declaration remains in the external archive.
+  The selected manifest contains the exact restored mobile declaration. The external archive remains evidence.
   Both platforms use the application identifier `com.mprlab.allergywheel`.
   Neither public store destination is recorded in the website catalog.
 
   Production Privacy Procedure:
   `PRIVACY-QUALIFICATION.md` preserves the remaining P002 production checks.
   Use the accepted source, browser, and native evidence with its recorded observation limits.
-  Complete the new LoopAware deployment, scoped synthetic site removal, and final store declarations.
+  Use qualified production LoopAware v1.1.9. Approved scoped deletion and preservation verification passed on October 27.
+  The selected site, count row, and feedback row were removed. All 27 preexisting unrelated sites were preserved.
+  Complete final store declarations.
   Keep browser Google property history separate from the native inventory. Verify the current public policy.
-  Use isolated test sites under the existing operator account with synthetic adult feedback and counts.
-  Use public `DeleteSite` and compare scoped database records before and after removal.
+  Retain the approved isolated test site deletion evidence and scoped database comparison.
+  Keep operational logs and email logs outside that removal assertion.
   Keep the 30-day account deletion period as a provider policy claim.
   Keep the store certification incomplete until the required evidence passes.
 
