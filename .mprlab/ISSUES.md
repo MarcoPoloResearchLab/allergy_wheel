@@ -11,6 +11,26 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B050] (P0) Use the iOS scene lifecycle
+  Goal:
+  Start the current application on iOS 27 after a build with Xcode 27.
+
+  Observed Failure:
+  The current simulator application stops at the UIKit scene lifecycle assertion.
+
+  Requirements:
+  - Select the supported Expo scene option in source config.
+  - Preserve native source dependencies and store signing inputs.
+  - Verify the generated scene manifest and factory provider through Expo CLI.
+  - Regenerate native output and pass final CI.
+
+  Validation:
+  The real Expo generator regression failed before the source correction.
+  Canonical native preparation and final `make ci` passed.
+  The unsigned simulator build displayed the game on iOS 27.0 after a build with the iOS 27.1 SDK.
+  Version 1.0.1, build 1, remained active after 15 seconds.
+  Signed store artifacts remain a separate operation.
+
 - [x] [B049] (P1) Disclose retained feedback network metadata
   Goal:
   Describe feedback IP and User-Agent data separately from transient count and font transport data.

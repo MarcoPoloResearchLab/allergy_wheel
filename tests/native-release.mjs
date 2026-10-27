@@ -25,6 +25,15 @@ try {
     const gradle = await readFile(join(prepared, 'android/app/build.gradle'), 'utf8');
     const plist = await readFile(join(prepared, 'ios/AllergyWheel/Info.plist'), 'utf8');
     const xcode = await readFile(join(prepared, 'ios/AllergyWheel.xcodeproj/project.pbxproj'), 'utf8');
+    const appDelegate = await readFile(join(prepared, 'ios/AllergyWheel/AppDelegate.swift'), 'utf8');
+    assert.match(plist, /<key>UIApplicationSceneManifest<\/key>/, 'Generated iOS application must adopt the scene lifecycle.');
+    assert.match(plist, /<key>UISceneDelegateClassName<\/key>\s*<string>EXExpoAppSceneDelegate<\/string>/);
+    assert.match(appDelegate, /class AppDelegate: ExpoAppDelegate, ExpoReactNativeFactoryProvider/);
+    assert.doesNotMatch(appDelegate, /UIWindow\(frame: UIScreen\.main\.bounds\)|factory\.startReactNative\(/);
+    const properties = JSON.parse(await readFile(join(prepared, 'ios/Podfile.properties.json'), 'utf8'));
+    assert.equal(properties['ios.buildReactNativeFromSource'], 'true');
+    assert.equal(properties.EXPO_USE_PRECOMPILED_MODULES, 'false');
+
     const require = createRequire(resolve('mobile/package.json'));
     const project = require('xcode').project(join(prepared, 'ios/AllergyWheel.xcodeproj/project.pbxproj'));
     project.parseSync();

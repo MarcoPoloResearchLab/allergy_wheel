@@ -6,17 +6,39 @@
     "icon": "./assets/icon.png",
     "orientation": "default",
     "userInterfaceStyle": "light",
-    "platforms": ["ios", "android"],
-    "plugins": ["./plugins/withOfflineBuild.cjs", "./plugins/withStoreRelease.cjs", "expo-system-ui"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "plugins": [
+      "./plugins/withOfflineBuild.cjs",
+      "./plugins/withStoreRelease.cjs",
+      "expo-system-ui",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "enableSceneSupport": true,
+            "buildReactNativeFromSource": true,
+            "usePrecompiledModules": false
+          }
+        }
+      ]
+    ],
     "ios": {
       "bundleIdentifier": "com.mprlab.allergywheel",
       "supportsTablet": true,
       "requireFullScreen": false,
-      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.mprlab.allergywheel",
-      "blockedPermissions": ["android.permission.RECORD_AUDIO", "com.google.android.gms.permission.AD_ID"]
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "com.google.android.gms.permission.AD_ID"
+      ]
     }
   }
 }

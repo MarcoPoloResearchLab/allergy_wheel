@@ -97,6 +97,8 @@ Give each term one meaning. Use the same term for the same concept in all docume
 
 ## Repository Technical Nouns
 
+- `scene lifecycle`: The UIKit contract that connects application windows to scenes.
+
 - `APK`: An Android application package for direct installation.
 - `AAB`: An Android application bundle for Google Play.
 - `IPA`: A signed iOS application archive.
