@@ -5,8 +5,23 @@
 The September 7, 2026 implementation supplies an Expo mobile shell for the existing JavaScript game.
 The local Android development APK and iOS simulator application contain the game resources.
 The current operation status is in `STORE-READINESS.md`. Earlier validation sections describe their recorded source.
-F001 retains software acceptance. Signed store artifacts remain a separate release requirement.
+F001 records completed software acceptance. F003 retains signed store artifacts and public store delivery.
 F002 retains verification of public store destinations.
+
+## Software Acceptance On October 27, 2026
+
+F001 software acceptance is completed for the current version 1.0.1 development source.
+The Android 17 emulator and iOS 27 simulator displayed the game and passed the current native UI flows.
+Those flows covered parent controls, selection, mute, Stop, results, and Spin Again.
+Chromium and WebKit checks covered offline phone and tablet rounds, layout, audio lifecycle, and external service failure.
+The current cumulative CI passed, including the privacy and native preparation contracts.
+`artifacts/layout` contains the current native phone and browser layout captures.
+The README supplies the development build and installation commands.
+
+Native observations recorded storage, fonts, and count resources. Exact startup request methods, headers, bodies, and referrers were not captured.
+Source request tests and native observations supply accepted software evidence with these stated limits.
+`PRIVACY-QUALIFICATION.md` records those limits and the remaining provider operation.
+Signed artifacts and public store availability remain separate F003 results.
 
 ## Confirmed Decisions
 
@@ -156,15 +171,15 @@ After an explicit publication request:
 
 1. Run the Governor check.
 2. Run `make ci` on the final source.
-3. Use the authorized source commit for `make release` through the sibling MPR gateway.
+3. Use the selected source for `make release` through the installed Gateway runtime.
 4. Run `make publish` to publish the sealed artifact.
 5. Run `make deploy` to apply the selected Pages resource.
 6. Verify the public website, domain, and `/.mprlab-release.json` against the publication receipt.
 
 The lifecycle owns the release marker.
 The local Pages test does not create a release marker or prove public publication.
-The current manifest declares the website and both mobile platforms.
-Signed mobile store artifacts require the mobile lifecycle contract before a store release.
+The current manifest selects only the website.
+The archived mobile mapping remains external until the F003 provider and metadata prerequisites pass.
 
 ## Local Validation
 
@@ -229,11 +244,8 @@ The language review covers the changed prose only.
 
 ## Remaining Acceptance
 
-F001 retains the uncovered software behavior and runtime evidence:
-
-- Verify rounds, audio, mute, rotation, background return, and first-launch offline play in simulators, emulators, or automated browsers.
-- Native parent service request and storage verification.
-- Apply the F004 data contract and complete the F003 production privacy procedure.
+F001 software acceptance is completed with the recorded native observation limits.
+F003 retains the new LoopAware deployment, scoped synthetic site removal, and final store certification.
 
 Signed AAB and IPA artifacts, final screenshots, and store declarations remain operations in `STORE-READINESS.md`.
 B046 corrected native store metadata. B047 corrected the feedback verification command.

@@ -4,6 +4,54 @@ F003 owns public store delivery. F001 owns software acceptance. This record reta
 F004 supplies the data contract. P002 preserves the decision history. B046 corrected the native store metadata source.
 Dated sections preserve earlier preparation evidence. The current operation sequence controls remaining work.
 
+## Current Operation Status On October 27, 2026
+
+F001 software acceptance is completed with the native observation limits in `PRIVACY-QUALIFICATION.md`.
+F001 CI passed before B052. Actual iOS 27 and Android 17 game interactions passed.
+The native development artifacts use version 1.0.1. Website release v1.0.3 passed verification with the prior privacy notice.
+The B052 purpose and safeguard text remains unpublished. Its next website activation requires a new public verification.
+The selected manifest contains only the website. Its explicit environment file is `configs/.env.allergy-wheel`.
+No credential migration is required. `.mprlab/deploy/resources.yml` remains the only deployment specification.
+
+Google saved seven reviewed data types, with Diagnostics required. No current review submission is recorded.
+Google saved all 178 countries and regions and the declaration that the app uses no Advertising ID.
+Its saved target audience remains `13+`. The selected product audience remains ages six and older.
+Complete the younger audience form and certification after LoopAware qualification.
+Apple saved six reviewed data types. Diagnostics use `App Functionality` and linked data. Aggregate analytics are unlinked.
+Each type has a saved `No Tracking` answer. Its final privacy publication requires a legal attestation.
+User approval for that action remains pending. Saved declarations remain separate from publication and review.
+
+Current native phone screenshots are in `artifacts/layout`.
+Android captures cover selection, wheel, results, and the parent area at 1080 by 2424 pixels.
+Apple saved one current native JPEG in each required iPhone and 13-inch iPad screenshot slot.
+The iPhone result is 1206 by 2622 pixels. The iPad initial selection is 2064 by 2752 pixels.
+Both captures use development version 1.0.1, build 1. The required iPad capture is completed.
+Saved assets do not establish review submission. Additional iPhone states are optional.
+Google accepted and saved three current native PNG screenshots at 1080 by 2424 pixels: selection, wheel, and result.
+The earlier three screenshots were removed from the selected listing. Their originals and provider library entries were retained.
+The listing overview shows `Ready to send for review`. No review submission is recorded.
+Keep each screenshot's development identity separate from signed store receipts.
+Existing artwork supplies the 512-pixel Google icon, 1024 by 500 feature graphic, and 1024-pixel native icon.
+Google saved the corrected full description. Apple saved the corrected description and review notes from current exports.
+These descriptions remove the stale native Google Analytics claim.
+
+The saved asset declaration selects `Do not label assets` for raw app captures and deterministic SVG rendering.
+This choice does not establish the original SVG's creative authorship.
+
+1. Complete the new LoopAware deployment and scoped synthetic site removal under F003.
+2. Confirm saved metadata and screenshots. Complete the required store declarations and attestation.
+3. Restore only the exact archived `mobile` mapping in `resources.yml` after provider, software, and metadata readiness.
+4. Keep the archive outside application configuration. Preserve the current website, inputs, environment file, and execution policy.
+5. Run selected-manifest validation, Governor, and final CI on the restored source.
+6. Build and seal the signed AAB and IPA through the canonical lifecycle.
+7. Publish those sealed artifacts. Record upload, processing, review, and public availability separately.
+8. Keep F003 open until both public destinations are verified. Then complete the F002 website link work.
+
+The external `allergy-mobile-declaration-exact.yml` archive preserves the removed mobile mapping.
+It is evidence for the later source change, not another deployment specification.
+Current native qualification uses semantic identity, version, build, signing, and provider results.
+Dated sections below preserve earlier observations and do not replace this current operation sequence.
+
 ## Remaining Work On October 1, 2026
 
 The mobile shell, offline package, shared adapters, store exporter, artwork generator, and website link UI are implemented.
@@ -95,7 +143,9 @@ Final `make ci` passed in Docker.
 
 `mobile/store/listing.json` contains the English store text and reviewer instructions.
 B046 corrected the descriptions and reviewer notes to describe automatic fonts, aggregate LoopAware counts, and guarded feedback.
-The exporter integration tests reject native Google Analytics descriptions. Console metadata updates remain pending before submission.
+The exporter integration tests reject native Google Analytics descriptions.
+Google saved the current full description. Apple saved the current description and review notes.
+Saved metadata remains separate from review submission and signed candidate acceptance.
 The selected support contact is `support@mprlab.com`.
 The public privacy page also supplies the support contact.
 
@@ -223,16 +273,18 @@ Do not submit a claim of no data collection, no tracking, or approved child-dire
 
 ## Artwork And Screenshots
 
-The repository wheel SVG supplies existing artwork. Native app icons and store artwork still require preparation and review.
-Screenshots must show the final native candidate. Browser captures do not establish native acceptance.
-Capture allergen selection, the wheel, and ingredient results for both phone and tablet layouts.
-Keep each capture with its platform, device, application version, build identifier, and source commit.
+`make store-artwork` prepares the native icon and Google artwork from the existing wheel SVG.
+Current native phone captures are usable for the required phone slots.
+The required iPhone slot accepts 1206 by 2622 pixels.
+The required 13-inch iPad initial selection capture is completed and saved in its Apple screenshot slot.
+An owned iOS simulator supplied that asset. Additional phone selection, wheel, and result captures are optional.
+Keep each capture with its platform, simulator or emulator, application version, build identifier, and selected source.
+Use native captures for store device slots. Browser images remain layout evidence.
 
-Apple's accepted dimensions depend on the device class.
-Use the current [Apple screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/).
+Use the current [Apple screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications).
 Google requires a 512 by 512 pixel store icon and a 1024 by 500 pixel feature graphic.
 See [Google preview asset requirements](https://support.google.com/googleplay/android-developer/answer/9866151?hl=en).
-No generated screenshot or artwork is recorded as final in this preparation.
+The existing artwork has these dimensions. F003 retains the remaining store asset uploads.
 
 ## Earlier Completion Order
 

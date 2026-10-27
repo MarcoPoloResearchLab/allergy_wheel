@@ -103,6 +103,13 @@ for (const engine of [chromium, webkit]) {
             assert.match(privacyText, /IP address/i);
             assert.match(privacyText, /stores.*IP address.*User-Agent.*with.*feedback/i);
             assert.match(privacyText, /Google Fonts/i);
+            assert.match(privacyText, /Startup totals help us measure use and maintain the app\./);
+            assert.match(privacyText, /count collector and proxy omit client IP addresses, User-Agent values, and visitor identifiers from their logs\./);
+            assert.match(privacyText, /count service does not create visitor profiles\./);
+            assert.match(privacyText, /Google says it uses the requesting IP address to deliver fonts and for security\./);
+            assert.match(privacyText, /Google Fonts does not set cookies or include Google account credentials\./);
+            assert.match(privacyText, /Google says it does not use Fonts data for end-user profiles or targeted advertising\./);
+            assert.match(privacyText, /No fixed retention period is verified by this app\./);
             assert.match(privacyText, /does not send email/i);
             assert.match(privacyText, /support@mprlab\.com/);
             assert.doesNotMatch(privacyText, /support retention/i);
@@ -132,6 +139,7 @@ try {
     assert.equal(disclosure.audience.minimumAge, 6);
     assert.equal(disclosure.native.googleAnalytics, false);
     assert.equal(disclosure.native.counts.retentionDays, 90);
+    assert.equal(disclosure.native.fonts.retention, 'provider-managed; no fixed period verified');
     assert.equal(disclosure.native.feedback.deletionDays, 30);
     assert.equal(disclosure.browser.googleAnalytics, true);
     assert.equal(disclosure.storeCertification, 'not-certified');
