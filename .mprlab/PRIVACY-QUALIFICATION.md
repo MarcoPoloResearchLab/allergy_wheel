@@ -18,14 +18,23 @@ Exact native startup methods, request headers, bodies, and referrers were not ca
 Source request tests and native observations supply the accepted software evidence with these limits.
 No further inspector or hardware check is required.
 
-The inspected LoopAware runtime selects 90-day aggregate retention. No expired aggregate rows were observed.
+Production LoopAware v1.1.9 selects 90-day aggregate retention. No expired aggregate rows were observed.
 Source code removes expired counts at startup and every 24 hours.
 The collector and proxy log observations for aggregate counts contained no IP address, request headers, or visitor identifiers.
-The new LoopAware deployment and scoped synthetic site removal remain pending.
+Current provider evidence qualifies the count and privacy behavior.
+
+Approved synthetic site deletion passed on October 27 at 16:38 UTC.
+The scoped comparison confirmed zero selected sites, count rows, and feedback rows after removal.
+All 27 preexisting unrelated sites were preserved. The check excludes operational logs, email logs, and account deletion timing.
+A newer LoopAware deployment remains a separate pending operation.
+
 Feedback IP and User-Agent remain retained fields. The 30-day account deletion period remains a provider policy claim.
-Website release v1.0.3 passed verification with the prior public privacy notice.
-The B052 purpose and safeguard text remains unpublished. Its next website activation requires a new public verification.
-Store declarations are saved. Apple privacy publication still requires user approval for its legal attestation.
+
+Website release v1.0.4 and the B052 notice passed public verification.
+The unchanged website deployment retry passed in 22.272 seconds.
+
+Store declarations are saved. The user approved the Apple privacy attestation. Provider publication remains unverified.
+Google child audience certification still requires user approval.
 These results do not establish signed artifacts, store review, or public availability.
 Dated sections below preserve their earlier evidence. This section and the production procedure control current qualification.
 
@@ -40,7 +49,7 @@ Browser analytics defaults deny analytics and advertisement storage before measu
 Google signals and advertisement personalization are disabled. Denied storage can still permit measurement requests.
 
 `PrivacyContract` in `js/constants.js` supplies the public page, native parent text, and disclosure artifacts.
-The public policy URL is `https://allergy.mprlab.com/privacy.html` after publication of the current source.
+Website v1.0.4 serves the current public policy at `https://allergy.mprlab.com/privacy.html`.
 The food-safety warning remains part of that text.
 
 ## Data Inventory
@@ -48,7 +57,7 @@ The food-safety warning remains part of that text.
 | Surface | Data and purpose | Retention and removal | Evidence limit |
 | --- | --- | --- | --- |
 | Native game | Allergen selection and results stay in session memory. | Restart or reload removes the selection. System controls can clear older application storage. | Real selection creates no persistent storage in Chromium and WebKit. Native runtime verification remains below. |
-| Native counts | One empty POST supplies a startup count. Network transport processes an IP address. No cookies, referrer, selection, results, or visitor identifier are sent. | The provider contract keeps daily totals for at most 90 UTC calendar days. Site deletion removes associated counts. | LoopAware F016 source and B045 collector evidence give evidence for this contract. Deployed retention and proxy logs require verification. |
+| Native counts | One empty POST supplies a startup count. Network transport processes an IP address. No cookies, referrer, selection, results, or visitor identifier are sent. | The provider contract keeps daily totals for at most 90 UTC calendar days. Site deletion removes associated counts. | Production v1.1.9 config and log observations qualify current behavior. Expired production row deletion remains unobserved. |
 | Google Fonts | The stylesheet and font file requests send an IP address and browser headers to Google. | Google controls retention. No fixed period is verified by this application. | Both stylesheet and font file requests must appear in the live inventory. Offline play uses a system font. |
 | Adult feedback | Optional contact details, message or sentiment, site ID, and parent source URL support feedback. LoopAware also stores the IP address and browser/device information from User-Agent with feedback. | LoopAware policy keeps data while the account is active. It specifies associated data removal within 30 days after an account deletion request. | Live form entry proves connectivity. It does not prove submission, stored records, or deletion execution. |
 | Support contact | The address is contact information. The game sends no email and collects no support correspondence. | External email uses the sender's email service. | This contact address is outside the native collection inventory. |
@@ -136,17 +145,18 @@ Site removal checks do not verify account deletion timing. The 30-day account de
 
 1. Use the recorded source, browser, and native evidence with its stated observation limits.
 2. Compare the current disclosure exports and saved store answers with the native data inventory.
-3. Complete the new LoopAware deployment before the remaining synthetic removal check.
-4. Use only operator-owned isolated test sites and synthetic adult feedback and counts for that check.
-5. Delete only those sites through `DeleteSite`. Compare scoped database records before and after removal.
+3. Use the recorded production LoopAware v1.1.9 qualification.
+4. Retain the approved isolated test site deletion evidence from October 27.
+5. Record the zero selected rows and preservation of all 27 preexisting unrelated sites.
 6. Keep site removal evidence separate from the 30-day account deletion policy claim.
 7. Keep the dated browser Google property evidence separate from the native inventory.
 8. Compare the public policy and the final candidate's source contract.
 9. Complete the store data, audience, country, and provider declarations from the verified inventory.
-10. Obtain user approval for the legal attestation before Apple privacy publication.
+10. Complete Apple privacy publication under the recorded user approval. Verify the provider result.
 11. Record declaration saves, privacy publication, certification, review, and public availability as separate results.
 
 Use the available software environments for device acceptance. No hardware test is required.
 Use synthetic adult data for provider removal checks. Do not remove the production site or customer records.
 Until those checks pass, keep the store certification incomplete and retain the concrete missing result under F003.
-The remaining results are the new LoopAware deployment, scoped synthetic site removal, and final store declarations and certification.
+The scoped removal and preservation checks passed. Final store declarations and certification remain incomplete.
+A newer LoopAware deployment remains separate from this provider qualification.

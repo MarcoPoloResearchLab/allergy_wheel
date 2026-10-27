@@ -123,7 +123,7 @@ The canonical configuration specifies 90 days.
 The native request tests do not prove deployed proxy behavior or store acceptance.
 
 The public mobile privacy page source is `privacy.html`.
-Its intended URL is `https://allergy.mprlab.com/privacy.html` after authorized website publication.
+Website v1.0.4 serves it at `https://allergy.mprlab.com/privacy.html`.
 The same privacy text appears in an expandable section inside the mobile parent area.
 It describes local preferences, automatic services, guarded feedback, support, and the food-safety limit of the game.
 F004 supplies the privacy contract and client evidence. F003 retains production retention, deletion, declarations, and native runtime verification.
@@ -178,8 +178,8 @@ After an explicit publication request:
 
 The lifecycle owns the release marker.
 The local Pages test does not create a release marker or prove public publication.
-The current manifest selects only the website.
-The archived mobile mapping remains external until the F003 provider and metadata prerequisites pass.
+The selected manifest declares the website and both mobile platforms.
+The exact archived mobile mapping is restored. Scoped provider removal and preservation verification passed. Signed store artifacts remain incomplete.
 
 ## Local Validation
 
@@ -245,9 +245,12 @@ The language review covers the changed prose only.
 ## Remaining Acceptance
 
 F001 software acceptance is completed with the recorded native observation limits.
-F003 retains the new LoopAware deployment, scoped synthetic site removal, and final store certification.
+Production LoopAware v1.1.9 supplies accepted privacy, count retention, and redacted log evidence.
+Approved site deletion removed the selected site, count row, and synthetic feedback row. All 27 unrelated sites were preserved.
+F003 retains signed artifacts, final store certification, review, and public availability.
+A newer LoopAware deployment remains a separate pending operation.
 
-Signed AAB and IPA artifacts, final screenshots, and store declarations remain operations in `STORE-READINESS.md`.
+Required screenshots and corrected descriptions are saved. Signed AAB and IPA artifacts and final store declarations remain operations in `STORE-READINESS.md`.
 B046 corrected native store metadata. B047 corrected the feedback verification command.
 B005 passed live feedback verification in Chromium and WebKit on October 1, 2026, without feedback submission.
 

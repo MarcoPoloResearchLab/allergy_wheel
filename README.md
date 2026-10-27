@@ -228,12 +228,16 @@ The browser game and mobile privacy link remain available.
 The Pages manifest selects `gh-pages` and the existing `allergy.mprlab.com` domain.
 Use lowercase owner and repository names in the manifest repository identifier.
 The Pages test checks this identifier, the publication branch, and agreement with the published `CNAME`.
-The live Pages source still uses `master`.
+The live website uses `gh-pages`. Website v1.0.4 serves the current B052 privacy notice.
+Public policy verification passed. The unchanged website deployment retry passed in 22.272 seconds.
 I002 records the prepared publication contract.
 Use the publication procedure in `.mprlab/MOBILE-READINESS.md` only after an explicit deployment request.
 The repository `release`, `publish`, and `deploy` targets invoke the installed Gateway with an explicit application root.
 Set `MPRLAB_GATEWAY_EXECUTABLE` to select its executable.
-The selected manifest declares the website and mobile store destinations.
+The selected manifest declares the website and the exact restored mobile store destinations.
+Qualified LoopAware v1.1.9 passed approved synthetic site deletion and preservation of all 27 unrelated sites.
+Signed artifacts, Google child audience certification, provider publication, review, and public store availability remain separate operations.
+Apple privacy publication has user approval but remains unverified.
 
 F003 preparation and current store blockers are recorded in `.mprlab/STORE-READINESS.md`.
 The store text source is `mobile/store/listing.json`.
