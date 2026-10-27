@@ -39,7 +39,7 @@ Browser evidence does not establish native WebView request or storage behavior.
 3. Verify the current Gateway store delivery contract and signing inputs.
 4. Run required validation on the final source and record its commit.
 5. After an explicit release request, build and seal the current signed AAB and IPA through `make release`.
-6. Verify artifact identifiers, versions, build numbers, source digests, and release receipts.
+6. Verify artifact identifiers, versions, build numbers, signing results, and release receipts.
 7. Prepare final screenshots and accurate store metadata, privacy declarations, and country selections.
 8. After an explicit publication request, submit the sealed artifacts through the shared lifecycle.
 9. Record upload, processing, review, and public availability separately for each store.
@@ -51,6 +51,18 @@ A simulator application verifies simulator behavior. It does not establish a sig
 Public store installation can use available software evidence and publication receipts without a hardware prerequisite.
 This tracker review does not execute a release, publication, or deployment operation.
 
+## Website Privacy Publication On October 26, 2026
+
+The current manifest selects only the website for this bounded delivery.
+The native application source and its adapter tests remain in the repository.
+Publish the current privacy page before store artifact submission.
+Use the canonical `make release && make publish && make deploy` command.
+Verify the public policy through `make verify-store-pages` after deployment.
+Restore the mobile declaration through a subsequent source change after the required LoopAware and native privacy checks.
+Keep Google Play production submission separate because it can start store review.
+The support address is informational. Application qualification has no external mailbox retention requirement.
+Optional adult feedback retains its separate provider contact, retention, and deletion contract.
+
 ## Privacy Implementation On October 1, 2026
 
 F004 replaces P002 as the implementation issue. B048 is resolved. Final CI passed on October 26, 2026. P002 preserves the original decisions and earlier qualification observations.
@@ -58,7 +70,7 @@ F004 replaces P002 as the implementation issue. B048 is resolved. Final CI passe
 The current public text and native parent text use one source contract.
 Native feedback requires adult agreement after the parent gate. Browser analytics starts with denied storage.
 Game selection uses session memory, without persistent preferences. The previous persistent-storage description was incorrect.
-F003 retains deployed logs, retention execution, feedback removal, support procedures, native captures, and final store declarations.
+F003 retains deployed logs, retention execution, feedback removal, native captures, and final store declarations.
 Earlier P002 statements describe their recorded source and do not override the current contract.
 The earlier Android candidate requires replacement with the current source before certification.
 
@@ -198,7 +210,7 @@ These decisions do not determine store age ratings or establish country approval
 | LoopAware analytics | The source sends visit, device, locale, display, and network data. | Verify deployed settings, actual native requests, retention, and deletion. |
 | LoopAware feedback | The corrected provider form opens in both browser engines. | Complete B005 native acceptance and verify the complete data contract. |
 | External fonts | A parent action contacts Google Fonts. | Record actual request data and the applicable disclosure. |
-| Support email | Correspondence can contain contact details and message text. | Verify the support retention and deletion procedure. |
+| Support contact | The address is informational. The game sends no email or support correspondence. | Keep this external contact separate from native app collection. |
 
 Apple restricts third-party analytics for child-directed apps and distinguishes a parental gate from legal consent.
 See [Apple review guidelines 1.3 and 5.1.4](https://developer.apple.com/app-store/review/guidelines/).

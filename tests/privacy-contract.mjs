@@ -100,7 +100,9 @@ for (const engine of [chromium, webkit]) {
             assert.match(privacyText, /30.*days/i);
             assert.match(privacyText, /IP address/i);
             assert.match(privacyText, /Google Fonts/i);
-            assert.match(privacyText, /support correspondence/i);
+            assert.match(privacyText, /does not send email/i);
+            assert.match(privacyText, /support@mprlab\.com/);
+            assert.doesNotMatch(privacyText, /support retention/i);
             assert.match(privacyText, /clear.*storage/i);
             await parentPage.close();
             const freshParent = await context.newPage();
@@ -132,7 +134,13 @@ try {
     assert.equal(disclosure.storeCertification, 'not-certified');
     const review = JSON.parse(await readFile(join(output, 'store-disclosure-review.json'), 'utf8'));
     assert.equal(review.status, 'operator-review-required');
-    assert.equal(review.candidateMappings.length, 6);
+    assert.equal(review.candidateMappings.length, 5);
+    assert.equal(disclosure.support.collectedByApp, false);
+    assert.equal(disclosure.support.contact, 'support@mprlab.com');
+    assert.equal(Object.hasOwn(disclosure.support, 'retention'), false);
+    assert.equal(disclosure.qualification.some((item) => /support|mailbox|email/i.test(item)), false);
+    assert.equal(review.candidateMappings.some((item) => item.surface === 'support email'), false);
+    assert.equal(disclosure.native.feedback.data.includes('adult contact details'), true);
     assert.equal(disclosure.native.preferences.persistentStorage, false);
     assert.equal(await readFile(join(output, 'privacy-policy.txt'), 'utf8'), `${disclosure.sections.join('\n\n')}\n`);
 } finally {
