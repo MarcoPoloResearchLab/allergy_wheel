@@ -41,10 +41,15 @@ check: build-test-image
 test: build-test-image
 	docker run --rm --init --shm-size=1g "$(TEST_IMAGE)" npm test
 
+.PHONY: test-layout
+test-layout: build-test-image
+	mkdir -p artifacts/layout
+	docker run --rm --init --shm-size=1g --volume "$(REPOSITORY_DIRECTORY)/artifacts/layout:/output" "$(TEST_IMAGE)" node tests/layout-flow.mjs
+
 test-local:
 	bash "$(REPOSITORY_DIRECTORY)/tests/local-commands.sh"
 
-ci: check test test-node-forge-security test-dependency-audit test-dependency-installs test-mobile mobile-check mobile-audit test-pages test-store-listings test-feedback-verifier test-privacy test-native-release test-release-adapter test-native-preparation mobile-native-check test-apple-bundle test-local
+ci: check test test-layout test-node-forge-security test-dependency-audit test-dependency-installs test-mobile mobile-check mobile-audit test-pages test-store-listings test-feedback-verifier test-privacy test-native-release test-release-adapter test-native-preparation mobile-native-check test-apple-bundle test-local
 
 .PHONY: test-mobile mobile-dependencies mobile-prepare
 

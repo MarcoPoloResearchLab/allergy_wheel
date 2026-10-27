@@ -11,6 +11,26 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B051] (P1) Select the Android compiler policy
+  Goal:
+  Use the selected Kotlin execution policy in each generated Android launcher.
+
+  Observed Failure:
+  The public launcher omits the selected compiler strategy. The generated JVM options retain 512 MiB of metaspace.
+
+  Requirements:
+  - Supply `-Pkotlin.compiler.execution.strategy=in-process` from the generated launcher.
+  - Set `MaxMetaspaceSize=1g` through canonical preparation.
+  - Keep the heap, parallel execution, workers, ABI selection, and release signing unchanged.
+  - Verify launcher arguments and repeated preparation through public commands.
+
+  Validation:
+  The real launcher regression failed before the source correction.
+  Canonical preparation and launcher tests passed after the correction.
+  The second preparation restored the metaspace limit and kept custom heap and worker values.
+  Final CI passed with the retained layout tests and all native, browser, privacy, and dependency checks.
+  Store artifacts and publication remain separate operations.
+
 - [x] [B050] (P0) Use the iOS scene lifecycle
   Goal:
   Start the current application on iOS 27 after a build with Xcode 27.

@@ -291,3 +291,11 @@ Run `make mobile-prepare-store` after a native config or dependency change.
 The real Expo generator test verifies `EXExpoAppSceneDelegate` and `ExpoReactNativeFactoryProvider`.
 Simulator startup evidence remains separate from signed store artifacts.
 The unsigned version 1.0.1 simulator build displayed the game on iOS 27.0 with the iOS 27.1 SDK.
+
+## Android Compiler Policy
+
+Android preparation runs `mobile/scripts/prepare-android-build-policy.mjs` after Expo.
+The generated `gradlew` supplies `-Pkotlin.compiler.execution.strategy=in-process`.
+The JVM metaspace limit is `1g`.
+Preparation keeps the heap, parallel execution, workers, ABI selection, and signing inputs unchanged.
+`make test-native-release` verifies real launcher arguments and repeated preparation.

@@ -1,6 +1,6 @@
 // @ts-check
 import React, { useRef, useEffect, useState } from 'react';
-import { AppState, StyleSheet, Text, View, Button, Modal } from 'react-native';
+import { AppState, StyleSheet, Text, View, Button, Modal, Pressable } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import game from './generated/game.json';
@@ -9,7 +9,15 @@ import analytics from './generated/analytics.json';
 import { MobileText, MobileLocation } from './constants.js';
 import { createLifecycleScript } from './lifecycle.js';
 
-const styles = StyleSheet.create({ screen: { flex: 1, backgroundColor: '#fff5e9' }, error: { padding: 24 }, analytics: { position: 'absolute', width: 1, height: 1, opacity: 0 } });
+const styles = StyleSheet.create({
+    screen: { flex: 1, backgroundColor: '#fffbef' },
+    error: { padding: 24 },
+    analytics: { position: 'absolute', width: 1, height: 1, opacity: 0 },
+    parentBar: { alignItems: 'flex-end', paddingHorizontal: 16, backgroundColor: '#fffbef' },
+    parentButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 12, borderRadius: 12 },
+    parentButtonPressed: { backgroundColor: '#f5e8dc' },
+    parentLabel: { color: '#64574e', fontSize: 12, fontWeight: '600' }
+});
 
 /** The native entry point contains the packaged game and respects device safe areas. */
 export default function App() {
@@ -32,7 +40,12 @@ export default function App() {
                 thirdPartyCookiesEnabled: false, allowFileAccess: false, setSupportMultipleWindows: false
             })),
         React.createElement(SafeAreaView, { style: styles.screen },
-            React.createElement(Button, { title: MobileText.PARENTS, onPress: () => setParentsVisible(true) }),
+            React.createElement(View, { style: styles.parentBar },
+                React.createElement(Pressable, {
+                    accessibilityRole: 'button',
+                    onPress: () => setParentsVisible(true),
+                    style: ({ pressed }) => [styles.parentButton, pressed && styles.parentButtonPressed]
+                }, React.createElement(Text, { style: styles.parentLabel }, MobileText.PARENTS))),
             React.createElement(Modal, { visible: parentsVisible, presentationStyle: 'fullScreen', onRequestClose: () => setParentsVisible(false) },
                 React.createElement(SafeAreaProvider, null,
                 React.createElement(SafeAreaView, { style: styles.screen },
