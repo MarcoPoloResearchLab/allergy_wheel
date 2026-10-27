@@ -25,7 +25,7 @@ The food-safety warning remains part of that text.
 | Native game | Allergen selection and results stay in session memory. | Restart or reload removes the selection. System controls can clear older application storage. | Real selection creates no persistent storage in Chromium and WebKit. Native runtime verification remains below. |
 | Native counts | One empty POST supplies a startup count. Network transport processes an IP address. No cookies, referrer, selection, results, or visitor identifier are sent. | The provider contract keeps daily totals for at most 90 UTC calendar days. Site deletion removes associated counts. | LoopAware F016 source and B045 collector evidence give evidence for this contract. Deployed retention and proxy logs require verification. |
 | Google Fonts | The stylesheet and font file requests send an IP address and browser headers to Google. | Google controls retention. No fixed period is verified by this application. | Both stylesheet and font file requests must appear in the live inventory. Offline play uses a system font. |
-| Adult feedback | Optional contact details, message or sentiment, site ID, and parent source URL support feedback. | LoopAware policy keeps data while the account is active. It specifies associated data removal within 30 days after an account deletion request. | Live form entry proves connectivity. It does not prove submission, stored records, or deletion execution. |
+| Adult feedback | Optional contact details, message or sentiment, site ID, and parent source URL support feedback. LoopAware also stores the IP address and browser/device information from User-Agent with feedback. | LoopAware policy keeps data while the account is active. It specifies associated data removal within 30 days after an account deletion request. | Live form entry proves connectivity. It does not prove submission, stored records, or deletion execution. |
 | Support contact | The address is contact information. The game sends no email and collects no support correspondence. | External email uses the sender's email service. | This contact address is outside the native collection inventory. |
 | Browser website | Google Analytics, automatic feedback, and fonts use a separate browser contract. | Earlier console evidence recorded two-month event retention and fourteen-month user retention. Current settings require verification. | Native counts do not replace browser analytics. Denied storage is not proof of no collection. |
 
@@ -96,16 +96,19 @@ The Kids Category decision remains separate from the selected audience and ratin
 [Google Fonts data practices](https://fonts.googleblog.com/2022/11/your-privacy-and-google-fonts.html) describe network data received for font delivery.
 These sources establish review requirements. They do not establish this application's completed store certification.
 
+Feedback IP and User-Agent are retained fields, separate from count and font transport data.
+Site removal checks do not verify account deletion timing. The 30-day account deletion period remains a provider policy claim.
+
 ## Production Procedure Before Store Certification
 
 1. Capture game, counts, fonts, and adult feedback requests in Android emulators and iOS simulators.
 2. Record request bodies, cookies, referrers, storage, and session reset with actual provider scripts.
 3. Compare those captures with the exported contract and both store candidates.
 4. Inspect the deployed LoopAware collector profile and proxy configuration.
-5. Verify that proxy logs omit persistent IP addresses, headers, and visitor identifiers.
+5. Verify that aggregate collector proxy logs omit persistent IP addresses, headers, and visitor identifiers.
 6. Verify the deployed retention job and removal of daily counts outside the selected window.
-7. Verify site removal and associated count removal with an operator-owned test site.
-8. Verify feedback retention and associated deletion with synthetic adult data and an operator-owned test account.
+7. Create isolated test sites under the existing operator account. Record synthetic feedback and counts before removal.
+8. Delete only those test sites through the public `DeleteSite` operation. Compare scoped database records before and after removal.
 9. Verify the current Google property settings, consent signals, retention, and deletion procedure for the browser website.
 10. Compare the live public policy with the candidate's exported policy after website publication.
 11. Complete Apple App Privacy and Google Data safety from the verified native inventory.
