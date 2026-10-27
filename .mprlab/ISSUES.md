@@ -11,6 +11,23 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B049] (P1) Disclose retained feedback network metadata
+  Goal:
+  Describe feedback IP and User-Agent data separately from transient count and font transport data.
+
+  Observed Failure:
+  The adult agreement, policy, and store export omitted IP and User-Agent fields that LoopAware stores with feedback.
+
+  Requirements:
+  - Include retained feedback metadata in the public policy and applicable data inventory.
+  - Apply the existing feedback retention and deletion policy to these fields.
+  - Verify the rendered disclosure through the public browser entry point.
+
+  Validation:
+  The new public regression failed before the correction and passed after the correction.
+  Final `make ci` passed, including Chromium, WebKit, the disclosure export, and native adapter checks.
+  Production delivery remains a separate operation.
+
 - [x] [B048] (P1) Restore the mobile dependency audit after the node-forge advisory
   Goal:
   The locked Expo dependencies pass the required mobile audit without a known high-severity finding.
@@ -473,7 +490,10 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   `PRIVACY-QUALIFICATION.md` preserves the remaining P002 production checks.
   Verify deployed proxy logs, retention execution, feedback deletion, native captures, and store declarations.
   Verify browser Google property settings and the public policy against the selected candidate.
-  Use synthetic adult data for removal checks. Keep the store certification incomplete until the required evidence passes.
+  Use isolated test sites under the existing operator account with synthetic adult feedback and counts.
+  Use public `DeleteSite` and compare scoped database records before and after removal.
+  Keep the 30-day account deletion period as a provider policy claim.
+  Keep the store certification incomplete until the required evidence passes.
 
   Requirements:
   - Complete the F001 artifact and software acceptance prerequisites before store submission.

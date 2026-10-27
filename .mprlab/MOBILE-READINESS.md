@@ -97,7 +97,7 @@ Its incognito WebView cannot read game-origin storage. Analytics failure does no
 | Local game | The selected allergen and results stay in session memory. No game preference uses persistent storage. Catalog and audio requests use packaged data URLs. |
 | Native analytics client | Sends one empty JSON object by POST. Omits cookies and referrer. Does not retry a failed or uncertain response. |
 | LoopAware analytics | The collector stores only site ID, UTC date, and request count. Transport processes network information transiently. Proxy logging requires separate verification before production activation. |
-| LoopAware feedback | A separate parent action loads `widget.js`. Submission contains contact details, a message or sentiment, site ID, and source URL. |
+| LoopAware feedback | A separate parent action loads `widget.js`. Submission contains contact details, a message or sentiment, site ID, and source URL. LoopAware stores IP and User-Agent with feedback. |
 | External fonts | The game loads Google Fonts automatically when online. The game uses the system sans-serif font offline. |
 | Support | The address is informational. The game does not send email or collect support correspondence. |
 | Website | The existing Google Analytics, LoopAware widget, and external fonts remain on the browser game. The mobile privacy page starts no external service. |

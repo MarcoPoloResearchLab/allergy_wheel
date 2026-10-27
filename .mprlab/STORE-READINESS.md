@@ -205,11 +205,11 @@ These decisions do not determine store age ratings or establish country approval
 
 | Surface | Current source evidence | Required verification |
 | --- | --- | --- |
-| Game preferences | The selected allergen stays in game storage. | Verify native storage and outgoing requests on both platforms. |
-| Google Analytics | A parent action loads the selected property with storage and advertisement consent denied. | Verify actual requests, property settings, retention, deletion, and disclosure categories. |
-| LoopAware analytics | The source sends visit, device, locale, display, and network data. | Verify deployed settings, actual native requests, retention, and deletion. |
-| LoopAware feedback | The corrected provider form opens in both browser engines. | Complete B005 native acceptance and verify the complete data contract. |
-| External fonts | A parent action contacts Google Fonts. | Record actual request data and the applicable disclosure. |
+| Game preferences | The selected allergen stays in session memory. | Verify native storage and outgoing requests on both platforms. |
+| Google Analytics | The browser website loads the selected property with storage and advertisement consent denied. The native app excludes Google Analytics. | Verify actual requests, property settings, retention, deletion, and disclosure categories. |
+| LoopAware analytics | The native source sends one empty startup request. LoopAware stores daily totals for up to 90 UTC calendar days. | Verify deployed settings, actual native requests, retention, and deletion. |
+| LoopAware feedback | The corrected provider form opens in both browser engines. LoopAware retains submitted fields, IP, and User-Agent together. | Complete B005 native acceptance and verify the complete data contract. |
+| External fonts | The native app contacts Google Fonts automatically. | Record actual request data and the applicable disclosure. |
 | Support contact | The address is informational. The game sends no email or support correspondence. | Keep this external contact separate from native app collection. |
 
 Apple restricts third-party analytics for child-directed apps and distinguishes a parental gate from legal consent.
