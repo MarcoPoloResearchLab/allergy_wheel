@@ -41,6 +41,12 @@ check: build-test-image
 test: build-test-image
 	docker run --rm --init --shm-size=1g "$(TEST_IMAGE)" npm test
 
+HARNESS_FIRST_FAILURE_CONTAINER ?= $(COMPOSE_PROJECT_NAME)-harness-first-failure
+
+.PHONY: test-harness-first-failure
+test-harness-first-failure: build-test-image
+	docker run --rm --init --name "$(HARNESS_FIRST_FAILURE_CONTAINER)" --network none --shm-size=1g "$(TEST_IMAGE)" node tests/harness-first-failure.mjs
+
 .PHONY: test-layout
 test-layout: build-test-image
 	mkdir -p artifacts/layout
@@ -49,7 +55,7 @@ test-layout: build-test-image
 test-local:
 	bash "$(REPOSITORY_DIRECTORY)/tests/local-commands.sh"
 
-ci: check test test-layout test-node-forge-security test-dependency-audit test-dependency-installs test-mobile mobile-check mobile-audit test-pages test-store-listings test-feedback-verifier test-privacy test-native-release test-release-adapter test-native-preparation mobile-native-check test-apple-bundle test-local
+ci: check test-harness-first-failure test test-layout test-node-forge-security test-deepmerge-security test-dependency-audit test-dependency-installs test-mobile mobile-check mobile-audit test-pages test-store-listings test-feedback-verifier test-privacy test-native-release test-release-adapter test-native-preparation mobile-native-check test-apple-bundle test-local
 
 .PHONY: test-mobile mobile-dependencies mobile-prepare
 
@@ -197,3 +203,12 @@ test-dependency-audit: build-test-image
 
 test-dependency-installs: build-test-image
 	docker run --rm --init "$(TEST_IMAGE)" node tests/dependency-security.mjs
+
+.PHONY: test-deepmerge-security
+DEEPMERGE_SECURITY_CONTAINER ?= $(COMPOSE_PROJECT_NAME)-deepmerge-security
+test-deepmerge-security: build-test-image
+	docker run --rm --init --name "$(DEEPMERGE_SECURITY_CONTAINER)" --network none --workdir /workspace/mobile "$(TEST_IMAGE)" node scripts/dependency-security-probes.mjs --deepmerge
+
+.PHONY: mobile-refresh-lock
+mobile-refresh-lock: build-dependency-image
+	docker run --rm --init --env CI=1 --volume "$(REPOSITORY_DIRECTORY):/workspace" --workdir /workspace/mobile "$(DEPENDENCY_IMAGE)" npm install --package-lock-only --ignore-scripts

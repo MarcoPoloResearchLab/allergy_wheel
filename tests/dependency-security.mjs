@@ -22,6 +22,7 @@ for (const flags of [[], ['--include=dev', '--ignore-scripts']]) {
         });
         assert.equal(verified.status, 0, verified.stdout + verified.stderr);
         assert.match(verified.stdout, /mobile_node_forge_security.ok/);
+        assert.match(verified.stdout, /mobile_deepmerge_security.ok/);
         console.log(`dependency_install.ok: npm ci ${flags.join(' ')}`);
     } finally { rmSync(fixture, { recursive: true, force: true }); }
 }
