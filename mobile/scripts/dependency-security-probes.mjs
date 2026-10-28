@@ -1,10 +1,11 @@
 // @ts-check
 import assert from "node:assert/strict";
 import { generateKeyPairSync, verify } from "node:crypto";
-import { readFileSync, realpathSync, readdirSync, statSync, lstatSync } from "node:fs";
+import { readFileSync, realpathSync, readdirSync, statSync, lstatSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { tmpdir } from "node:os";
 
 
 /** Verify one explicitly selected installed package through its real RSA public API. */
@@ -74,8 +75,8 @@ const message = "Allergy Wheel RSA signature boundary";
   assert.equal(identity.version, "1.4.0");
 }
 
-/** Locate every Forge copy in the actual dependency installation. */
-export function installedForgeCopies(root) {
+/** Locate every selected package copy in the actual dependency installation. */
+function installedPackageCopies(root, packageName) {
   const selected = [];
   const active = new Set();
   const visit = (directory) => {
@@ -87,7 +88,7 @@ export function installedForgeCopies(root) {
         if (item.name === '.bin') continue;
         const location = path.join(directory, item.name);
         const directoryEntry = item.isDirectory() || (item.isSymbolicLink() && statSync(location).isDirectory());
-        if (item.name === 'node-forge' && directoryEntry) selected.push(path.relative(root, location).split(path.sep).join('/'));
+        if (item.name === packageName && directoryEntry) selected.push(path.relative(root, location).split(path.sep).join('/'));
         if (!directoryEntry) continue;
         if (item.name.startsWith('@')) visit(location);
         else {
@@ -102,6 +103,11 @@ export function installedForgeCopies(root) {
   visit(path.join(root, 'node_modules'));
   return selected.sort();
 }
+
+/** Locate every installed Forge package. */
+export const installedForgeCopies = root => installedPackageCopies(root, 'node-forge');
+/** Locate every installed deepmerge package. */
+export const installedDeepmergeCopies = root => installedPackageCopies(root, 'deepmerge');
 
 /** Qualify the actual Expo consumers and certificate operations. */
 export function verifyExpoConsumers(root) {
@@ -140,11 +146,98 @@ assert.equal(certificates.convertCSRPEMToCSR(certificates.convertCSRToCSRPEM(cer
 
 }
 
+/** Qualify the installed CJS and UMD public entry points without source-index imports. */
+export function verifyInstalledDeepmerge(installation) {
+  const require = createRequire(path.join(installation, 'package.json'));
+  const identity = require(path.join(installation, 'package.json'));
+  assert.equal(identity.name, 'deepmerge');
+  assert.equal(identity.version, '4.3.1');
+  const selectedRoot = realpathSync(installation);
+  for (const entry of [require.resolve(installation), path.join(installation, 'dist/umd.js')]) {
+    const relative = path.relative(selectedRoot, realpathSync(entry));
+    assert.ok(relative && !relative.startsWith('..') && !path.isAbsolute(relative), 'deepmerge entry must belong to the selected installation');
+    const merge = require(entry);
+    const payload = () => JSON.parse('{"__proto__":{"allergyPoisoned":true},"ordinary":{"value":1}}');
+    const safe = (value) => {
+      assert.equal(Object.getPrototypeOf(value), Object.prototype, `${entry}: result prototype changed`);
+      assert.equal(Object.hasOwn(value, '__proto__'), false);
+      assert.equal(value.allergyPoisoned, undefined);
+      assert.equal({}.allergyPoisoned, undefined);
+    };
+    safe(merge(Object.create(null), payload()));
+    safe(merge(payload(), {}));
+    safe(merge({ __proto__: null, ordinary: null }, payload()));
+    safe(merge(JSON.parse('{"__proto__":null}'), payload()));
+    const array = merge([], [payload()]);
+    safe(array[0]);
+    safe(merge({}, { nested: payload() }).nested);
+    safe(merge({ nested: null }, { nested: payload() }).nested);
+    assert.deepEqual(merge({ nested: { first: 1 }, items: [1] }, { nested: { second: 2 }, items: [2] }),
+      { nested: { first: 1, second: 2 }, items: [1, 2] });
+    const symbol = Symbol('ordinary');
+    assert.equal(merge({}, { [symbol]: 3 })[symbol], 3);
+    const original = { nested: { value: 1 } };
+    const cloned = merge({}, original);
+    assert.notEqual(cloned.nested, original.nested);
+    assert.equal(merge({}, original, { clone: false }).nested, original.nested);
+    assert.deepEqual(merge({ items: [1] }, { items: [2] }, { arrayMerge: (_target, source) => source }), { items: [2] });
+    assert.deepEqual(merge({ count: 1 }, { count: 2 }, { customMerge: key => key === 'count' ? (left, right) => left + right : undefined }), { count: 2 });
+    assert.deepEqual(merge({ nested: { count: 1 } }, { nested: { count: 2 } },
+      { customMerge: key => key === 'nested' ? (left, right) => ({ count: left.count + right.count }) : undefined }), { nested: { count: 3 } });
+    assert.deepEqual(merge.all([{ first: 1 }, { second: 2 }]), { first: 1, second: 2 });
+  }
+}
+
+/** Qualify actual installed Expo and React Native resolution and public configuration APIs. */
+export async function verifyDeepmergeConsumers(root) {
+  const require = createRequire(path.join(root, 'package.json'));
+  const selected = realpathSync(path.dirname(require.resolve('deepmerge/package.json')));
+  for (const name of ['@expo/config', '@react-native-community/cli', '@react-native-community/cli-config', '@react-native-community/cli-doctor']) {
+    const consumer = createRequire(require.resolve(`${name}/package.json`));
+    const installation = path.dirname(consumer.resolve('deepmerge/package.json'));
+    assert.equal(realpathSync(installation), selected, `${name} must resolve the selected correction`);
+    verifyInstalledDeepmerge(installation);
+  }
+  const fixture = mkdtempSync(path.join(tmpdir(), 'allergy-deepmerge-consumers-'));
+  let primaryError;
+  try {
+    writeFileSync(path.join(fixture, 'package.json'), JSON.stringify({ name: 'allergy-deepmerge-fixture', version: '1.0.0' }));
+    writeFileSync(path.join(fixture, 'app.json'), JSON.stringify({ expo: { name: 'Fixture', slug: 'fixture', extra: { first: 1 } } }));
+    const expo = require('@expo/config');
+    const result = await expo.modifyConfigAsync(fixture, { extra: { second: 2 } }, { skipSDKVersionRequirement: true });
+    assert.equal(result.type, 'success');
+    assert.deepEqual(result.config.extra, { first: 1, second: 2 });
+    writeFileSync(path.join(fixture, 'react-native.config.js'), 'module.exports = { assets: ["fixture-assets"] };\n');
+    const native = await require('@react-native-community/cli-config').loadConfigAsync({ projectRoot: fixture });
+    assert.deepEqual(native.assets, ['fixture-assets']);
+  } catch (error) {
+    primaryError = error;
+    throw error;
+  } finally {
+    try { rmSync(fixture, { recursive: true, force: true }); }
+    catch (cleanupError) {
+      if (primaryError) throw new AggregateError([primaryError, cleanupError], 'Consumer qualification and fixture cleanup failed');
+      throw cleanupError;
+    }
+  }
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = path.resolve(import.meta.dirname, '..');
+  if (process.argv[2] === '--deepmerge') {
+    verifyInstalledDeepmerge(path.join(root, 'node_modules/deepmerge'));
+    await verifyDeepmergeConsumers(root);
+    console.log('mobile_deepmerge_security.ok: CJS, UMD, Expo and React Native consumers');
+    process.exit(0);
+  }
   const installations = installedForgeCopies(root);
   assert.ok(installations.length, 'Forge must be installed');
   for (const relative of installations) verifyInstalledForge(path.join(root, relative));
   verifyExpoConsumers(root);
   console.log('mobile_node_forge_security.ok: every installed copy and actual Expo certificate consumers');
+  const mergeInstallations = installedDeepmergeCopies(root);
+  assert.ok(mergeInstallations.length, 'deepmerge must be installed');
+  for (const relative of mergeInstallations) verifyInstalledDeepmerge(path.join(root, relative));
+  await verifyDeepmergeConsumers(root);
+  console.log('mobile_deepmerge_security.ok: every installed copy, CJS, UMD and actual Expo/RN consumers');
 }

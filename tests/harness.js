@@ -33,7 +33,7 @@ export function defineSuite(suiteName, suiteDefinition) {
 }
 
 /**
- * Executes all registered suites and renders the results.
+ * Executes tests until the first failure and renders the completed results.
  *
  * @param {HTMLElement} resultsContainer - Element where the summary and detailed results will be appended.
  * @returns {void}
@@ -48,7 +48,7 @@ export function runSuites(resultsContainer) {
     summaryHeading.textContent = "Test Results";
     resultsContainer.appendChild(summaryHeading);
 
-    for (const suite of registeredSuites) {
+    suites: for (const suite of registeredSuites) {
         const suiteSection = document.createElement("section");
         const suiteHeading = document.createElement("h2");
         suiteHeading.textContent = suite.name;
@@ -58,6 +58,7 @@ export function runSuites(resultsContainer) {
         suiteSection.appendChild(listElement);
         const suiteAggregate = { name: suite.name, tests: [] };
         aggregatedSuites.push(suiteAggregate);
+        resultsContainer.appendChild(suiteSection);
 
         for (const testCase of suite.tests) {
             const listItem = document.createElement("li");
@@ -79,9 +80,9 @@ export function runSuites(resultsContainer) {
                 });
             }
             listElement.appendChild(listItem);
+            if (summary.failed > 0) break suites;
         }
 
-        resultsContainer.appendChild(suiteSection);
     }
 
     const footer = document.createElement("p");

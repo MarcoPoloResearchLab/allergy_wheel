@@ -20,15 +20,15 @@ const server = createServer(async (request, response) => {
     if (boundary === 'unavailable') { response.statusCode = 503; return response.end('{"error":"unavailable"}'); }
     if (request.url?.includes('/security/advisories/bulk')) {
         if (boundary === 'empty') return response.end('{}');
-        const name = ['unknown', 'critical'].includes(boundary) ? 'expo' : 'node-forge';
-        return response.end(JSON.stringify({ [name]: [{ id: 1240912,
-            url: `https://github.com/advisories/${name === 'expo' ? 'GHSA-xxxx-yyyy-zzzz' : policy.remediations[0].advisory}`,
+        const names = ['unknown', 'critical'].includes(boundary) ? ['expo'] : ['node-forge', 'deepmerge'];
+        return response.end(JSON.stringify(Object.fromEntries(names.map((name, index) => [name, [{ id: 1240912 + index,
+            url: `https://github.com/advisories/${name === 'expo' ? 'GHSA-xxxx-yyyy-zzzz' : policy.remediations.find(entry => entry.package === name).advisory}`,
             title: 'Controlled dependency advisory', severity: boundary === 'critical' ? 'critical' : 'high',
             vulnerable_versions: '*', cwe: [], cvss: { score: 8.7, vectorString: null },
-        }] }));
+        }]]))));
     }
     const name = decodeURIComponent(request.url?.slice(1) ?? '');
-    const version = name === 'expo' ? '57.0.31' : '1.4.0';
+    const version = name === 'expo' ? '57.0.31' : name === 'deepmerge' ? '4.3.1' : '1.4.0';
     response.end(JSON.stringify({ name, 'dist-tags': { latest: version }, versions: { [version]: { name, version } } }));
 });
 await new Promise((done) => server.listen(0, '127.0.0.1', done));
@@ -55,18 +55,22 @@ try {
     }
     await mkdir(path.join(fixture, 'node_modules'));
     for (const name of await readdir(path.join(source, 'node_modules'))) {
-        if (name !== 'node-forge') await symlink(path.join(source, 'node_modules', name), path.join(fixture, 'node_modules', name));
+        if (!['node-forge', 'deepmerge'].includes(name)) await symlink(path.join(source, 'node_modules', name), path.join(fixture, 'node_modules', name));
     }
     const installed = path.join(fixture, 'node_modules/node-forge');
     await symlink(path.join(fixture, 'vendor/node-forge'), installed);
+    const merged = path.join(fixture, 'node_modules/deepmerge');
+    await symlink(path.join(fixture, 'vendor/deepmerge'), merged);
     await run('known advisory with real local correction', true, /behavior-qualified/);
     boundary = 'empty';
-    await run('empty feed retains known-advisory behavior qualification', true, /1 behavior-qualified local corrections with absent advisories/);
+    await run('empty feed retains known-advisory behavior qualification', true, /2 behavior-qualified local corrections with absent advisories/);
     for (const mode of ['unknown', 'critical', 'malformed', 'unavailable']) { boundary = mode; await run(`registry ${mode}`, false); }
     const config = path.join(fixture, 'config/dependency-audit.json');
     boundary = 'empty';
     for (const [label, mutate] of [
         ['missing known advisory', value => { value.remediations = []; }],
+        ['missing deepmerge correction', value => { value.remediations.pop(); }],
+        ['wrong package probe identity', value => { value.remediations[1].package = 'node-forge'; }],
         ['expired review', value => { value.review_after = '2000-01-01'; }],
         ['unknown policy shape', value => { value.extra = true; }],
         ['missing installation', value => { value.remediations[0].installations = []; }],
@@ -76,6 +80,30 @@ try {
         const value = JSON.parse(policyText); mutate(value); await writeFile(config, JSON.stringify(value)); await run(label, false);
     }
     await writeFile(config, policyText);
+    for (const entry of ['dist/cjs.js', 'dist/umd.js']) {
+        const runtime = path.join(merged, entry);
+        const corrected = await readFile(runtime, 'utf8');
+        const unsafe = corrected.replace("if (propertyIsForbidden(key)) { return }", '')
+            .replace('propertyIsForbidden(key) || propertyIsUnsafe(target, key)', 'propertyIsUnsafe(target, key)');
+        assert.notEqual(unsafe, corrected);
+        await writeFile(runtime, unsafe);
+        for (const mode of ['known', 'empty']) {
+            boundary = mode;
+            await run(`${mode} feed rejects unsafe deepmerge ${entry}`, false, /behavior failed/);
+        }
+        await writeFile(runtime, corrected);
+    }
+    boundary = 'empty';
+    const deepmergeProvenance = path.join(fixture, 'vendor/deepmerge/PROVENANCE.json');
+    const deepmergeProvenanceText = await readFile(deepmergeProvenance, 'utf8');
+    await writeFile(deepmergeProvenance, JSON.stringify({ ...JSON.parse(deepmergeProvenanceText), upstream_fix_reference: 'https://github.com/TehShrike/deepmerge/pull/999' }));
+    await run('deepmerge provenance differs', false, /provenance differs/);
+    await writeFile(deepmergeProvenance, deepmergeProvenanceText);
+    const concealedMerge = path.join(fixture, 'node_modules/extra-merge/node_modules/deepmerge');
+    await mkdir(path.dirname(concealedMerge), { recursive: true });
+    await cp(merged, concealedMerge, { recursive: true, dereference: true });
+    await run('unselected deepmerge copy', false, /installed copies differ/);
+    await rm(path.join(fixture, 'node_modules/extra-merge'), { recursive: true });
     const provenancePath = path.join(fixture, 'vendor/node-forge/PROVENANCE.json');
     const provenanceText = await readFile(provenancePath, 'utf8');
     await writeFile(provenancePath, JSON.stringify({ ...JSON.parse(provenanceText), review_after: '2099-01-01' }));

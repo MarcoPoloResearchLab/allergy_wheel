@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, resolve } from "node:path";
 import { chromium } from "playwright";
+import { runPageFlow, runWithOwnedCleanup } from "./page-flow.mjs";
 import { runGameFlow } from "../tests/game-flow.mjs";
 import { runStoreFlow } from "../tests/store-flow.mjs";
 
@@ -207,115 +208,112 @@ function stopStaticServer(server) {
  */
 async function runBrowserTestSuite() {
     const { server, port } = await startStaticServer(serverRootDirectory);
-    const browser = await chromium.launch();
-    const page = await browser.newPage();
-    page.on("console", (message) => {
-        const messageType = message.type().toUpperCase();
-        console.info(`[browser ${messageType}] ${message.text()}`);
-    });
-    page.on("pageerror", (error) => {
-        console.error(`[browser error] ${error.message}`);
-    });
-    page.on("response", (response) => {
-        if (!response.ok()) {
-            console.error(
-                `[browser response] ${response.status()} ${response.url()}`
-            );
-        }
-    });
-    const testPageUrl = `http://127.0.0.1:${port}/tests/index.html`;
+    let browser;
+    await runWithOwnedCleanup(async () => {
+        browser = await chromium.launch();
+        const page = await browser.newPage();
+        page.on("console", (message) => {
+            const messageType = message.type().toUpperCase();
+            console.info(`[browser ${messageType}] ${message.text()}`);
+        });
+        page.on("response", (response) => {
+            if (!response.ok()) {
+                console.error(
+                    `[browser response] ${response.status()} ${response.url()}`
+                );
+            }
+        });
+        const testPageUrl = `http://127.0.0.1:${port}/tests/index.html`;
 
-    try {
-        const navigationResponse = await page.goto(testPageUrl, { waitUntil: "networkidle" });
-        if (!navigationResponse || !navigationResponse.ok()) {
-            throw new Error(`Unable to load ${testPageUrl}.`);
-        }
-
-        const pollIntervalMilliseconds = 500;
-        const maximumAttempts = Math.ceil(30_000 / pollIntervalMilliseconds);
-        /** @type {null | unknown} */
-        let rawEvaluationResult = null;
-        for (let attemptIndex = 0; attemptIndex < maximumAttempts; attemptIndex += 1) {
-            rawEvaluationResult = await page.evaluate(
-                (resultStorageKey) => {
-                    const resultRecord = globalThis[resultStorageKey];
-                    if (!resultRecord) {
-                        return null;
-                    }
-
-                    return JSON.parse(JSON.stringify(resultRecord));
-                },
-                GLOBAL_RESULT_STORAGE_KEY
-            );
-
-            if (rawEvaluationResult !== null) {
-                break;
+        await runPageFlow(page, async () => {
+            const navigationResponse = await page.goto(testPageUrl, { waitUntil: "networkidle" });
+            if (!navigationResponse || !navigationResponse.ok()) {
+                throw new Error(`Unable to load ${testPageUrl}.`);
             }
 
-            await page.waitForTimeout(pollIntervalMilliseconds);
-        }
+            const pollIntervalMilliseconds = 500;
+            const maximumAttempts = Math.ceil(30_000 / pollIntervalMilliseconds);
+            /** @type {null | unknown} */
+            let rawEvaluationResult = null;
+            for (let attemptIndex = 0; attemptIndex < maximumAttempts; attemptIndex += 1) {
+                rawEvaluationResult = await page.evaluate(
+                    (resultStorageKey) => {
+                        const resultRecord = globalThis[resultStorageKey];
+                        if (!resultRecord) {
+                            return null;
+                        }
 
-        if (rawEvaluationResult === null) {
-            throw new Error("Timed out waiting for browser test results.");
-        }
+                        return JSON.parse(JSON.stringify(resultRecord));
+                    },
+                    GLOBAL_RESULT_STORAGE_KEY
+                );
 
-        const evaluationSource = /** @type {{ summary?: { passed?: number, failed?: number }, suites?: Array<{ name?: string, tests?: Array<{ name?: string, status?: string, errorMessage?: string }> }> }} */ (
-            rawEvaluationResult
-        );
-        const evaluationResult = {
-            summary: {
-                passed: Number(evaluationSource.summary?.passed ?? 0),
-                failed: Number(evaluationSource.summary?.failed ?? 0)
-            },
-            suites: Array.isArray(evaluationSource.suites)
-                ? evaluationSource.suites.map((suite) => ({
-                      name: String(suite?.name ?? ""),
-                      tests: Array.isArray(suite?.tests)
-                          ? suite.tests.map((test) => ({
-                                name: String(test?.name ?? ""),
-                                status: test?.status === "failed" ? "failed" : "passed",
-                                errorMessage:
-                                    typeof test?.errorMessage === "string"
-                                        ? test.errorMessage
-                                        : undefined
-                            }))
-                          : []
-                  }))
-                : []
-        };
+                if (rawEvaluationResult !== null) {
+                    break;
+                }
 
-        const failedTestSummaries = [];
-        for (const suiteResult of evaluationResult.suites) {
-            for (const testResult of suiteResult.tests) {
-                if (testResult.status === "failed") {
-                    const failureLabel = `${suiteResult.name} › ${testResult.name}`;
-                    if (testResult.errorMessage) {
-                        failedTestSummaries.push(
-                            `${failureLabel} — ${testResult.errorMessage}`
-                        );
-                    } else {
-                        failedTestSummaries.push(failureLabel);
+                await page.waitForTimeout(pollIntervalMilliseconds);
+            }
+
+            if (rawEvaluationResult === null) {
+                throw new Error("Timed out waiting for browser test results.");
+            }
+
+            const evaluationSource = /** @type {{ summary?: { passed?: number, failed?: number }, suites?: Array<{ name?: string, tests?: Array<{ name?: string, status?: string, errorMessage?: string }> }> }} */ (
+                rawEvaluationResult
+            );
+            const evaluationResult = {
+                summary: {
+                    passed: Number(evaluationSource.summary?.passed ?? 0),
+                    failed: Number(evaluationSource.summary?.failed ?? 0)
+                },
+                suites: Array.isArray(evaluationSource.suites)
+                    ? evaluationSource.suites.map((suite) => ({
+                          name: String(suite?.name ?? ""),
+                          tests: Array.isArray(suite?.tests)
+                              ? suite.tests.map((test) => ({
+                                    name: String(test?.name ?? ""),
+                                    status: test?.status === "failed" ? "failed" : "passed",
+                                    errorMessage:
+                                        typeof test?.errorMessage === "string"
+                                            ? test.errorMessage
+                                            : undefined
+                                }))
+                              : []
+                      }))
+                    : []
+            };
+
+            const failedTestSummaries = [];
+            for (const suiteResult of evaluationResult.suites) {
+                for (const testResult of suiteResult.tests) {
+                    if (testResult.status === "failed") {
+                        const failureLabel = `${suiteResult.name} › ${testResult.name}`;
+                        if (testResult.errorMessage) {
+                            failedTestSummaries.push(
+                                `${failureLabel} — ${testResult.errorMessage}`
+                            );
+                        } else {
+                            failedTestSummaries.push(failureLabel);
+                        }
                     }
                 }
             }
-        }
 
-        if (evaluationResult.summary.failed > 0 || failedTestSummaries.length > 0) {
-            const failureSummary = failedTestSummaries.join("\n- ") || "(no details provided)";
-            throw new Error(
-                `Browser tests failed. Passed: ${evaluationResult.summary.passed} • Failed: ${evaluationResult.summary.failed}\nFailed tests:\n- ${failureSummary}`
+            if (evaluationResult.summary.failed > 0 || failedTestSummaries.length > 0) {
+                const failureSummary = failedTestSummaries.join("\n- ") || "(no details provided)";
+                throw new Error(
+                    `Browser tests failed. Passed: ${evaluationResult.summary.passed} • Failed: ${evaluationResult.summary.failed}\nFailed tests:\n- ${failureSummary}`
+                );
+            }
+
+            console.info(
+                `Passed: ${evaluationResult.summary.passed} • Failed: ${evaluationResult.summary.failed}`
             );
-        }
-
-        console.info(
-            `Passed: ${evaluationResult.summary.passed} • Failed: ${evaluationResult.summary.failed}`
-        );
+        });
         await runGameFlow(browser, `http://127.0.0.1:${port}/index.html`);
         await runStoreFlow(browser, `http://127.0.0.1:${port}/index.html`);
-    } finally {
-        await browser.close();
-        await stopStaticServer(server);
-    }
+    }, [async () => { if (browser) await browser.close(); }, () => stopStaticServer(server)]);
 }
 
 await runBrowserTestSuite();

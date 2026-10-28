@@ -41,6 +41,10 @@
       "expo-build-properties": {
         "declared": "~57.0.22",
         "resolved": "57.0.22"
+      },
+      "deepmerge": {
+        "declared": "file:vendor/deepmerge",
+        "resolved": "4.3.1"
       }
     },
     "devDependencies": {
@@ -63,7 +67,8 @@
       },
       "uuid": "11.1.1",
       "brace-expansion": "5.0.12",
-      "node-forge": "$node-forge"
+      "node-forge": "$node-forge",
+      "deepmerge": "$deepmerge"
     }
   },
   "toolchain": {

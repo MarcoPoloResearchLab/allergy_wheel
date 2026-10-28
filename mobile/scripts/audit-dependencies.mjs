@@ -1,7 +1,7 @@
 // @ts-check
 import { spawnSync } from 'node:child_process';
 import { readFile, realpath } from 'node:fs/promises';
-import { verifyInstalledForge, installedForgeCopies } from './dependency-security-probes.mjs';
+import { verifyInstalledForge, installedForgeCopies, verifyInstalledDeepmerge, installedDeepmergeCopies } from './dependency-security-probes.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,30 +14,35 @@ const keys = (object, expected, subject) => {
 };
 const policy = await json('config/dependency-audit.json');
 keys(policy, ['schema', 'reviewed_at', 'review_after', 'remediations'], 'policy');
-if (policy.schema !== 'allergy-wheel.dependency-audit.v1' || (!Array.isArray(policy.remediations) || policy.remediations.length !== 1)) fail('policy schema is invalid.');
+if (policy.schema !== 'allergy-wheel.dependency-audit.v1' || (!Array.isArray(policy.remediations) || policy.remediations.length !== 2)) fail('policy schema is invalid.');
 for (const field of ['reviewed_at', 'review_after']) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(policy[field]) || !Number.isFinite(Date.parse(policy[field]))) fail(`${field} is invalid.`);
 }
 if (Date.parse(policy.review_after) < Date.now() || policy.reviewed_at > policy.review_after) fail(`review expired or invalid (${policy.review_after}).`);
 const lock = await json('package-lock.json');
 if (lock.lockfileVersion !== 3 || !lock.packages) fail('lockfile schema is invalid.');
+const corrections = new Map([
+  ['GHSA-86w9-cpqp-85rv', { package: 'node-forge', version: '1.4.0', patch: 'RSA-CORRECTION.patch', upstream: 'https://github.com/digitalbazaar/forge/pull/1152', copies: installedForgeCopies, verify: verifyInstalledForge }],
+  ['GHSA-gcqx-w48m-w2h4', { package: 'deepmerge', version: '4.3.1', patch: 'PROTOTYPE-CORRECTION.patch', upstream: 'https://github.com/TehShrike/deepmerge/pull/274', copies: installedDeepmergeCopies, verify: verifyInstalledDeepmerge }],
+]);
 const remediations = new Map();
 const qualifiedLocations = new Map();
 for (const entry of policy.remediations) {
   keys(entry, ['advisory', 'package', 'version', 'patch', 'upstream', 'installations'], 'remediation');
   keys(entry.upstream, ['pull_request'], 'upstream');
-  if (entry.advisory !== 'GHSA-86w9-cpqp-85rv' || remediations.has(entry.advisory) ||
-      entry.package !== 'node-forge' || !/^\d+\.\d+\.\d+$/.test(entry.version) ||
+  const correction = corrections.get(entry.advisory);
+  if (!correction || remediations.has(entry.advisory) ||
+      entry.package !== correction.package || entry.version !== correction.version || entry.upstream.pull_request !== correction.upstream ||
       !Array.isArray(entry.installations) || entry.installations.length === 0 || new Set(entry.installations).size !== entry.installations.length ||
       entry.installations.some((location) => typeof location !== 'string' || !location.startsWith('node_modules/') || !location.endsWith(`node_modules/${entry.package}`) || location.includes('\\') || location.split('/').some((part) => !part || part === '.' || part === '..')) ||
       !/^https:\/\/github.com\/[^/]+\/[^/]+\/pull\/\d+$/.test(entry.upstream.pull_request)) fail('remediation identity is invalid.');
-  const patchPath = `vendor/${entry.package}/RSA-CORRECTION.patch`;
+  const patchPath = `vendor/${entry.package}/${correction.patch}`;
   if (entry.patch !== patchPath) fail(`${entry.advisory} patch path is invalid.`);
   await readFile(path.join(root, patchPath));
-  const provenance = await json('vendor/node-forge/PROVENANCE.json');
+  const provenance = await json(`vendor/${entry.package}/PROVENANCE.json`);
   if (provenance.upstream_package !== entry.package || provenance.upstream_version !== entry.version ||
       provenance.advisory !== entry.advisory || provenance.upstream_fix_reference !== entry.upstream.pull_request ||
-      provenance.review_after !== policy.review_after || provenance.source !== 'https://registry.npmjs.org/node-forge/1.4.0') fail('local correction provenance differs.');
+      provenance.review_after !== policy.review_after || provenance.source !== `https://registry.npmjs.org/${entry.package}/${entry.version}`) fail('local correction provenance differs.');
   const expected = Object.entries(lock.packages).filter(([location]) => location.endsWith(`node_modules/${entry.package}`));
   if (expected.some(([, value]) => (value.link ? lock.packages[value.resolved]?.version : value.version) !== entry.version) ||
       JSON.stringify(expected.map(([location]) => location).sort()) !== JSON.stringify([...entry.installations].sort())) fail(`${entry.advisory} lockfile installations differ.`);
@@ -51,11 +56,11 @@ for (const entry of policy.remediations) {
     }
   }
   qualifiedLocations.set(entry.advisory, locations);
-  const installed = installedForgeCopies(root);
+  const installed = correction.copies(root);
   if (JSON.stringify(installed.sort()) !== JSON.stringify([...entry.installations].sort())) fail(`${entry.advisory} installed copies differ.`);
   for (const location of entry.installations) {
     if ((await json(`${location}/package.json`)).version !== entry.version) fail(`${location} installed version differs.`);
-    try { verifyInstalledForge(path.join(root, location)); }
+    try { correction.verify(path.join(root, location)); }
     catch (error) { fail(`${location} behavior failed: ${error.message}`); }
   }
   remediations.set(entry.advisory, entry);

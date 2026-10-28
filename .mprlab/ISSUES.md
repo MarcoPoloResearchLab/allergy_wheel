@@ -11,6 +11,55 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B054] (P1) Correct unsafe deepmerge assignments
+  Goal:
+  Qualify the first-failure CI task without the unremediated deepmerge advisory.
+
+  Evidence:
+  B053 canonical CI stopped at `mobile-audit` for `GHSA-gcqx-w48m-w2h4`.
+  The stock CJS entry returned a poisoned result prototype in the focused Docker probe.
+  Upstream has no patched release. Pull request 274 is a closed proposal.
+
+  Requirements:
+  - Maintain the local correction in the source, CJS, and UMD package files.
+  - Reject `__proto__` assignments in both target and source loops.
+  - Preserve ordinary merges, arrays, clone options, and custom merge behavior.
+  - Qualify installed copies and actual Expo and React Native consumers.
+  - Preserve the Forge correction and all audit rejection gates.
+  - Verify both npm installation modes and canonical native preparation.
+
+  Validation:
+  The stock installed package failed the public probe before the correction.
+  Corrected CJS and UMD checks passed with actual Expo and React Native consumers.
+  Both npm installation modes passed the installed package checks.
+  Controlled audit fixtures and both live registry audits passed.
+  Canonical native preparation and all four Podfile scenarios passed.
+  Final cumulative `make ci` passed in 109.886 seconds with Gateway v7.0.8, CI mode, and closed stdin.
+
+- [x] [B053] (P1) Stop browser tests after the first failure
+  Goal:
+  Stop later test cases and suites after the first browser assertion fails.
+
+  Evidence:
+  The isolated browser probe found a later case and suite after a controlled failure.
+  The outer probe stopped on its first mismatch and closed its browser and server.
+
+  Requirements:
+  - Publish completed results and the first error before the harness returns.
+  - Preserve the partial DOM, earlier successful cases, and successful suite behavior.
+  - Keep browser, server, and owned container cleanup after failure.
+  - Include the focused public probe in canonical CI.
+
+  Validation:
+  The probe failed before the harness correction.
+  The corrected focused probe passed all three controlled scenarios.
+  Docker confirmed that each named probe container was absent after exit.
+  The runtime-error probe also found later game actions after an uncaught browser error.
+  The shared page flow now closes its context and preserves that first error.
+  Focused checks passed runtime cancellation, required waiter failure, and intentional caught errors.
+  Injected outer cleanup failure kept the original error first and still closed the server.
+  Final cumulative `make ci` passed in 109.886 seconds with Gateway v7.0.8, CI mode, and closed stdin.
+
 - [x] [B052] (P1) Clarify service purposes and count safeguards
   Goal:
   Describe aggregate count use and the attributed Google Fonts practices in the shared privacy policy.

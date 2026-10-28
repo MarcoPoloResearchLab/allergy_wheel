@@ -1,5 +1,6 @@
 // @ts-check
 import assert from "node:assert/strict";
+import { runPageFlow } from "../scripts/page-flow.mjs";
 
 /** Exercise the real game with its catalogs, controls, wheel, and audio APIs. */
 export async function runGameFlow(browser, gameUrl) {
@@ -7,9 +8,7 @@ export async function runGameFlow(browser, gameUrl) {
     await context.route("**/*", (route) => new URL(route.request().url()).origin === new URL(gameUrl).origin
         ? route.continue() : route.abort());
     const page = await context.newPage();
-    const errors = [];
-    page.on("pageerror", (error) => errors.push(error.message));
-    try {
+    await runPageFlow(page, async () => {
         await page.clock.install();
         await page.goto(gameUrl, { waitUntil: "domcontentloaded" });
         await page.locator('#loading[hidden]').waitFor({ state: "attached" });
@@ -49,9 +48,6 @@ export async function runGameFlow(browser, gameUrl) {
         await page.locator('#nav-game').click();
         await page.locator('#mute').click();
         assert.equal(await page.locator('#mute').getAttribute('aria-pressed'), 'false');
-        assert.deepEqual(errors, []);
         console.info('Real game flow passed: selection, Stop, automatic stop, reveal, restart, mute, and navigation.');
-    } finally {
-        await context.close();
-    }
+    });
 }
