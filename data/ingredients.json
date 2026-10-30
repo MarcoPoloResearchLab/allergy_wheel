@@ -1,0 +1,712 @@
+[
+  {
+    "name": "peanuts",
+    "allergen": "peanuts",
+    "emoji": "🥜"
+  },
+  {
+    "name": "peanut butter",
+    "allergen": "peanuts",
+    "emoji": "🥜"
+  },
+  {
+    "name": "peanut sauce",
+    "allergen": "peanuts",
+    "emoji": "🥜"
+  },
+  {
+    "name": "almonds",
+    "allergen": "tree_nuts",
+    "emoji": "🌰"
+  },
+  {
+    "name": "walnuts",
+    "allergen": "tree_nuts",
+    "emoji": "🌰"
+  },
+  {
+    "name": "hazelnuts",
+    "allergen": "tree_nuts",
+    "emoji": "🌰"
+  },
+  {
+    "name": "pistachios",
+    "allergen": "tree_nuts",
+    "emoji": "🌰"
+  },
+  {
+    "name": "pine nuts",
+    "allergen": "tree_nuts",
+    "emoji": "🌲"
+  },
+  {
+    "name": "cashews",
+    "allergen": "tree_nuts",
+    "emoji": "🥜"
+  },
+  {
+    "name": "sesame",
+    "allergen": "sesame",
+    "emoji": "⚪️"
+  },
+  {
+    "name": "tahini",
+    "allergen": "sesame",
+    "emoji": "🧴"
+  },
+  {
+    "name": "sesame oil",
+    "allergen": "sesame",
+    "emoji": "🧴"
+  },
+  {
+    "name": "shrimp",
+    "allergen": "shellfish",
+    "emoji": "🦐"
+  },
+  {
+    "name": "crab",
+    "allergen": "shellfish",
+    "emoji": "🦀"
+  },
+  {
+    "name": "lobster",
+    "allergen": "shellfish",
+    "emoji": "🦞"
+  },
+  {
+    "name": "mussels",
+    "allergen": "shellfish",
+    "emoji": "🦪"
+  },
+  {
+    "name": "oysters",
+    "allergen": "shellfish",
+    "emoji": "🦪"
+  },
+  {
+    "name": "squid (shellfish)",
+    "allergen": "shellfish",
+    "emoji": "🦑"
+  },
+  {
+    "name": "fish",
+    "allergen": "fish",
+    "emoji": "🐟"
+  },
+  {
+    "name": "salmon",
+    "allergen": "fish",
+    "emoji": "🐟"
+  },
+  {
+    "name": "cod",
+    "allergen": "fish",
+    "emoji": "🐟"
+  },
+  {
+    "name": "tuna",
+    "allergen": "fish",
+    "emoji": "🐟"
+  },
+  {
+    "name": "mackerel",
+    "allergen": "fish",
+    "emoji": "🐟"
+  },
+  {
+    "name": "milk",
+    "allergen": "milk",
+    "emoji": "🥛"
+  },
+  {
+    "name": "cream",
+    "allergen": "milk",
+    "emoji": "🥛"
+  },
+  {
+    "name": "butter",
+    "allergen": "milk",
+    "emoji": "🧈"
+  },
+  {
+    "name": "yogurt",
+    "allergen": "milk",
+    "emoji": "🥛"
+  },
+  {
+    "name": "mozzarella",
+    "allergen": "milk",
+    "emoji": "🧀"
+  },
+  {
+    "name": "parmesan",
+    "allergen": "milk",
+    "emoji": "🧀"
+  },
+  {
+    "name": "cheese",
+    "allergen": "milk",
+    "emoji": "🧀"
+  },
+  {
+    "name": "cream cheese",
+    "allergen": "milk",
+    "emoji": "🧀"
+  },
+  {
+    "name": "egg",
+    "allergen": "egg",
+    "emoji": "🥚"
+  },
+  {
+    "name": "soy sauce",
+    "allergen": "soy",
+    "emoji": "🫘"
+  },
+  {
+    "name": "tofu",
+    "allergen": "soy",
+    "emoji": "🫘"
+  },
+  {
+    "name": "wheat",
+    "allergen": "wheat",
+    "emoji": "🌾"
+  },
+  {
+    "name": "wheat dough",
+    "allergen": "wheat",
+    "emoji": "🌾"
+  },
+  {
+    "name": "wheat flour",
+    "allergen": "wheat",
+    "emoji": "🌾"
+  },
+  {
+    "name": "wheat pasta",
+    "allergen": "wheat",
+    "emoji": "🍝"
+  },
+  {
+    "name": "wheat spaghetti",
+    "allergen": "wheat",
+    "emoji": "🍝"
+  },
+  {
+    "name": "wheat penne",
+    "allergen": "wheat",
+    "emoji": "🍝"
+  },
+  {
+    "name": "wheat macaroni",
+    "allergen": "wheat",
+    "emoji": "🍝"
+  },
+  {
+    "name": "wheat ramen",
+    "allergen": "wheat",
+    "emoji": "🍜"
+  },
+  {
+    "name": "udon wheat noodles",
+    "allergen": "wheat",
+    "emoji": "🍜"
+  },
+  {
+    "name": "wheat soba",
+    "allergen": "wheat",
+    "emoji": "🍜"
+  },
+  {
+    "name": "wheat panko",
+    "allergen": "wheat",
+    "emoji": "🥯"
+  },
+  {
+    "name": "wheat bread",
+    "allergen": "wheat",
+    "emoji": "🍞"
+  },
+  {
+    "name": "wheat bun",
+    "allergen": "wheat",
+    "emoji": "🍞"
+  },
+  {
+    "name": "wheat tortillas",
+    "allergen": "wheat",
+    "emoji": "🌯"
+  },
+  {
+    "name": "wheat pita",
+    "allergen": "wheat",
+    "emoji": "🫓"
+  },
+  {
+    "name": "wheat wonton wrappers",
+    "allergen": "wheat",
+    "emoji": "🥟"
+  },
+  {
+    "name": "wheat berries",
+    "allergen": "wheat",
+    "emoji": "🌾"
+  },
+  {
+    "name": "wheat crumbs",
+    "allergen": "wheat",
+    "emoji": "🍞"
+  },
+  {
+    "name": "wheat starch",
+    "allergen": "wheat",
+    "emoji": "🌾"
+  },
+  {
+    "name": "italian sausage",
+    "allergen": "italian_sausage",
+    "emoji": "🌭"
+  },
+  {
+    "name": "nori",
+    "allergen": "",
+    "emoji": "🍘"
+  },
+  {
+    "name": "rice",
+    "allergen": "",
+    "emoji": "🍚"
+  },
+  {
+    "name": "pita bread",
+    "allergen": "wheat",
+    "emoji": "🫓"
+  },
+  {
+    "name": "tomato",
+    "allergen": "",
+    "emoji": "🍅"
+  },
+  {
+    "name": "basil",
+    "allergen": "",
+    "emoji": "🌿"
+  },
+  {
+    "name": "olive oil",
+    "allergen": "",
+    "emoji": "🫒"
+  },
+  {
+    "name": "mayonnaise",
+    "allergen": "",
+    "emoji": "🧴"
+  },
+  {
+    "name": "avocado",
+    "allergen": "",
+    "emoji": "🥑"
+  },
+  {
+    "name": "chicken",
+    "allergen": "",
+    "emoji": "🍗"
+  },
+  {
+    "name": "beef",
+    "allergen": "",
+    "emoji": "🥩"
+  },
+  {
+    "name": "pork",
+    "allergen": "",
+    "emoji": "🥩"
+  },
+  {
+    "name": "garlic",
+    "allergen": "",
+    "emoji": "🧄"
+  },
+  {
+    "name": "onion",
+    "allergen": "",
+    "emoji": "🧅"
+  },
+  {
+    "name": "cucumber",
+    "allergen": "",
+    "emoji": "🥒"
+  },
+  {
+    "name": "eggplant",
+    "allergen": "",
+    "emoji": "🍆"
+  },
+  {
+    "name": "potato",
+    "allergen": "",
+    "emoji": "🥔"
+  },
+  {
+    "name": "carrot",
+    "allergen": "",
+    "emoji": "🥕"
+  },
+  {
+    "name": "scallions",
+    "allergen": "",
+    "emoji": "🧅"
+  },
+  {
+    "name": "lime",
+    "allergen": "",
+    "emoji": "🍋"
+  },
+  {
+    "name": "lemon",
+    "allergen": "",
+    "emoji": "🍋"
+  },
+  {
+    "name": "cheddar",
+    "allergen": "milk",
+    "emoji": "🧀"
+  },
+  {
+    "name": "clams",
+    "allergen": "shellfish",
+    "emoji": "🦪"
+  },
+  {
+    "name": "fish sauce",
+    "allergen": "fish",
+    "emoji": "🐟"
+  },
+  {
+    "name": "wheat noodles",
+    "allergen": "wheat",
+    "emoji": "🍜"
+  },
+  {
+    "name": "crema",
+    "allergen": "milk",
+    "emoji": "🥛"
+  },
+  {
+    "name": "ricotta",
+    "allergen": "milk",
+    "emoji": "🧀"
+  },
+  {
+    "name": "tzatziki",
+    "allergen": "milk",
+    "emoji": "🥛"
+  },
+  {
+    "name": "corn tortillas",
+    "allergen": "",
+    "emoji": "🌮"
+  },
+  {
+    "name": "bread crumbs",
+    "allergen": "wheat",
+    "emoji": "🍞"
+  },
+  {
+    "name": "rice noodles",
+    "allergen": "",
+    "emoji": "🍜"
+  },
+  {
+    "name": "anchovy fish sauce",
+    "allergen": "fish",
+    "emoji": "🐟"
+  },
+  {
+    "name": "bacon",
+    "allergen": "",
+    "emoji": "🥓"
+  },
+  {
+    "name": "banana",
+    "allergen": "",
+    "emoji": "🍌"
+  },
+  {
+    "name": "beef patty",
+    "allergen": "",
+    "emoji": "🍔"
+  },
+  {
+    "name": "bread",
+    "allergen": "wheat",
+    "emoji": "🍞"
+  },
+  {
+    "name": "cabbage",
+    "allergen": "",
+    "emoji": "🥬"
+  },
+  {
+    "name": "celery",
+    "allergen": "",
+    "emoji": "🥬"
+  },
+  {
+    "name": "chicken cutlet",
+    "allergen": "",
+    "emoji": "🍗"
+  },
+  {
+    "name": "chicken wings",
+    "allergen": "",
+    "emoji": "🍗"
+  },
+  {
+    "name": "chickpeas",
+    "allergen": "",
+    "emoji": "🫘"
+  },
+  {
+    "name": "chili",
+    "allergen": "",
+    "emoji": "🌶️"
+  },
+  {
+    "name": "chili oil",
+    "allergen": "",
+    "emoji": "🌶️"
+  },
+  {
+    "name": "chutney",
+    "allergen": "",
+    "emoji": "🫙"
+  },
+  {
+    "name": "coconut",
+    "allergen": "",
+    "emoji": "🥥"
+  },
+  {
+    "name": "coconut milk",
+    "allergen": "",
+    "emoji": "🥥"
+  },
+  {
+    "name": "condensed milk",
+    "allergen": "milk",
+    "emoji": "🥛"
+  },
+  {
+    "name": "curry sauce",
+    "allergen": "",
+    "emoji": "🍛"
+  },
+  {
+    "name": "feta",
+    "allergen": "milk",
+    "emoji": "🧀"
+  },
+  {
+    "name": "feta cheese",
+    "allergen": "milk",
+    "emoji": "🧀"
+  },
+  {
+    "name": "green curry paste",
+    "allergen": "",
+    "emoji": "🥫"
+  },
+  {
+    "name": "grilled chicken",
+    "allergen": "",
+    "emoji": "🍗"
+  },
+  {
+    "name": "ham",
+    "allergen": "",
+    "emoji": "🍖"
+  },
+  {
+    "name": "herbs",
+    "allergen": "",
+    "emoji": "🌿"
+  },
+  {
+    "name": "honey",
+    "allergen": "",
+    "emoji": "🍯"
+  },
+  {
+    "name": "imitation crab",
+    "allergen": "fish",
+    "emoji": "🦀"
+  },
+  {
+    "name": "jelly",
+    "allergen": "",
+    "emoji": "🍇"
+  },
+  {
+    "name": "lamb",
+    "allergen": "",
+    "emoji": "🐑"
+  },
+  {
+    "name": "lettuce",
+    "allergen": "",
+    "emoji": "🥬"
+  },
+  {
+    "name": "mirin",
+    "allergen": "",
+    "emoji": "🍶"
+  },
+  {
+    "name": "paneer (milk)",
+    "allergen": "milk",
+    "emoji": "🧀"
+  },
+  {
+    "name": "parsley",
+    "allergen": "",
+    "emoji": "🌿"
+  },
+  {
+    "name": "peas",
+    "allergen": "",
+    "emoji": "🫛"
+  },
+  {
+    "name": "pickles",
+    "allergen": "",
+    "emoji": "🥒"
+  },
+  {
+    "name": "pork cutlet",
+    "allergen": "",
+    "emoji": "🐖"
+  },
+  {
+    "name": "salsa",
+    "allergen": "",
+    "emoji": "🫑"
+  },
+  {
+    "name": "sesame bagel",
+    "allergen": "wheat",
+    "emoji": "🥯"
+  },
+  {
+    "name": "sev wheat",
+    "allergen": "wheat",
+    "emoji": "🍜"
+  },
+  {
+    "name": "spices",
+    "allergen": "",
+    "emoji": "🧂"
+  },
+  {
+    "name": "squid",
+    "allergen": "shellfish",
+    "emoji": "🦑"
+  },
+  {
+    "name": "stock",
+    "allergen": "",
+    "emoji": "🥣"
+  },
+  {
+    "name": "sugar",
+    "allergen": "",
+    "emoji": "🍬"
+  },
+  {
+    "name": "sushi rice",
+    "allergen": "",
+    "emoji": "🍙"
+  },
+  {
+    "name": "tamarind",
+    "allergen": "",
+    "emoji": "🟤"
+  },
+  {
+    "name": "tomato sauce",
+    "allergen": "",
+    "emoji": "🍅"
+  },
+  {
+    "name": "trout",
+    "allergen": "fish",
+    "emoji": "🐟"
+  },
+  {
+    "name": "wasabi",
+    "allergen": "",
+    "emoji": "🟢"
+  },
+  {
+    "name": "wheat baguette",
+    "allergen": "wheat",
+    "emoji": "🥖"
+  },
+  {
+    "name": "wheat biscuit",
+    "allergen": "wheat",
+    "emoji": "🍪"
+  },
+  {
+    "name": "wheat croutons",
+    "allergen": "wheat",
+    "emoji": "🥖"
+  },
+  {
+    "name": "wheat fettuccine",
+    "allergen": "wheat",
+    "emoji": "🍝"
+  },
+  {
+    "name": "wheat flatbread",
+    "allergen": "wheat",
+    "emoji": "🫓"
+  },
+  {
+    "name": "wheat gnocchi",
+    "allergen": "wheat",
+    "emoji": "🥟"
+  },
+  {
+    "name": "wheat naan",
+    "allergen": "wheat",
+    "emoji": "🫓"
+  },
+  {
+    "name": "wheat roll",
+    "allergen": "wheat",
+    "emoji": "🥖"
+  },
+  {
+    "name": "wheat tempura",
+    "allergen": "wheat",
+    "emoji": "🍤"
+  },
+  {
+    "name": "wheat tortilla",
+    "allergen": "wheat",
+    "emoji": "🌯"
+  },
+  {
+    "name": "wheat udon",
+    "allergen": "wheat",
+    "emoji": "🍜"
+  },
+  {
+    "name": "wheat wrappers",
+    "allergen": "wheat",
+    "emoji": "🥟"
+  }
+]
