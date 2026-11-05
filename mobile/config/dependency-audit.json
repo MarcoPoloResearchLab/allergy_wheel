@@ -4,18 +4,6 @@
   "review_after": "2026-11-12",
   "remediations": [
     {
-      "advisory": "GHSA-86w9-cpqp-85rv",
-      "package": "node-forge",
-      "version": "1.4.0",
-      "patch": "vendor/node-forge/RSA-CORRECTION.patch",
-      "upstream": {
-        "pull_request": "https://github.com/digitalbazaar/forge/pull/1152"
-      },
-      "installations": [
-        "node_modules/node-forge"
-      ]
-    },
-    {
       "advisory": "GHSA-gcqx-w48m-w2h4",
       "package": "deepmerge",
       "version": "4.3.1",

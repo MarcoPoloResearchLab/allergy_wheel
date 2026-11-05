@@ -1,7 +1,7 @@
 // @ts-check
 import { spawnSync } from 'node:child_process';
 import { readFile, realpath } from 'node:fs/promises';
-import { verifyInstalledForge, installedForgeCopies, verifyInstalledDeepmerge, installedDeepmergeCopies } from './dependency-security-probes.mjs';
+import { FORGE_VERSION, verifyInstalledForge, installedForgeCopies, verifyInstalledDeepmerge, installedDeepmergeCopies } from './dependency-security-probes.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,15 +14,26 @@ const keys = (object, expected, subject) => {
 };
 const policy = await json('config/dependency-audit.json');
 keys(policy, ['schema', 'reviewed_at', 'review_after', 'remediations'], 'policy');
-if (policy.schema !== 'allergy-wheel.dependency-audit.v1' || (!Array.isArray(policy.remediations) || policy.remediations.length !== 2)) fail('policy schema is invalid.');
+if (policy.schema !== 'allergy-wheel.dependency-audit.v1' || (!Array.isArray(policy.remediations) || policy.remediations.length !== 1)) fail('policy schema is invalid.');
 for (const field of ['reviewed_at', 'review_after']) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(policy[field]) || !Number.isFinite(Date.parse(policy[field]))) fail(`${field} is invalid.`);
 }
 if (Date.parse(policy.review_after) < Date.now() || policy.reviewed_at > policy.review_after) fail(`review expired or invalid (${policy.review_after}).`);
 const lock = await json('package-lock.json');
 if (lock.lockfileVersion !== 3 || !lock.packages) fail('lockfile schema is invalid.');
+// Registry Forge qualification is required even when the advisory feed is empty.
+const forgeLocations = Object.entries(lock.packages)
+  .filter(([location]) => location.endsWith('node_modules/node-forge'));
+if (forgeLocations.length === 0 || forgeLocations.some(([, selected]) => selected.link || selected.version !== FORGE_VERSION)) fail('Forge lockfile installations differ.');
+const installedForge = installedForgeCopies(root);
+if (JSON.stringify(installedForge) !== JSON.stringify(forgeLocations.map(([location]) => location).sort())) fail('Forge installed copies differ.');
+for (const location of installedForge) {
+  if ((await json(`${location}/package.json`)).version !== FORGE_VERSION) fail(`${location} installed version differs.`);
+  try { verifyInstalledForge(path.join(root, location)); }
+  catch (error) { fail(`${location} behavior failed: ${error.message}`); }
+}
+process.stdout.write(`Registry node-forge@${FORGE_VERSION}: every installed copy is behavior-qualified.\n`);
 const corrections = new Map([
-  ['GHSA-86w9-cpqp-85rv', { package: 'node-forge', version: '1.4.0', patch: 'RSA-CORRECTION.patch', upstream: 'https://github.com/digitalbazaar/forge/pull/1152', copies: installedForgeCopies, verify: verifyInstalledForge }],
   ['GHSA-gcqx-w48m-w2h4', { package: 'deepmerge', version: '4.3.1', patch: 'PROTOTYPE-CORRECTION.patch', upstream: 'https://github.com/TehShrike/deepmerge/pull/274', copies: installedDeepmergeCopies, verify: verifyInstalledDeepmerge }],
 ]);
 const remediations = new Map();
