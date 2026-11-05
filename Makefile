@@ -55,7 +55,7 @@ test-layout: build-test-image
 test-local:
 	bash "$(REPOSITORY_DIRECTORY)/tests/local-commands.sh"
 
-ci: check test-harness-first-failure test test-layout test-node-forge-security test-deepmerge-security test-dependency-audit test-dependency-installs test-mobile mobile-check mobile-audit test-pages test-store-listings test-feedback-verifier test-privacy test-native-release test-release-adapter test-native-preparation mobile-native-check test-apple-bundle test-local
+ci: check test-harness-first-failure test test-layout test-node-forge-security test-deepmerge-security test-dependency-audit test-dependency-installs test-mobile mobile-check test-expo-fingerprint mobile-audit test-pages test-store-listings test-feedback-verifier test-privacy test-native-release test-release-adapter test-native-preparation mobile-native-check test-apple-bundle test-local
 
 .PHONY: test-mobile mobile-dependencies mobile-prepare
 
@@ -212,3 +212,13 @@ test-deepmerge-security: build-test-image
 .PHONY: mobile-refresh-lock
 mobile-refresh-lock: build-dependency-image
 	docker run --rm --init --env CI=1 --volume "$(REPOSITORY_DIRECTORY):/workspace" --workdir /workspace/mobile "$(DEPENDENCY_IMAGE)" npm install --package-lock-only --ignore-scripts
+
+.PHONY: test-expo-fingerprint
+test-expo-fingerprint: build-test-image
+	docker run --rm --init --volume "$(REPOSITORY_DIRECTORY)/mobile/ios:/workspace/mobile/ios:ro" --volume "$(REPOSITORY_DIRECTORY)/mobile/android:/workspace/mobile/android:ro" "$(TEST_IMAGE)" node tests/expo-fingerprint.mjs
+
+MOBILE_LOCK_PACKAGES ?=
+.PHONY: mobile-update-lock-packages
+mobile-update-lock-packages: build-dependency-image
+	$(if $(strip $(MOBILE_LOCK_PACKAGES)),,$(error Set MOBILE_LOCK_PACKAGES to the package names to update))
+	docker run --rm --init --env CI=1 --volume "$(REPOSITORY_DIRECTORY):/workspace" --workdir /workspace/mobile "$(DEPENDENCY_IMAGE)" npm update $(MOBILE_LOCK_PACKAGES) --package-lock-only --ignore-scripts
