@@ -11,6 +11,62 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B056] (P1) Align Expo patch dependencies
+  Goal:
+  Restore the full CI after the Expo compatibility check reports newer patch versions.
+
+  Requirements:
+  - Keep Expo SDK 57 and the selected React Native version.
+  - Align dependencies through the existing Docker command.
+  - Preserve the Deepmerge correction and all dependency security checks.
+  - Qualify upstream Forge 1.4.3 before removal of the obsolete vendor copy.
+  - Select patched `glob 14.0.3` and `minimatch 11.0.4` for Fingerprint.
+  - Update the transitive Joi dependency to `17.13.9`.
+  - Verify native fingerprint sources and nested ignore rules through the public API.
+  - Regenerate native inputs and their preparation record.
+  - Complete the full CI.
+
+  Validation:
+  `make mobile-check` rejected `expo 57.0.31` and `expo-build-properties 57.0.22`.
+  The check requires `expo ~57.0.32` and `expo-build-properties ~57.0.23`.
+  Expo compatibility, runtime audit, build audit, and fingerprint checks passed.
+  Both installation modes passed the RSA and Expo certificate checks.
+
+  `make mobile-prepare-store` passed with CocoaPods and all four property checks.
+  Native dependency records and the CocoaPods lockfile match the selected packages.
+  Final `make ci` passed on November 5, 2026.
+
+- [x] [B055] (P1) {B056} Correct allergen control dimensions
+  Goal:
+  Keep allergen text and icons inside controls of equal height on the website and mobile package.
+
+  Requirements:
+  - Preserve the game colors and all allergen names.
+  - Keep controls compact and preserve complete allergen labels.
+  - Keep the complete selection screen inside the viewport without vertical scroll.
+  - Preserve native radio semantics, keyboard focus, and a visible selection indicator.
+  - Put the start button below the allergen controls.
+  - Verify phone, tablet, and desktop layouts with the display font and the system font.
+  - Verify the wheel and result controls after the layout change.
+
+  Validation:
+  The initial browser test failed because allergen controls had different heights.
+  All 72 layout cases passed in Chromium and WebKit at widths from 320 to 1440 pixels.
+  The cases included 320 by 568 pixels and 667 by 375 pixels.
+  The complete selection screen fit each viewport without vertical scroll.
+  Allergen controls used equal heights of 80 pixels or less.
+  The cases covered the website, generated mobile package, display font, and system font.
+
+  Game rounds, results, restart controls, and mobile offline flows passed.
+  Independent review found no further defects in the changed layout.
+  Selected controls use a gold fill and a bold inset border.
+  Hover and keyboard focus preserve the selection style.
+  `make mobile-package` updated the tracked native input with the verified styles and markup.
+
+  Final Validation:
+  B056 resolved the Expo dependency mismatch and the dependency audit failures.
+  Final `make ci` passed on November 5, 2026, including all 72 layout cases.
+
 - [x] [B054] (P1) Correct unsafe deepmerge assignments
   Goal:
   Qualify the first-failure CI task without the unremediated deepmerge advisory.

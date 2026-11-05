@@ -44,7 +44,7 @@ P001 and F004 retain the owner decisions. P002 preserves the earlier decision hi
 
 The source review inspected Hecate and LoopAware `mobile/package.json` and StillPuzzle `package.json`.
 Each project uses Expo SDK 57 and React Native 0.86.
-The selected dependency lock uses Expo 57.0.31 and React Native 0.86.3.
+The selected dependency lock uses Expo 57.0.32 and React Native 0.86.3.
 The selected adapter uses React Native WebView 13.16.1.
 PWA installation and website APK downloads are outside the selected delivery path.
 
@@ -314,3 +314,20 @@ The generated `gradlew` supplies `-Pkotlin.compiler.execution.strategy=in-proces
 The JVM metaspace limit is `1g`.
 Preparation keeps the heap, parallel execution, workers, ABI selection, and signing inputs unchanged.
 `make test-native-release` verifies real launcher arguments and repeated preparation.
+
+## Expo Dependency Qualification
+
+The selected versions are `expo 57.0.32`, `expo-build-properties 57.0.23`, and React Native `0.86.3`.
+The npm overrides select `glob 14.0.3` and `minimatch 11.0.4` for `@expo/fingerprint 0.20.15`.
+These versions address the [Glob advisory](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4) and [Minimatch advisory](https://github.com/advisories/GHSA-g3hv-75wg-m249).
+The lockfile selects `joi 17.13.9` for the [Joi advisory](https://github.com/advisories/GHSA-4528-x5fx-h6hg).
+
+The registry package `node-forge 1.4.3` replaces the local Forge package.
+It uses the [upstream RSA implementation](https://github.com/digitalbazaar/forge/blob/936b24d939dc7261ee37982576f9cf2b410084ee/lib/rsa.js#L1240-L1254).
+The RSA and Expo certificate checks remain required for every installed Forge copy.
+Any Forge advisory causes the audit to fail.
+Deepmerge retains the local correction and its behavior checks.
+
+`make test-expo-fingerprint` verifies selected versions, native sources, equal hashes for unchanged inputs, and nested ignore rules.
+`make ci` includes this test.
+Run `make mobile-prepare-store` after a dependency change.
