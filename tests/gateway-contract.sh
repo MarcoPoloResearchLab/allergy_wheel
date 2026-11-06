@@ -17,24 +17,22 @@ mkdir -p "$install/application/.mprlab/deploy"
 cat > "$install/application/.mprlab/deploy/resources.yml" <<'MANIFEST'
 mprlab_resources:
   owner: allergy-runtime-fixture
-  inputs:
-    synthetic: fixture
-  ci:
-    enabled: false
   release:
     scheme: semver
-  defaults:
-    timeouts:
-      startup: 30s
-      completion: 1m
-      readiness: 30s
-      request: 30s
-      shutdown: 30s
-  resources:
-    private:
-      kind: private_values
-      bindings:
-        synthetic: synthetic
+  environment:
+    private_inputs:
+    - id: synthetic
+      value: fixture
+  lifecycle:
+    ci:
+      enabled: false
+    defaults:
+      timeouts:
+        startup: 30s
+        completion: 1m
+        readiness: 30s
+        request: 30s
+        shutdown: 30s
 MANIFEST
 tar -xzf /gateway-runtime.tar.gz -C "$seed"
 "$seed/bin/mprlab-gateway" install --version "$MPRLAB_GATEWAY_TEST_VERSION" \

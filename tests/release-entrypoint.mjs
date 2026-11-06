@@ -65,7 +65,7 @@ async function testCapturedAdapter(platform) {
     const root = await mkdtemp(join(tmpdir(), 'allergy-captured-adapter-'));
     try {
         const gateway = process.env.MPRLAB_GATEWAY_EXECUTABLE;
-        assert.ok(gateway, 'Select the physical installed Gateway executable.');
+        assert.ok(gateway, 'Select the installed Gateway executable.');
         await mkdir(join(root, '.mprlab/deploy'), { recursive: true });
         await mkdir(join(root, 'configs/signing'), { recursive: true });
         await mkdir(join(root, 'scripts'));
@@ -91,24 +91,34 @@ async function testCapturedAdapter(platform) {
         await writeFile(selected, names.map(name => `${name}=${name === 'ALLERGY_WHEEL_ANDROID_KEYSTORE' ? signing : 'synthetic-input'}\n`).join(''));
         await writeFile(join(root, '.mprlab/deploy/resources.yml'), `mprlab_resources:
   owner: allergy-capture-fixture
-  environment_file: .mprlab/deploy/.env
-  inputs:
-${names.map(name => `    ${name}: ${'${'}${name}}\n`).join('')}  ci:
-    enabled: false
   release:
     scheme: semver
-  defaults:
-    timeouts:
-      startup: 30s
-      completion: 1m
-      readiness: 30s
-      request: 30s
-      shutdown: 30s
-  resources:
-    private:
-      kind: private_values
-      bindings:
-        signing: ALLERGY_WHEEL_ANDROID_KEYSTORE
+  environment:
+    source: .mprlab/deploy/.env
+    private_inputs:
+${names.map(name => `    - id: ${name.toLowerCase().replaceAll('_', '-')}\n      variable: ${name}\n`).join('')}  artifacts:
+    mobile:
+    - id: mobile
+      source: mobile
+      build_system: local
+      build:
+        android: scripts/build-store-artifact.mjs
+        ios: scripts/build-store-artifact.mjs
+      android:
+        package_name: com.mprlab.allergywheel
+      ios:
+        bundle_identifier: com.mprlab.allergywheel
+        export_intent: app-store
+  lifecycle:
+    ci:
+      enabled: false
+    defaults:
+      timeouts:
+        startup: 30s
+        completion: 1m
+        readiness: 30s
+        request: 30s
+        shutdown: 30s
 `);
         const runner = join(root, 'run.mjs');
         await writeFile(runner, `
@@ -118,7 +128,7 @@ writeFileSync(${JSON.stringify(selected)}, 'ALLERGY_WHEEL_ANDROID_KEYSTORE=chang
 const result = spawnSync(process.execPath, [${JSON.stringify(join(root, 'scripts/build-store-artifact.mjs'))},
     '--mobile-dir', ${JSON.stringify(join(root, 'mobile'))}, '--output', ${JSON.stringify(join(root, platform === 'android' ? 'android.aab' : 'ios.ipa'))},
     '--release-timestamp', '2026-09-07T20:00:00Z'], {
-    env: { ...process.env, ALLERGY_WHEEL_ANDROID_KEYSTORE: '/changed-process-value',
+    env: { ...process.env, MPRLAB_APP_ROOT: ${JSON.stringify(root)}, ALLERGY_WHEEL_ANDROID_KEYSTORE: '/changed-process-value',
         MPRLAB_ARTIFACT_VERSION: 'v1.2.3', MPRLAB_MOBILE_BUILD_INTENT: 'invalid-relative-intent',
         MPRLAB_APPLICATION_LIFECYCLE_LOCK: 'exclusive', MPRLAB_LIFECYCLE_OPERATION: 'release' },
     input: '', encoding: 'utf8'

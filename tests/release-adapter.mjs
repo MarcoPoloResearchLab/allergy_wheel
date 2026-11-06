@@ -33,7 +33,7 @@ const assert = require('node:assert/strict');
 let body = '';
 process.stdin.on('data', data => body += data);
 process.stdin.on('end', () => {
-    assert.deepEqual(JSON.parse(body), { root: process.env.MPRLAB_APP_ROOT, keys: ['ALLERGY_WHEEL_ANDROID_KEYSTORE'] });
+    assert.deepEqual(JSON.parse(body), { root: process.env.MPRLAB_APP_ROOT, keys: ['ALLERGY_WHEEL_ANDROID_KEYSTORE'], scope: 'provider' });
     process.stdout.write(JSON.stringify({ ALLERGY_WHEEL_ANDROID_KEYSTORE: process.env.TEST_CAPTURED_SIGNING_PATH }));
 });
 `);
