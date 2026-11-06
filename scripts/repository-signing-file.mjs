@@ -9,7 +9,7 @@ export async function repositorySigningFile(gateway, name) {
     if (!repositoryRoot || !isAbsolute(repositoryRoot)) throw new Error('Signing requires the captured application root.');
     const captured = spawnSync(gateway, ['private-environment-operation'], {
         cwd: repositoryRoot, env: process.env, encoding: 'utf8',
-        input: JSON.stringify({ root: repositoryRoot, keys: [name] })
+        input: JSON.stringify({ root: repositoryRoot, keys: [name], scope: 'provider' })
     });
     if (captured.error) throw new Error(`Read captured signing input ${name}: ${captured.error.message}`);
     if (captured.status !== 0) throw new Error(`Read captured signing input ${name}: ${captured.stderr.trim()}`);
