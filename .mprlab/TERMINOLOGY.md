@@ -97,6 +97,9 @@ Give each term one meaning. Use the same term for the same concept in all docume
 
 ## Repository Technical Nouns
 
+- `fingerprint`: A hash that identifies selected native application inputs.
+- `npm override`: A `package.json` rule that selects a dependency version.
+
 - `scene lifecycle`: The UIKit contract that connects application windows to scenes.
 
 - `APK`: An Android application package for direct installation.

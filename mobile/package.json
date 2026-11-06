@@ -18,15 +18,15 @@
     "export": "expo export --platform all"
   },
   "dependencies": {
-    "expo": "~57.0.31",
+    "deepmerge": "file:vendor/deepmerge",
+    "expo": "~57.0.32",
+    "expo-build-properties": "~57.0.23",
     "expo-system-ui": "~57.0.4",
+    "node-forge": "1.4.3",
     "react": "19.2.3",
     "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-webview": "13.16.1",
-    "node-forge": "file:vendor/node-forge",
-    "expo-build-properties": "~57.0.22",
-    "deepmerge": "file:vendor/deepmerge"
+    "react-native-webview": "13.16.1"
   },
   "devDependencies": {
     "@react-native-community/cli": "20.2.0",
@@ -34,12 +34,13 @@
     "esbuild": "0.28.1"
   },
   "overrides": {
-    "@expo/cli@57.0.32": {
-      "zod": "4.6.7"
-    },
     "uuid": "11.1.1",
     "brace-expansion": "5.0.12",
     "node-forge": "$node-forge",
-    "deepmerge": "$deepmerge"
+    "deepmerge": "$deepmerge",
+    "@expo/fingerprint@0.20.15": {
+      "glob": "14.0.3",
+      "minimatch": "11.0.4"
+    }
   }
 }

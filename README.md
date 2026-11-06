@@ -85,6 +85,8 @@ The selected toolchain supports Android 7.0 and later, and iOS 16.4 and later.
 | `make test-gateway-contract` | Verify both native requests and captured Android input with an installed published Gateway runtime. |
 | `make mobile-native-check` | Verify the retained game and native source in the current checkout. |
 | `make mobile-audit-build` | Audit all mobile runtime and build dependencies in Docker. |
+| `make test-expo-fingerprint` | Verify native fingerprint sources, stable hashes, and nested ignore rules in Docker. |
+| `make mobile-update-lock-packages MOBILE_LOCK_PACKAGES=joi` | Update the named package in the mobile lockfile through Docker. |
 | `make test-tooling-audit` | Audit the browser test and game packaging dependencies in Docker. |
 | `make test-native-preparation` | Verify native configuration and current game source packaging in Docker. |
 | `make test-apple-bundle` | Rebuild the offline game and run the actual native JavaScript bundle phase in Docker. |

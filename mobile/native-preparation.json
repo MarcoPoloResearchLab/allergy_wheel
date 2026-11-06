@@ -10,13 +10,25 @@
   },
   "dependencies": {
     "dependencies": {
+      "deepmerge": {
+        "declared": "file:vendor/deepmerge",
+        "resolved": "4.3.1"
+      },
       "expo": {
-        "declared": "~57.0.31",
-        "resolved": "57.0.31"
+        "declared": "~57.0.32",
+        "resolved": "57.0.32"
+      },
+      "expo-build-properties": {
+        "declared": "~57.0.23",
+        "resolved": "57.0.23"
       },
       "expo-system-ui": {
         "declared": "~57.0.4",
         "resolved": "57.0.4"
+      },
+      "node-forge": {
+        "declared": "1.4.3",
+        "resolved": "1.4.3"
       },
       "react": {
         "declared": "19.2.3",
@@ -33,18 +45,6 @@
       "react-native-webview": {
         "declared": "13.16.1",
         "resolved": "13.16.1"
-      },
-      "node-forge": {
-        "declared": "file:vendor/node-forge",
-        "resolved": "1.4.0"
-      },
-      "expo-build-properties": {
-        "declared": "~57.0.22",
-        "resolved": "57.0.22"
-      },
-      "deepmerge": {
-        "declared": "file:vendor/deepmerge",
-        "resolved": "4.3.1"
       }
     },
     "devDependencies": {
@@ -62,13 +62,14 @@
       }
     },
     "overrides": {
-      "@expo/cli@57.0.32": {
-        "zod": "4.6.7"
-      },
       "uuid": "11.1.1",
       "brace-expansion": "5.0.12",
       "node-forge": "$node-forge",
-      "deepmerge": "$deepmerge"
+      "deepmerge": "$deepmerge",
+      "@expo/fingerprint@0.20.15": {
+        "glob": "14.0.3",
+        "minimatch": "11.0.4"
+      }
     }
   },
   "toolchain": {

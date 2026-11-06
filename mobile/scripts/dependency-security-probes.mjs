@@ -8,6 +8,8 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 
 
+export const FORGE_VERSION = "1.4.3";
+
 /** Verify one explicitly selected installed package through its real RSA public API. */
 export function verifyInstalledForge(installation) {
   const consumerRequire = createRequire(path.join(installation, "package.json"));
@@ -72,7 +74,7 @@ const message = "Allergy Wheel RSA signature boundary";
   }
 
   assert.equal(identity.name, "node-forge", `${consumer}: upstream package identity`);
-  assert.equal(identity.version, "1.4.0");
+  assert.equal(identity.version, FORGE_VERSION);
 }
 
 /** Locate every selected package copy in the actual dependency installation. */
@@ -122,7 +124,7 @@ export function verifyExpoConsumers(root) {
     verifyInstalledForge(installation);
     roots.add(realpathSync(installation));
   }
-  assert.equal(roots.size, 1, "Expo consumers must use the selected corrected Forge");
+  assert.equal(roots.size, 1, "Expo consumers must use the selected registry Forge");
 const nativeKeys = generateKeyPairSync("rsa", { modulusLength: 2048, publicExponent: 3 });
 const pem = {
   privateKeyPEM: nativeKeys.privateKey.export({ type: "pkcs1", format: "pem" }).toString(),

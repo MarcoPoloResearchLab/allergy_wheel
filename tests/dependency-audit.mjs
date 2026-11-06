@@ -20,15 +20,15 @@ const server = createServer(async (request, response) => {
     if (boundary === 'unavailable') { response.statusCode = 503; return response.end('{"error":"unavailable"}'); }
     if (request.url?.includes('/security/advisories/bulk')) {
         if (boundary === 'empty') return response.end('{}');
-        const names = ['unknown', 'critical'].includes(boundary) ? ['expo'] : ['node-forge', 'deepmerge'];
+        const names = ['unknown', 'critical'].includes(boundary) ? ['expo'] : boundary === 'forge' ? ['node-forge'] : ['deepmerge'];
         return response.end(JSON.stringify(Object.fromEntries(names.map((name, index) => [name, [{ id: 1240912 + index,
-            url: `https://github.com/advisories/${name === 'expo' ? 'GHSA-xxxx-yyyy-zzzz' : policy.remediations.find(entry => entry.package === name).advisory}`,
+            url: `https://github.com/advisories/${name === 'expo' ? 'GHSA-xxxx-yyyy-zzzz' : name === 'node-forge' ? 'GHSA-86w9-cpqp-85rv' : policy.remediations.find(entry => entry.package === name).advisory}`,
             title: 'Controlled dependency advisory', severity: boundary === 'critical' ? 'critical' : 'high',
             vulnerable_versions: '*', cwe: [], cvss: { score: 8.7, vectorString: null },
         }]]))));
     }
     const name = decodeURIComponent(request.url?.slice(1) ?? '');
-    const version = name === 'expo' ? '57.0.31' : name === 'deepmerge' ? '4.3.1' : '1.4.0';
+    const version = name === 'expo' ? '57.0.32' : name === 'deepmerge' ? '4.3.1' : '1.4.3';
     response.end(JSON.stringify({ name, 'dist-tags': { latest: version }, versions: { [version]: { name, version } } }));
 });
 await new Promise((done) => server.listen(0, '127.0.0.1', done));
@@ -58,19 +58,21 @@ try {
         if (!['node-forge', 'deepmerge'].includes(name)) await symlink(path.join(source, 'node_modules', name), path.join(fixture, 'node_modules', name));
     }
     const installed = path.join(fixture, 'node_modules/node-forge');
-    await symlink(path.join(fixture, 'vendor/node-forge'), installed);
+    await cp(path.join(source, 'node_modules/node-forge'), installed, { recursive: true, dereference: true });
     const merged = path.join(fixture, 'node_modules/deepmerge');
     await symlink(path.join(fixture, 'vendor/deepmerge'), merged);
     await run('known advisory with real local correction', true, /behavior-qualified/);
     boundary = 'empty';
-    await run('empty feed retains known-advisory behavior qualification', true, /2 behavior-qualified local corrections with absent advisories/);
+    await run('empty feed retains known-advisory behavior qualification', true, /1 behavior-qualified local corrections with absent advisories/);
+    boundary = 'forge';
+    await run('every Forge advisory is unremediated', false, /unremediated advisory GHSA-86w9-cpqp-85rv/);
     for (const mode of ['unknown', 'critical', 'malformed', 'unavailable']) { boundary = mode; await run(`registry ${mode}`, false); }
     const config = path.join(fixture, 'config/dependency-audit.json');
     boundary = 'empty';
     for (const [label, mutate] of [
         ['missing known advisory', value => { value.remediations = []; }],
-        ['missing deepmerge correction', value => { value.remediations.pop(); }],
-        ['wrong package probe identity', value => { value.remediations[1].package = 'node-forge'; }],
+        ['Forge cannot become a local exception', value => { value.remediations.push({ ...value.remediations[0], package: 'node-forge' }); }],
+        ['wrong package probe identity', value => { value.remediations[0].package = 'node-forge'; }],
         ['expired review', value => { value.review_after = '2000-01-01'; }],
         ['unknown policy shape', value => { value.extra = true; }],
         ['missing installation', value => { value.remediations[0].installations = []; }],
@@ -104,7 +106,7 @@ try {
     await cp(merged, concealedMerge, { recursive: true, dereference: true });
     await run('unselected deepmerge copy', false, /installed copies differ/);
     await rm(path.join(fixture, 'node_modules/extra-merge'), { recursive: true });
-    const provenancePath = path.join(fixture, 'vendor/node-forge/PROVENANCE.json');
+    const provenancePath = path.join(fixture, 'vendor/deepmerge/PROVENANCE.json');
     const provenanceText = await readFile(provenancePath, 'utf8');
     await writeFile(provenancePath, JSON.stringify({ ...JSON.parse(provenanceText), review_after: '2099-01-01' }));
     await run('provenance review drift', false, /provenance differs/);
@@ -119,13 +121,25 @@ try {
     const rsa = path.join(installed, 'lib/rsa.js');
     const original = await readFile(rsa, 'utf8');
     await writeFile(rsa, original + '\n// Harmless source formatting.\n');
-    await run('formatting does not invalidate a qualified correction', true);
+    await run('formatting does not invalidate a qualified registry package', true);
     await writeFile(rsa, original);
+    const selectedLockPath = path.join(fixture, 'package-lock.json');
+    const selectedLockText = await readFile(selectedLockPath, 'utf8');
+    const driftedLock = JSON.parse(selectedLockText);
+    driftedLock.packages['node_modules/node-forge'].version = '1.4.0';
+    await writeFile(selectedLockPath, JSON.stringify(driftedLock));
+    await run('locked Forge version drift', false, /lockfile installations differ/);
+    await writeFile(selectedLockPath, selectedLockText);
     const metadataPath = path.join(installed, 'package.json');
     const metadata = await readFile(metadataPath, 'utf8');
     await writeFile(metadataPath, JSON.stringify({ ...JSON.parse(metadata), version: '0.0.0' }));
     await run('installed version drift', false, /installed version differs/);
     await writeFile(metadataPath, metadata);
+    const forgeEntry = path.join(installed, 'lib/index.js');
+    const forgeEntryText = await readFile(forgeEntry, 'utf8');
+    await writeFile(forgeEntry, 'module.exports = {};\n');
+    await run('empty feed rejects broken root Forge behavior', false, /behavior failed/);
+    await writeFile(forgeEntry, forgeEntryText);
     const concealed = path.join(fixture, 'node_modules/concealed/node_modules');
     await mkdir(concealed, { recursive: true });
     await symlink(path.join(fixture, 'absent-package'), path.join(concealed, '0-dangling'));
@@ -139,11 +153,9 @@ try {
     await symlink(linkedParent, path.join(fixture, 'node_modules/linked-parent'));
     await run('linked parent cannot conceal an unselected installed copy', false, /installed copies differ/);
     const linkedLocation = 'node_modules/linked-parent/node_modules/node-forge';
-    const linkedPolicy = JSON.parse(policyText); linkedPolicy.remediations[0].installations.push(linkedLocation);
-    await writeFile(config, JSON.stringify(linkedPolicy));
     const linkedLockPath = path.join(fixture, 'package-lock.json');
     const originalLock = await readFile(linkedLockPath, 'utf8');
-    const linkedLock = JSON.parse(originalLock); linkedLock.packages[linkedLocation] = { version: '1.4.0' };
+    const linkedLock = JSON.parse(originalLock); linkedLock.packages[linkedLocation] = { version: '1.4.3' };
     await writeFile(linkedLockPath, JSON.stringify(linkedLock));
     await run('selected copy below linked parent is qualified', true);
     await writeFile(path.join(linkedCopy, 'lib/index.js'), 'module.exports = {};\n');
@@ -160,11 +172,9 @@ try {
     await mkdir(path.dirname(nested), { recursive: true });
     await cp(installed, nested, { recursive: true, dereference: true });
     await run('unselected installed copy', false, /installed copies differ/);
-    const selected = JSON.parse(policyText); selected.remediations[0].installations.push(nestedLocation);
-    await writeFile(config, JSON.stringify(selected));
     const lockPath = path.join(fixture, 'package-lock.json');
     const lock = JSON.parse(await readFile(lockPath, 'utf8'));
-    lock.packages[nestedLocation] = { version: '1.4.0' }; await writeFile(lockPath, JSON.stringify(lock));
+    lock.packages[nestedLocation] = { version: '1.4.3' }; await writeFile(lockPath, JSON.stringify(lock));
     await run('selected nested copy', true);
     const nestedMetadata = path.join(nested, 'package.json');
     await writeFile(nestedMetadata, JSON.stringify({ ...JSON.parse(metadata), main: '../../../node-forge/lib/index.js' }));

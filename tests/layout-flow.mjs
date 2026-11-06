@@ -9,9 +9,14 @@ const websiteUrl = 'https://allergy.mprlab.com/';
 const screenshotDirectory = '/output';
 const viewports = [
     { width: 320, height: 568 },
+    { width: 375, height: 812 },
     { width: 390, height: 844 },
+    { width: 440, height: 956 },
+    { width: 768, height: 1024 },
+    { width: 667, height: 375 },
     { width: 844, height: 390 },
-    { width: 1024, height: 768 }
+    { width: 1024, height: 768 },
+    { width: 1440, height: 900 }
 ];
 /** Check that navigation and wheel controls remain visible without page scrolling. */
 async function assertWheelFits(page) {
@@ -24,13 +29,56 @@ async function assertWheelFits(page) {
             wheelVisible: wheel.top >= header.bottom && wheel.bottom <= innerHeight,
             controlVisible: control.top >= header.bottom && control.bottom <= innerHeight,
             scrollWidth: document.documentElement.scrollWidth,
-            viewportWidth: innerWidth
+            viewportWidth: innerWidth,
+            overflow: [...document.querySelectorAll('body *')].filter((element) => {
+                const bounds = element.getBoundingClientRect();
+                return bounds.width > 0 && (bounds.right > innerWidth || bounds.left < 0);
+            }).map((element) => ({ tag: element.tagName, id: element.id, className: element.className, right: element.getBoundingClientRect().right }))
         };
     });
     assert.equal(layout.headerVisible, true, 'The header must stay in the viewport during play.');
     assert.equal(layout.wheelVisible, true, 'The wheel must fit below the header.');
     assert.equal(layout.controlVisible, true, 'Wheel controls must stay in the viewport.');
-    assert.ok(layout.scrollWidth <= layout.viewportWidth, `The game must fit the viewport width (${layout.scrollWidth}/${layout.viewportWidth}).`);
+    assert.ok(layout.scrollWidth <= layout.viewportWidth, `The game must fit the viewport width (${layout.scrollWidth}/${layout.viewportWidth}): ${JSON.stringify(layout.overflow)}.`);
+}
+
+/** Check the visible selection controls through the real game page. */
+async function assertSelectionFits(page) {
+    const layout = await page.locator('#allergy-list').evaluate((list) => {
+        const chips = [...list.querySelectorAll('.chip')];
+        return {
+            heights: chips.map((chip) => chip.getBoundingClientRect().height),
+            overflow: chips.filter((chip) => {
+                const bounds = chip.getBoundingClientRect();
+                const children = [...chip.children];
+                return chip.scrollWidth > chip.clientWidth || children.some((child) => {
+                    if (child.getClientRects().length === 0 || getComputedStyle(child).opacity === '0') return false;
+                    const childBounds = child.getBoundingClientRect();
+                    return child.scrollWidth > child.clientWidth + 1
+                        || childBounds.left < bounds.left + 2 || childBounds.right > bounds.right - 2
+                        || childBounds.top < bounds.top + 2 || childBounds.bottom > bounds.bottom - 2;
+                });
+            }).map((chip) => chip.textContent),
+            pageFits: document.documentElement.scrollWidth <= innerWidth,
+            screenFits: document.documentElement.scrollHeight <= innerHeight,
+            actionFits: document.querySelector('#start').scrollWidth <= document.querySelector('#start').clientWidth,
+            actionBelowOptions: document.querySelector('#start').getBoundingClientRect().top >= list.getBoundingClientRect().bottom,
+            headerControlHeights: [...document.querySelectorAll('.header-nav button, .aw-header-controls button')]
+                .map((button) => button.getBoundingClientRect().height)
+        };
+    });
+    assert.equal(layout.heights.length, 10, 'Every allergen must be available.');
+    assert.ok(Math.max(...layout.heights) - Math.min(...layout.heights) <= 1,
+        `All allergen options must have equal heights (${layout.heights.join(', ')}).`);
+    assert.ok(Math.min(...layout.heights) >= 44, 'All options must support touch input.');
+    assert.ok(Math.max(...layout.heights) <= 80, `Allergen choices must stay compact (${layout.heights.join(', ')}).`);
+    assert.deepEqual(layout.overflow, [], 'Allergen text, radio controls, and emoji must fit inside each option.');
+    assert.equal(layout.pageFits, true, 'Selection must fit the viewport width.');
+    assert.equal(layout.screenFits, true, 'The complete selection screen must fit without vertical scrolling.');
+    assert.equal(layout.actionFits, true, 'The start action must contain its label and icon.');
+    assert.equal(layout.actionBelowOptions, true, 'The start action must follow all allergen options.');
+    assert.ok(Math.min(...layout.headerControlHeights) >= 44, 'Header buttons must support touch input.');
+    assert.ok(Math.max(...layout.headerControlHeights) - Math.min(...layout.headerControlHeights) <= 1, 'Header action buttons must have equal heights.');
 }
 
 const contentTypes = Object.freeze({
@@ -40,17 +88,22 @@ const contentTypes = Object.freeze({
 
 execFileSync(process.execPath, ['scripts/build-mobile-game.mjs'], { stdio: 'inherit' });
 const mobileSource = await readFile('mobile/generated/game.html', 'utf8');
+const fontData = (await readFile('tests/fixtures/fredoka-one.ttf')).toString('base64');
+const scenarios = viewports.flatMap((viewport) => ['offline', 'fredoka'].map((fontMode) => ({ viewport, fontMode })));
 await mkdir(screenshotDirectory, { recursive: true });
 
 for (const engine of [chromium, webkit]) {
     const browser = await engine.launch();
     try {
         for (const surface of ['browser', 'mobile']) {
-            for (const viewport of viewports) {
+            for (const { viewport, fontMode } of scenarios) {
                 const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
                 await context.route('**/*', async (route) => {
                     const url = new URL(route.request().url());
                     if (url.href === MobileLocation.GAME) return route.fulfill({ contentType: contentTypes.html, body: mobileSource });
+                    if (url.hostname === 'fonts.googleapis.com' && fontMode === 'fredoka') {
+                        return route.fulfill({ contentType: 'text/css', body: `@font-face { font-family: 'Fredoka One'; font-weight: 400; src: url(data:font/ttf;base64,${fontData}); }` });
+                    }
                     if (url.origin !== new URL(websiteUrl).origin) return route.abort();
                     const path = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname.slice(1));
                     const extension = path.split('.').at(-1);
@@ -61,8 +114,18 @@ for (const engine of [chromium, webkit]) {
                     await page.clock.install();
                     await page.goto(surface === 'mobile' ? MobileLocation.GAME : websiteUrl);
                     await page.locator('#loading[hidden]').waitFor({ state: 'attached' });
+                    await page.evaluate(() => document.fonts.ready);
+                    if (fontMode === 'fredoka') {
+                        assert.equal(await page.evaluate(async () => (await document.fonts.load('16px "Fredoka One"')).length > 0), true, 'The display font must load in font scenarios.');
+                    }
                     const header = await page.locator('header').boundingBox();
                     assert.ok(header && header.height <= 172, `${surface} ${viewport.width}: header must leave room for the game (actual ${header?.height}).`);
+                    await page.screenshot({ animations: 'disabled', path: `${screenshotDirectory}/${engine.name()}-${surface}-${viewport.width}-${fontMode}-selection.png`, fullPage: true });
+                    await assertSelectionFits(page);
+                    await page.locator('input[value="italian_sausage"]').check();
+                    await page.locator('input[value="italian_sausage"]').focus();
+                    await assertSelectionFits(page);
+                    await page.screenshot({ animations: 'disabled', path: `${screenshotDirectory}/${engine.name()}-${surface}-${viewport.width}-${fontMode}-selection.png`, fullPage: true });
                     await page.locator('input[value="peanuts"]').check();
                     await page.locator('#mute').click();
                     await page.locator('#start').click();
@@ -87,11 +150,11 @@ for (const engine of [chromium, webkit]) {
                     assert.equal(resultLayout.fits, true, 'The result dialog must fit inside the viewport.');
                     assert.equal(resultLayout.scrollFits, true, 'Result content must wrap within the dialog.');
                     await page.locator('#again').scrollIntoViewIfNeeded();
-                    await page.screenshot({ path: `${screenshotDirectory}/${engine.name()}-${surface}-${viewport.width}-result.png` });
+                    await page.screenshot({ path: `${screenshotDirectory}/${engine.name()}-${surface}-${viewport.width}-${fontMode}-result.png` });
                     await page.locator('#again').click();
                     assert.equal(await page.locator('#reveal').getAttribute('aria-hidden'), 'true');
                     await assertWheelFits(page);
-                    await page.screenshot({ path: `${screenshotDirectory}/${engine.name()}-${surface}-${viewport.width}-wheel.png` });
+                    await page.screenshot({ path: `${screenshotDirectory}/${engine.name()}-${surface}-${viewport.width}-${fontMode}-wheel.png` });
                     await page.locator('#wheel-continue').click();
                     await page.locator('#reveal[aria-hidden="false"]').waitFor();
                     await page.keyboard.press('Escape');
@@ -103,7 +166,7 @@ for (const engine of [chromium, webkit]) {
                     });
                     assert.equal(restartCoversViewport, true, 'Restart confirmation must cover the viewport and header.');
                     await page.locator('#restart-confirmation-cancel').click();
-                    console.info(`${engine.name()} ${surface} ${viewport.width}×${viewport.height}: header, result layering, wrapping, and Spin Again passed.`);
+                    console.info(`${engine.name()} ${surface} ${viewport.width}×${viewport.height} ${fontMode}: header, result layering, wrapping, and Spin Again passed.`);
                 } finally {
                     await context.close();
                 }
