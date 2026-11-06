@@ -1,0 +1,12 @@
+[
+  { "token": "peanuts",         "label": "Peanuts",                         "emoji": "🥜" },
+  { "token": "tree_nuts",       "label": "Tree Nuts",                       "emoji": "🌰" },
+  { "token": "sesame",          "label": "Sesame",                          "emoji": "⚪️" },
+  { "token": "shellfish",       "label": "Shellfish",                       "emoji": "🦐" },
+  { "token": "milk",            "label": "Milk / Dairy",                    "emoji": "🥛" },
+  { "token": "egg",             "label": "Egg",                             "emoji": "🥚" },
+  { "token": "soy",             "label": "Soy",                             "emoji": "🫘" },
+  { "token": "wheat",           "label": "Wheat / Gluten",                  "emoji": "🌾" },
+  { "token": "italian_sausage", "label": "Italian Sausage (Pork/Spices)",   "emoji": "🌭" },
+  { "token": "fish",            "label": "Fish",                            "emoji": "🐟" }
+]

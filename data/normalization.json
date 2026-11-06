@@ -1,0 +1,13 @@
+[
+  { "pattern": "\\bpeanut(s)?\\b", "flags": "i", "token": "peanuts" },
+  { "pattern": "\\bpine nut(s)?\\b", "flags": "i", "token": "tree_nuts" },
+  { "pattern": "\\bwalnut(s)?|almond(s)?|cashew(s)?|pistachio(s)?|hazelnut(s)?\\b", "flags": "i", "token": "tree_nuts" },
+  { "pattern": "\\bsesame\\b|tahini", "flags": "i", "token": "sesame" },
+  { "pattern": "\\bshrimp|prawn|crab|lobster|clam(s)?|mussel(s)?|oyster(s)?\\b", "flags": "i", "token": "shellfish" },
+  { "pattern": "\\bmoz(zarella)?|parmesan|parmigiano|yogurt|cream|butter|milk|cheese|tzatziki|crema\\b", "flags": "i", "token": "milk" },
+  { "pattern": "\\begg(s)?\\b", "flags": "i", "token": "egg" },
+  { "pattern": "\\bsoy\\b|soy sauce", "flags": "i", "token": "soy" },
+  { "pattern": "\\bwheat\\b|flour|bread|panko|pasta|dough\\b", "flags": "i", "token": "wheat" },
+  { "pattern": "\\bnori|salmon|tuna|cod|fish sauce|fish\\b", "flags": "i", "token": "fish" },
+  { "pattern": "italian sausage", "flags": "i", "token": "italian_sausage" }
+]
