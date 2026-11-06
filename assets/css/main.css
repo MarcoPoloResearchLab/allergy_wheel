@@ -1447,9 +1447,9 @@ body[data-screen="wheel"] #reveal[aria-hidden="false"] { display: grid }
     padding: clamp(20px, 4vw, 28px);
 }
 
-#reveal .row { flex-direction: column-reverse; align-items: flex-start; gap: 10px; }
-#dish-title { font-size: clamp(24px, 5vw, 30px); line-height: 1.18; overflow-wrap: anywhere; }
-#dish-cuisine { background: #fff0cc; color: #755317; border: 0; padding: 6px 10px; border-radius: 8px; font-size: 12px; }
+#reveal .row { align-items: flex-start; gap: 10px; }
+#dish-title { flex: 1; min-width: 0; font-size: clamp(24px, 5vw, 30px); line-height: 1.18; overflow-wrap: anywhere; }
+#dish-cuisine { flex: 0 0 auto; box-sizing: border-box; max-width: 45%; overflow-wrap: anywhere; background: #fff0cc; color: #755317; border: 0; padding: 6px 10px; border-radius: 8px; font-size: 12px; }
 #reveal .banner { border: 1px solid #bcdfcc; border-radius: 18px; padding: 14px; gap: 14px; margin-top: 20px; }
 #reveal .banner.bad { border-color: #f2b7bd; }
 #reveal .face { width: 64px; height: 64px; flex: 0 0 64px; }
