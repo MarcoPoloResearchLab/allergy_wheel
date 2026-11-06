@@ -4,6 +4,22 @@ F003 owns public store delivery. F001 owns software acceptance. This record reta
 F004 supplies the data contract. P002 preserves the decision history. B046 corrected the native store metadata source.
 Dated sections preserve earlier preparation evidence. The current operation sequence controls remaining work.
 
+## Current Operation Status On November 6, 2026
+
+Google Play has version `1.0.10`, build `1794000541`, in review.
+The pre-review checks completed on November 6, 2026.
+The website release marker reports `v1.0.9`.
+The GitHub release `v1.0.10` has no `mprlab-publication.json` completion record.
+The original local sealed records and artifacts for that release are absent.
+
+The user authorized a new sealed release, publication, replacement of the Google Play review if necessary, and deployment.
+The replacement release uses the current game code.
+Gateway allocates its version and native build identifiers through the normal release procedure.
+
+Save the original sealed records and artifacts for recovery before publication.
+Verify every declared publication and the complete `mprlab-publication.json` record before deployment.
+Verify the public website release marker after deployment.
+
 ## Current Operation Status On October 27, 2026
 
 F001 software acceptance is completed with the native observation limits in `PRIVACY-QUALIFICATION.md`.
