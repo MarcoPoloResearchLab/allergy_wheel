@@ -82,6 +82,10 @@ mprlab_resources:
           platform: android
         destination: google_play
         track: production
+        operations:
+        - name: app_publish.mobile.mutate
+          timeouts:
+            request: 2m
   targets:
     access:
       hosts:
