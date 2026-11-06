@@ -1,41 +1,113 @@
 ---
 mprlab_resources:
   owner: allergy-wheel
-  environment_file: configs/.env.allergy-wheel
-  inputs:
-    ALLERGY_WHEEL_ANDROID_KEYSTORE: ${ALLERGY_WHEEL_ANDROID_KEYSTORE}
-    ALLERGY_WHEEL_ANDROID_KEY_ALIAS: ${ALLERGY_WHEEL_ANDROID_KEY_ALIAS}
-    ALLERGY_WHEEL_ANDROID_KEY_PASSWORD: ${ALLERGY_WHEEL_ANDROID_KEY_PASSWORD}
-    ALLERGY_WHEEL_ANDROID_STORE_PASSWORD: ${ALLERGY_WHEEL_ANDROID_STORE_PASSWORD}
-    ALLERGY_WHEEL_APPLE_CERTIFICATE: ${ALLERGY_WHEEL_APPLE_CERTIFICATE}
-    ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD: ${ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD}
-    ALLERGY_WHEEL_APPLE_IDENTITY: ${ALLERGY_WHEEL_APPLE_IDENTITY}
-    ALLERGY_WHEEL_APPLE_PROFILE: ${ALLERGY_WHEEL_APPLE_PROFILE}
-    ALLERGY_WHEEL_APPLE_TEAM: ${ALLERGY_WHEEL_APPLE_TEAM}
-    APP_STORE_CONNECT_API_ISSUER_ID: ${APP_STORE_CONNECT_API_ISSUER_ID}
-    APP_STORE_CONNECT_API_KEY_ID: ${APP_STORE_CONNECT_API_KEY_ID}
-    APP_STORE_CONNECT_API_KEY_PATH: ${APP_STORE_CONNECT_API_KEY_PATH}
-    GOOGLE_PLAY_SERVICE_ACCOUNT_KEY_PATH: ${GOOGLE_PLAY_SERVICE_ACCOUNT_KEY_PATH}
-    DEPLOY_SUDO_PASSWORD_TUTOSH: ${DEPLOY_SUDO_PASSWORD_TUTOSH}
-  ci:
-    enabled: true
-    command:
-      '0': make
-      '1': ci
-  defaults:
-    timeouts:
-      startup: 2m
-      completion: 30m
-      readiness: 5m
-      request: 30s
-      shutdown: 30s
-  hosts:
-    tutosh:
-      ansible_become_password: DEPLOY_SUDO_PASSWORD_TUTOSH
   release:
     scheme: semver
-  operations:
+  environment:
+    source: configs/.env.allergy-wheel
+    private_inputs:
+    - id: allergy-wheel-android-keystore
+      variable: ALLERGY_WHEEL_ANDROID_KEYSTORE
+    - id: allergy-wheel-android-key-alias
+      variable: ALLERGY_WHEEL_ANDROID_KEY_ALIAS
+    - id: allergy-wheel-android-key-password
+      variable: ALLERGY_WHEEL_ANDROID_KEY_PASSWORD
+    - id: allergy-wheel-android-store-password
+      variable: ALLERGY_WHEEL_ANDROID_STORE_PASSWORD
+    - id: allergy-wheel-apple-certificate
+      variable: ALLERGY_WHEEL_APPLE_CERTIFICATE
+    - id: allergy-wheel-apple-certificate-password
+      variable: ALLERGY_WHEEL_APPLE_CERTIFICATE_PASSWORD
+    - id: allergy-wheel-apple-identity
+      variable: ALLERGY_WHEEL_APPLE_IDENTITY
+    - id: allergy-wheel-apple-profile
+      variable: ALLERGY_WHEEL_APPLE_PROFILE
+    - id: allergy-wheel-apple-team
+      variable: ALLERGY_WHEEL_APPLE_TEAM
+    - id: app-store-connect-api-issuer-id
+      variable: APP_STORE_CONNECT_API_ISSUER_ID
+    - id: app-store-connect-api-key-id
+      variable: APP_STORE_CONNECT_API_KEY_ID
+    - id: app-store-connect-api-key-path
+      variable: APP_STORE_CONNECT_API_KEY_PATH
+    - id: google-play-service-account-key-path
+      variable: GOOGLE_PLAY_SERVICE_ACCOUNT_KEY_PATH
+    - id: deploy-sudo-password-tutosh
+      variable: DEPLOY_SUDO_PASSWORD_TUTOSH
+  artifacts:
+    web_bundles:
+    - id: website
+      format: directory
+      source:
+        kind: container
+        context: .
+        dockerfile: Dockerfile.pages
+        target: pages
+    mobile:
+    - id: mobile
+      source: mobile
+      build_system: local
+      build:
+        android: scripts/build-store-artifact.mjs
+        ios: scripts/build-store-artifact.mjs
+      android:
+        package_name: com.mprlab.allergywheel
+      ios:
+        bundle_identifier: com.mprlab.allergywheel
+        export_intent: app-store
+  publications:
+    github_pages:
+      sites:
+      - id: website
+        artifact: website
+        repository: marcopoloresearchlab/allergy_wheel
+        branch: gh-pages
+        domain: allergy.mprlab.com
+        marker:
+          path: /.mprlab-release.json
+    app_store_connect:
+      ios:
+      - id: mobile-ios
+        artifact:
+          id: mobile
+          platform: ios
+        app_store_id: '6809568034'
+        destination: app_store
+        track: production
+    google_play:
+      applications:
+      - id: mobile-android
+        artifact:
+          id: mobile
+          platform: android
+        destination: google_play
+        track: production
+  targets:
+    access:
+      hosts:
+      - host: tutosh
+        elevation_password:
+          input: deploy-sudo-password-tutosh
+    github_pages:
+      sites:
+      - id: website
+        publication: website
+        url: https://allergy.mprlab.com/
+  lifecycle:
     ci:
+      enabled: true
+      command:
+      - make
+      - ci
+    defaults:
+      timeouts:
+        startup: 2m
+        completion: 30m
+        readiness: 5m
+        request: 30s
+        shutdown: 30s
+    operations:
+    - name: ci
       timeouts:
         completion: 2h
       polling:
@@ -44,7 +116,7 @@ mprlab_resources:
         increment: 2s
         multiplier: 2
         attempt_limit: 60
-    app-plan-release:
+    - name: app-plan-release
       timeouts:
         completion: 2m
       polling:
@@ -53,7 +125,7 @@ mprlab_resources:
         increment: 2s
         multiplier: 2
         attempt_limit: 60
-    app-plan-publish:
+    - name: app-plan-publish
       timeouts:
         completion: 2m
       polling:
@@ -62,7 +134,7 @@ mprlab_resources:
         increment: 2s
         multiplier: 2
         attempt_limit: 60
-    app-plan-deploy:
+    - name: app-plan-deploy
       timeouts:
         completion: 2m
       polling:
@@ -71,7 +143,7 @@ mprlab_resources:
         increment: 2s
         multiplier: 2
         attempt_limit: 60
-    app-release:
+    - name: app-release
       timeouts:
         completion: 2h
       polling:
@@ -80,7 +152,7 @@ mprlab_resources:
         increment: 2s
         multiplier: 2
         attempt_limit: 60
-    app-publish:
+    - name: app-publish
       timeouts:
         completion: 4h
       polling:
@@ -89,7 +161,7 @@ mprlab_resources:
         increment: 2s
         multiplier: 2
         attempt_limit: 60
-    app-deploy:
+    - name: app-deploy
       timeouts:
         completion: 20m
       polling:
@@ -98,40 +170,10 @@ mprlab_resources:
         increment: 2s
         multiplier: 2
         attempt_limit: 60
-    app_lifecycle.repository_read:
+    - name: app_lifecycle.repository_read
       polling:
         initial: 2s
         maximum: 15s
         increment: 2s
         multiplier: 2
         attempt_limit: 60
-  resources:
-    website:
-      kind: github_pages
-      repository: marcopoloresearchlab/allergy_wheel
-      branch: gh-pages
-      domain: allergy.mprlab.com
-      url: https://allergy.mprlab.com/
-      source:
-        kind: container
-        context: .
-        dockerfile: Dockerfile.pages
-        target: pages
-      verification:
-        path: /.mprlab-release.json
-    mobile:
-      kind: mobile_application
-      source: mobile
-      build_system: local
-      build:
-        android: scripts/build-store-artifact.mjs
-        ios: scripts/build-store-artifact.mjs
-      android:
-        package_name: com.mprlab.allergywheel
-        destination: google_play
-        track: production
-      ios:
-        bundle_identifier: com.mprlab.allergywheel
-        app_store_id: '6809568034'
-        destination: app_store
-        track: production
