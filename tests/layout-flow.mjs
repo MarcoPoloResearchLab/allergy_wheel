@@ -138,15 +138,26 @@ for (const engine of [chromium, webkit]) {
                         const title = overlay.querySelector('#dish-title');
                         title.scrollIntoView({ block: 'nearest' });
                         const titleBounds = title.getBoundingClientRect();
+                        const cuisine = overlay.querySelector('#dish-cuisine');
+                        const cuisineBounds = cuisine.getBoundingClientRect();
+                        const headingBounds = title.parentElement.getBoundingClientRect();
                         const topElement = document.elementFromPoint(titleBounds.left + titleBounds.width / 2, titleBounds.top + titleBounds.height / 2);
                         return {
                             titleVisible: overlay.contains(topElement),
+                            headingSharesRow: Math.abs(titleBounds.top - cuisineBounds.top) <= 1,
+                            cuisineAtRight: Math.abs(cuisineBounds.right - headingBounds.right) <= 1,
+                            headingDoesNotOverlap: titleBounds.right <= cuisineBounds.left,
+                            cuisineIsSmaller: parseFloat(getComputedStyle(cuisine).fontSize) < parseFloat(getComputedStyle(title).fontSize),
                             fits: bounds.left >= 8 && bounds.right <= innerWidth - 8 && bounds.top >= 8 && bounds.bottom <= innerHeight - 8,
                             scrollFits: card.scrollWidth <= card.clientWidth,
                             width: bounds.width
                         };
                     });
                     assert.equal(resultLayout.titleVisible, true, 'The result title must appear above the header.');
+                    assert.equal(resultLayout.headingSharesRow, true, 'The dish title and cuisine must start on the same row.');
+                    assert.equal(resultLayout.cuisineAtRight, true, 'The cuisine must align with the right edge of the card content.');
+                    assert.equal(resultLayout.headingDoesNotOverlap, true, 'The dish title and cuisine must not overlap.');
+                    assert.equal(resultLayout.cuisineIsSmaller, true, 'The cuisine text must stay smaller than the dish title.');
                     assert.equal(resultLayout.fits, true, 'The result dialog must fit inside the viewport.');
                     assert.equal(resultLayout.scrollFits, true, 'Result content must wrap within the dialog.');
                     await page.locator('#again').scrollIntoViewIfNeeded();
