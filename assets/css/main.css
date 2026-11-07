@@ -68,7 +68,7 @@ header h1 {
 .aw-hearts-container { display: flex; align-items: center; }
 .header-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .aw-bottombar { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; align-self: center; }
-.header-nav .ghost { min-width: 80px; text-align: center; }
+.header-nav .ghost { min-width: 80px; text-align: center; font-weight: 900; }
 
 .avatar-menu-wrapper { position: relative; z-index: 70; }
 
@@ -205,9 +205,6 @@ header h1 {
         grid-column: 2 / -1;
         grid-row: 2;
         justify-self: end;
-        padding: 3px;
-        background: #f5e8dc;
-        border-radius: 16px;
         display: flex;
     }
 
@@ -218,17 +215,6 @@ header h1 {
         min-width: 76px;
         padding: 8px 16px;
         font-size: 14px;
-        border: 0;
-        border-radius: 12px;
-        box-shadow: none;
-        background: transparent;
-        color: #64574e;
-    }
-
-    .aw-bottombar .ghost[aria-pressed="true"] {
-        background: #fff;
-        color: #a1244e;
-        box-shadow: 0 2px 5px #38231312;
     }
 
     .menu-table {
@@ -520,6 +506,27 @@ header h1 {
     box-shadow: 3px 3px 0 #000;
 }
 
+#fs {
+    flex: 0 0 44px;
+    inline-size: 44px;
+    block-size: 44px;
+    padding: 6px;
+    border-width: 3px;
+    background: #fff7c8;
+    box-shadow: 3px 3px 0 #000;
+}
+
+.fullscreen-icon {
+    display: block;
+    inline-size: 26px;
+    block-size: 26px;
+    flex: 0 0 auto;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(2px 2px 0 #ffb6c7);
+    transform: rotate(-6deg);
+}
+
 /* Hearts bar */
 .hearts {
     position: relative; /* required for delta bubble positioning */
@@ -668,10 +675,7 @@ main { flex: 1; min-width: 0; display: grid; place-items: center; padding: 20px 
     margin: 0;
 }
 
-.allergen-introduction > .title,
-.allergen-introduction > .muted { margin: 0; }
-
-.allergen-introduction > .muted { font-size: 14px; line-height: 1.4; }
+.allergen-introduction > .title { margin: 0; }
 
 .title { margin: 0 0 10px 0; font-size: clamp(22px, 3.4vw, 34px) }
 
@@ -905,12 +909,9 @@ body[data-screen="allergy"] #screen-allergy { padding: 12px; }
     body[data-screen="allergy"] .header-nav { gap: 4px; flex-wrap: nowrap; }
     body[data-screen="allergy"] .header-nav .ghost { min-width: 48px; padding-inline: 6px; font-size: 14px; }
     body[data-screen="allergy"] .aw-header-controls .ghost { padding: 6px; font-size: 14px; }
-    body[data-screen="allergy"] #fs { font-size: 0; }
-    body[data-screen="allergy"] #fs::after { content: "⛶"; font-size: 20px; }
     body[data-screen="allergy"] #screen-allergy { padding: 4px; }
     body[data-screen="allergy"] .card { padding: 8px; border-width: 3px; }
     body[data-screen="allergy"] .card__body { gap: 8px; }
-    body[data-screen="allergy"] .allergen-introduction > .muted { display: none; }
     body[data-screen="allergy"] .allergen-grid { gap: 6px; }
     body[data-screen="allergy"] .chip { min-height: 48px; padding: 4px; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto; font-size: 14px; }
 
@@ -924,8 +925,11 @@ body[data-screen="allergy"] #screen-allergy { padding: 12px; }
 
 @media (max-height: 620px) and (max-width: 359px),
        (max-height: 620px) and (min-width: 600px) and (max-width: 719px) {
-    body[data-screen="allergy"] .chip { grid-template-columns: minmax(0, 1fr); }
-    body[data-screen="allergy"] .chip__emoji { display: none; }
+    body[data-screen="allergy"] .chip { gap: 4px; font-size: 13px; }
+}
+
+@media (max-height: 480px) and (min-width: 600px) and (max-width: 719px) {
+    body[data-screen="allergy"] .chip { font-size: 12px; }
 }
 
 @supports selector(:has(*)) {
