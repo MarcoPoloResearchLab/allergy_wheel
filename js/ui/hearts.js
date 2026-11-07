@@ -6,7 +6,8 @@ import {
     AttributeBooleanValue,
     BrowserEventName,
     HeartsElementId,
-    HeartsText
+    HeartsText,
+    WheelConfiguration
 } from "../constants.js";
 
 const ElementTagName = Object.freeze({
@@ -14,12 +15,12 @@ const ElementTagName = Object.freeze({
 });
 
 const HeartClassName = Object.freeze({
-    HEART: "heart"
+    HEART: "heart",
+    EMPTY: "heart-empty"
 });
 
 const HeartAnimationClassName = Object.freeze({
-    ENTER: "heart-enter",
-    EXIT: "heart-exit"
+    ENTER: "heart-enter"
 });
 
 const HeartsBarClassName = Object.freeze({
@@ -33,7 +34,6 @@ const HeartDeltaClassName = Object.freeze({
 
 const AnimationDurationMilliseconds = Object.freeze({
     HEART_ENTER: 300,
-    HEART_EXIT: 260,
     HEART_BAR_FEEDBACK: 350,
     HEART_DELTA: 800,
     SAFETY_BUFFER: 120
@@ -41,11 +41,8 @@ const AnimationDurationMilliseconds = Object.freeze({
 
 const HeartsBarChildClassName = Object.freeze({
     COUNT: "heart-count",
-    ICONS: "heart-icons"
-});
-
-const HeartSelector = Object.freeze({
-    HEART: ".heart"
+    ICONS: "heart-icons",
+    GOAL: "heart-goal"
 });
 
 const HeartsBarChildSelector = Object.freeze({
@@ -53,10 +50,7 @@ const HeartsBarChildSelector = Object.freeze({
     ICONS: `.${HeartsBarChildClassName.ICONS}`
 });
 
-const HeartSymbol = "❤️";
-
 const TextContent = Object.freeze({
-    EMPTY: "",
     ZERO: "0"
 });
 
@@ -65,7 +59,7 @@ const NumericBase = Object.freeze({
 });
 
 function formatHeartsLabel(totalHearts) {
-    return `${totalHearts}${HeartsText.LABEL_SUFFIX}`;
+    return `${totalHearts}${HeartsText.OF}${WheelConfiguration.WIN_CONDITION_HEARTS}${HeartsText.LABEL_SUFFIX}`;
 }
 
 function setMetadataAttributes(heartsBarElement, totalHearts, heartCountText) {
@@ -104,6 +98,13 @@ function ensureHeartsBarChildren(heartsBarElement) {
         }
     });
 
+    let goalElement = heartsBarElement.querySelector(`.${HeartsBarChildClassName.GOAL}`);
+    if (!goalElement) {
+        goalElement = document.createElement(ElementTagName.SPAN);
+        goalElement.className = HeartsBarChildClassName.GOAL;
+        goalElement.textContent = HeartsText.GOAL;
+        heartsBarElement.appendChild(goalElement);
+    }
     return { heartCountElement, heartIconsContainerElement };
 }
 
@@ -111,73 +112,12 @@ function updateHeartCountElement(heartCountElement, heartCountText) {
     heartCountElement.textContent = heartCountText;
 }
 
-function appendHeartElements(heartIconsContainerElement, totalHearts) {
-    heartIconsContainerElement.innerHTML = TextContent.EMPTY;
-    for (let heartIndex = 0; heartIndex < totalHearts; heartIndex += 1) {
-        const heartElement = createHeartElement();
-        heartIconsContainerElement.appendChild(heartElement);
-    }
-}
-
-function appendGainHearts(heartIconsContainerElement, heartsToAdd) {
-    for (let heartGainIndex = 0; heartGainIndex < heartsToAdd; heartGainIndex += 1) {
-        const heartElement = createHeartElement({ shouldAnimateEnter: true });
-        heartIconsContainerElement.appendChild(heartElement);
-    }
-}
-
-function removeHeartElements(heartIconsContainerElement, heartsToRemove) {
-    if (!heartIconsContainerElement || heartsToRemove <= 0) {
-        return;
-    }
-
-    const existingHeartElements = Array.from(
-        heartIconsContainerElement.querySelectorAll(HeartSelector.HEART)
-    );
-
-    const removableHeartElements = existingHeartElements.filter(
-        (heartElement) => !heartElement.classList.contains(HeartAnimationClassName.EXIT)
-    );
-
-    const heartsMarkedForRemoval = removableHeartElements.slice(-heartsToRemove);
-
-    heartsMarkedForRemoval.forEach((heartElement) => {
-        if (!heartElement) {
-            return;
-        }
-
-        heartElement.classList.remove(HeartAnimationClassName.ENTER);
-        heartElement.classList.add(HeartAnimationClassName.EXIT);
-
-        const cleanup = () => {
-            heartElement.removeEventListener(BrowserEventName.ANIMATION_END, handleAnimationEnd);
-            if (heartElement.parentNode === heartIconsContainerElement) {
-                heartIconsContainerElement.removeChild(heartElement);
-            }
-        };
-
-        const fallbackTimeoutId = setTimeout(
-            cleanup,
-            AnimationDurationMilliseconds.HEART_EXIT + AnimationDurationMilliseconds.SAFETY_BUFFER
-        );
-
-        function handleAnimationEnd(event) {
-            if (event.target !== heartElement) {
-                return;
-            }
-            clearTimeout(fallbackTimeoutId);
-            cleanup();
-        }
-
-        heartElement.addEventListener(BrowserEventName.ANIMATION_END, handleAnimationEnd);
-    });
-}
-
-function createHeartElement({ shouldAnimateEnter = false } = {}) {
+function createHeartElement({ filled, shouldAnimateEnter = false }) {
     const heartElement = document.createElement(ElementTagName.SPAN);
     heartElement.className = HeartClassName.HEART;
     heartElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
-    heartElement.textContent = HeartSymbol;
+    heartElement.textContent = filled ? HeartsText.FILLED_SYMBOL : HeartsText.EMPTY_SYMBOL;
+    heartElement.classList.toggle(HeartClassName.EMPTY, !filled);
 
     if (!shouldAnimateEnter) {
         return heartElement;
@@ -295,7 +235,7 @@ function triggerHeartsBarFeedback(heartsBarElement, feedbackClassName) {
  * Renders the hearts bar to reflect the provided count.
  *
  * @param {number} count - Current heart total.
- * @param {{ documentReference?: Document }} [options] - Optional dependencies.
+ * @param {{ animate?: boolean }} [options] - Animation options.
  */
 export function renderHearts(count, options = {}) {
     const { animate = false } = options;
@@ -312,23 +252,14 @@ export function renderHearts(count, options = {}) {
     );
     const totalHearts = Math.max(0, Math.floor(count || 0));
     const heartCountText = String(totalHearts);
-
-    if (!animate || previousCount === 0) {
-        appendHeartElements(heartIconsContainerElement, totalHearts);
-        updateHeartCountElement(heartCountElement, heartCountText);
-        setMetadataAttributes(heartsBarElement, totalHearts, heartCountText);
-        return;
-    }
-
-    const heartCountDelta = totalHearts - previousCount;
-    if (heartCountDelta > 0) {
-        appendGainHearts(heartIconsContainerElement, heartCountDelta);
-    } else if (heartCountDelta < 0) {
-        const heartsToRemove = Math.min(previousCount, -heartCountDelta);
-        removeHeartElements(heartIconsContainerElement, heartsToRemove);
-    }
-
-    updateHeartCountElement(heartCountElement, heartCountText);
+    const heartElements = Array.from({ length: WheelConfiguration.WIN_CONDITION_HEARTS }, (_, heartIndex) =>
+        createHeartElement({
+            filled: heartIndex < totalHearts,
+            shouldAnimateEnter: animate && heartIndex >= previousCount && heartIndex < totalHearts
+        }));
+    heartIconsContainerElement.replaceChildren(...heartElements);
+    updateHeartCountElement(heartCountElement,
+        `${heartCountText}${HeartsText.COUNT_SEPARATOR}${WheelConfiguration.WIN_CONDITION_HEARTS}`);
     setMetadataAttributes(heartsBarElement, totalHearts, heartCountText);
 }
 

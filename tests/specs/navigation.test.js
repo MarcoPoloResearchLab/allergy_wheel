@@ -1,113 +1,62 @@
 // @ts-check
 
 import { defineSuite } from "../harness.js";
-import { assert, assertEqual } from "../assert.js";
-import { NavigationController, resolveInitialNavState } from "../../js/core/navigation.js";
-import {
-    ScreenName,
-    AttributeBooleanValue,
-    AttributeName,
-    ControlElementId
-} from "../../js/constants.js";
+import { assertDeepEqual, assertEqual } from "../assert.js";
+import { NavigationController, resolveInitialNavState } from "../../js/ui/navigation.js";
+import { ScreenName, ScreenElementId, NavigationText, AttributeName, ControlElementId } from "../../js/constants.js";
 
 defineSuite("Navigation controller", (test) => {
-    test("updateActiveScreen toggles aria-pressed", () => {
-        const gameButton = document.createElement("button");
-        gameButton.id = ControlElementId.NAV_GAME_BUTTON;
-        const menuButton = document.createElement("button");
-        menuButton.id = ControlElementId.NAV_MENU_BUTTON;
-        document.body.appendChild(gameButton);
-        document.body.appendChild(menuButton);
-
-        const controller = new NavigationController({
-            documentReference: document,
-            controlElementIdMap: ControlElementId,
-            attributeNameMap: AttributeName
-        });
+    test("updateActiveScreen renders the opposite destination and remembers the game", () => {
+        const button = document.createElement("button");
+        button.id = ControlElementId.NAV_TOGGLE_BUTTON;
+        document.body.appendChild(button);
+        const controller = new NavigationController();
         controller.initialize();
-
         const cases = [
-            {
-                description: "allergy screen presses game button",
-                screenName: ScreenName.ALLERGY,
-                expectedGame: AttributeBooleanValue.TRUE,
-                expectedMenu: AttributeBooleanValue.FALSE
-            },
-            {
-                description: "menu screen presses menu button",
-                screenName: ScreenName.MENU,
-                expectedGame: AttributeBooleanValue.FALSE,
-                expectedMenu: AttributeBooleanValue.TRUE
-            }
+            { screen: ScreenName.ALLERGY, label: NavigationText.MENU, target: ScreenElementId.MENU },
+            { screen: ScreenName.MENU, label: NavigationText.GAME, target: ScreenElementId.ALLERGY },
+            { screen: ScreenName.WHEEL, label: NavigationText.MENU, target: ScreenElementId.MENU },
+            { screen: ScreenName.MENU, label: NavigationText.GAME, target: ScreenElementId.WHEEL },
+            { screen: ScreenName.ALLERGY, label: NavigationText.MENU, target: ScreenElementId.MENU },
+            { screen: ScreenName.MENU, label: NavigationText.GAME, target: ScreenElementId.ALLERGY }
         ];
-
-        for (const { description, screenName, expectedGame, expectedMenu } of cases) {
-            controller.updateActiveScreen(screenName);
-            assertEqual(
-                gameButton.getAttribute(AttributeName.ARIA_PRESSED),
-                expectedGame,
-                `game button aria-pressed mismatch: ${description}`
-            );
-            assertEqual(
-                menuButton.getAttribute(AttributeName.ARIA_PRESSED),
-                expectedMenu,
-                `menu button aria-pressed mismatch: ${description}`
-            );
+        for (const scenario of cases) {
+            controller.updateActiveScreen(scenario.screen);
+            assertEqual(button.textContent, scenario.label, "Navigation must name the other view.");
+            assertEqual(button.getAttribute(AttributeName.ARIA_CONTROLS), scenario.target, "Navigation must identify its destination.");
         }
-
-        gameButton.remove();
-        menuButton.remove();
+        button.remove();
     });
 
-    test("initialize wires click handlers", () => {
-        const gameButton = document.createElement("button");
-        gameButton.id = ControlElementId.NAV_GAME_BUTTON;
-        const menuButton = document.createElement("button");
-        menuButton.id = ControlElementId.NAV_MENU_BUTTON;
-        document.body.appendChild(gameButton);
-        document.body.appendChild(menuButton);
-
+    test("initialize emits the destination through the public callback", () => {
+        const button = document.createElement("button");
+        button.id = ControlElementId.NAV_TOGGLE_BUTTON;
+        document.body.appendChild(button);
         const observedScreens = [];
-        const controller = new NavigationController({
-            documentReference: document,
-            controlElementIdMap: ControlElementId,
-            attributeNameMap: AttributeName,
-            onScreenChange: (targetScreen) => {
-                observedScreens.push(targetScreen);
-            }
-        });
+        const controller = new NavigationController({ onScreenChange: (screen) => observedScreens.push(screen) });
         controller.initialize();
-
         const cases = [
-            { description: "game button click", element: gameButton, expected: ScreenName.ALLERGY },
-            { description: "menu button click", element: menuButton, expected: ScreenName.MENU }
+            { screen: ScreenName.ALLERGY, target: ScreenName.MENU },
+            { screen: ScreenName.MENU, target: ScreenName.ALLERGY },
+            { screen: ScreenName.WHEEL, target: ScreenName.MENU },
+            { screen: ScreenName.MENU, target: ScreenName.WHEEL }
         ];
-
-        for (const { description, element, expected } of cases) {
-            observedScreens.length = 0;
-            element.click();
-            assert(
-                observedScreens.includes(expected),
-                `expected onScreenChange for ${description}`
-            );
+        for (const scenario of cases) {
+            controller.updateActiveScreen(scenario.screen);
+            button.click();
         }
-
-        gameButton.remove();
-        menuButton.remove();
+        assertDeepEqual(observedScreens, cases.map((scenario) => scenario.target), "Clicks must request the current destination.");
+        button.remove();
     });
 
     test("resolveInitialNavState reads body attribute", () => {
         const cases = [
-            { description: "menu attribute", bodyValue: ScreenName.MENU, expected: ScreenName.MENU },
-            { description: "missing attribute defaults to allergy", bodyValue: "", expected: ScreenName.ALLERGY }
+            { bodyValue: ScreenName.MENU, expected: ScreenName.MENU },
+            { bodyValue: "", expected: ScreenName.ALLERGY }
         ];
-        for (const { description, bodyValue, expected } of cases) {
-            document.body.setAttribute(AttributeName.DATA_SCREEN, bodyValue);
-            assertEqual(
-                resolveInitialNavState(),
-                expected,
-                `initial state mismatch: ${description}`
-            );
+        for (const scenario of cases) {
+            document.body.setAttribute(AttributeName.DATA_SCREEN, scenario.bodyValue);
+            assertEqual(resolveInitialNavState(), scenario.expected, "Initial navigation must match the page.");
         }
         document.body.removeAttribute(AttributeName.DATA_SCREEN);
     });

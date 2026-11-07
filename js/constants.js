@@ -2,7 +2,7 @@
 
 export const StorePlatform = Object.freeze({ ANDROID: 'android', IOS: 'ios' });
 export const StoreConfiguration = Object.freeze({ PATH: './data/mobile-stores.json', ELEMENT_ID: 'mobile-installation' });
-export const StoreText = Object.freeze({ PRIVACY: 'Mobile privacy and support', PRIVACY_PATH: './privacy.html', TITLE: 'Play on your phone or tablet', ANDROID: 'Get it on Google Play', IOS: 'Download on the App Store', INVALID: 'Invalid mobile store catalog.' });
+export const StoreText = Object.freeze({ PRIVACY: 'Privacy and support', PRIVACY_PATH: './privacy.html', TITLE: 'Play on your phone or tablet', ANDROID: 'Get it on Google Play', IOS: 'Download on the App Store', INVALID: 'Invalid mobile store catalog.' });
 export const RuntimeSurface = Object.freeze({ WEB: 'web', MOBILE: 'mobile' });
 export const LifecycleEvent = 'allergy-wheel:lifecycle';
 export const LifecycleState = Object.freeze({ ACTIVE: 'active', BACKGROUND: 'background', INACTIVE: 'inactive' });
@@ -54,10 +54,10 @@ export const PrivacyContract = Object.freeze({
 });
 
 export const ParentText = Object.freeze({
-    TITLE: 'For parents', ANSWER: 'Answer', CONTINUE: 'Continue', QUESTION: 'To continue, multiply',
+    TITLE: 'Feedback', ANSWER: 'Answer', CONTINUE: 'Continue', QUESTION: 'To continue, multiply',
     INCORRECT: 'Please ask an adult to answer the question.',
     FEEDBACK: 'Open feedback', PRIVACY_TITLE: 'Privacy and support',
-    INTRODUCTION: 'Have a question or an idea? Ask an adult to open feedback.',
+    INTRODUCTION: 'Share a question or suggestion with our team.',
     LOADING: 'The online service is starting.', READY: 'The online service is ready.', UNAVAILABLE: 'Internet is unavailable or the service could not load. The game still works offline.',
     PRIVACY: PrivacyContract.sections.join('\n\n'),
     CONSENT: 'Feedback is for adults. Share a question or suggestion with our team.',
@@ -79,6 +79,13 @@ export const ScreenName = Object.freeze({
     ALLERGY: "allergy",
     WHEEL: "wheel",
     MENU: "menu"
+});
+
+export const NavigationText = Object.freeze({
+    GAME: "Game",
+    MENU: "Menu",
+    MISSING_CONTROL: "Navigation button is missing.",
+    CHANGE_FAILED: "Unable to change views."
 });
 
 
@@ -240,8 +247,7 @@ export const ControlElementId = Object.freeze({
     AVATAR_MENU: "avatar-menu",
     AVATAR_MENU_BACKDROP: "avatar-menu-backdrop",
     ALLERGY_TITLE: "allergy-title",
-    NAV_GAME_BUTTON: "nav-game",
-    NAV_MENU_BUTTON: "nav-menu",
+    NAV_TOGGLE_BUTTON: "nav-toggle",
     RESTART_CONFIRMATION_CONTAINER: "restart-confirmation",
     RESTART_CONFIRMATION_OVERLAY: "restart-confirmation-overlay",
     RESTART_CONFIRMATION_DIALOG: "restart-confirmation-dialog",
@@ -370,6 +376,7 @@ export const HeartsElementId = Object.freeze({
 export const AttributeName = Object.freeze({
     ARIA_HIDDEN: "aria-hidden",
     ARIA_LABEL: "aria-label",
+    ARIA_CONTROLS: "aria-controls",
     ARIA_PRESSED: "aria-pressed",
     ARIA_EXPANDED: "aria-expanded",
     ARIA_HAS_POPUP: "aria-haspopup",
@@ -506,5 +513,10 @@ export const ResultCardText = Object.freeze({
 export const HeartsText = Object.freeze({
     DELTA_GAIN: "+1",
     DELTA_LOSS: "-1",
-    LABEL_SUFFIX: " hearts"
+    GOAL: `Collect ${WheelConfiguration.WIN_CONDITION_HEARTS} hearts to win`,
+    LABEL_SUFFIX: ` hearts. Collect ${WheelConfiguration.WIN_CONDITION_HEARTS} hearts to win.`,
+    OF: " of ",
+    COUNT_SEPARATOR: " / ",
+    FILLED_SYMBOL: "♥",
+    EMPTY_SYMBOL: "♡"
 });

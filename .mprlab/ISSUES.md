@@ -228,6 +228,48 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## Improvements
 
+- [x] [I006] (P2) Show the heart goal and simplify game controls
+  Goal:
+  Show the game goal.
+  Keep feedback below the game.
+
+  Requirements:
+  - Show all ten hearts and the current total during play.
+  - Show Menu in the game and Game in the menu on one button.
+  - Put feedback below the game at the right edge.
+  - Use Feedback for the entry and screen title.
+  - Keep the adult check inside the feedback flow.
+  - Keep the parent gate and game controls.
+  - Verify phone, tablet, and desktop layouts.
+
+  Validation:
+  The initial game test required ten heart elements and found five.
+  The initial mobile test rejected parent feedback above the game.
+  Game controls and parent feedback tests passed after the changes.
+
+  All 80 layout cases passed in Chromium and WebKit at widths from 320 to 1440 pixels.
+  The cases covered both fonts and the space for the mobile footer.
+
+  The native shell test used controlled React and native boundaries.
+  The test verified parent feedback position, access, closure, and background behavior.
+  The generated mobile package contains the changes.
+
+  Independent review found no further defects.
+  `make ci` passed on November 7, 2026.
+  TestFlight publication remains a separate operation.
+
+  Feedback Revision:
+  LoopAware supplies the feedback form for the website and mobile application.
+  Live verification passed in Chromium and WebKit for both entry points on November 7, 2026.
+  The provider configuration returned HTTP 200 and the form opened in all four cases.
+  The verification did not submit feedback.
+
+  The revised entry and screen title use Feedback.
+  The adult check remains inside the feedback flow.
+  The initial entry test rejected the previous label.
+  The revised mobile tests and `make ci` passed on November 7, 2026.
+  Independent review found no further defects in the revision.
+
 ## Maintenance
 
 - [ ] [M400R] (P2) Backlog hygiene and archive

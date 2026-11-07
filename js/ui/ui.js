@@ -82,7 +82,7 @@ const ScreenElementEntries = Object.freeze([
 ]);
 
 /**
- * Displays the requested screen and hides others via aria attributes.
+ * Displays the requested screen and keeps a pending result when returning from the menu to the wheel.
  *
  * @param {string} screenName - Target screen identifier.
  */
@@ -93,6 +93,7 @@ export function showScreen(screenName) {
     }
 
     const revealElement = document.getElementById(ResultCardElementId.REVEAL_SECTION);
+    const previousScreenName = bodyElement.getAttribute(AttributeName.DATA_SCREEN);
 
     let resolvedScreenName = ScreenName.ALLERGY;
     if (screenName === ScreenName.WHEEL) {
@@ -118,7 +119,8 @@ export function showScreen(screenName) {
         }
     }
 
-    if (revealElement) {
+    const isReturningToGame = previousScreenName === ScreenName.MENU && resolvedScreenName === ScreenName.WHEEL;
+    if (revealElement && !isReturningToGame) {
         revealElement.setAttribute(AttributeName.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
     }
 }

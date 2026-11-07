@@ -31,7 +31,7 @@ export async function runStoreFlow(browser, gameUrl) {
         if (scenario.first) assert.equal(await links.first().getAttribute('data-platform'), scenario.first);
         else assert.equal(await page.locator('#mobile-installation').isVisible(), false);
         assert.equal(await page.locator('#screen-allergy').isVisible(), true);
-        await page.getByRole('link', { name: 'Mobile privacy and support' }).click();
+        await page.getByRole('link', { name: 'Privacy and support', exact: true }).click();
         await page.locator('#privacy-text').waitFor();
         assert.ok((await page.locator('#privacy-text').innerText()).includes('support@mprlab.com'));
         assert.equal(await page.getByRole('button').count(), 0);

@@ -75,35 +75,25 @@
             <h1>Allergy Wheel</h1>
         </div>
         <div class="aw-bottombar">
-            <div aria-label="Select a view" class="header-nav" role="group">
-                <button
-                    aria-pressed="true"
-                    class="ghost"
-                    id="nav-game"
-                    type="button"
-                >
-                    Game
-                </button>
-                <button
-                    aria-pressed="false"
-                    class="ghost"
-                    id="nav-menu"
-                    type="button"
-                >
-                    Menu
-                </button>
-            </div>
+            <nav class="header-nav">
+                <button class="ghost" id="nav-toggle" type="button"></button>
+            </nav>
         </div>
     </div>
     <div class="header-right">
         <div class="aw-hearts-container">
-            <div aria-live="polite" class="hearts" data-count="0" id="hearts-bar" aria-label="0 hearts" title="0 hearts">
-                <span class="heart-count">0</span>
+            <div aria-live="polite" class="hearts" data-count="0" id="hearts-bar" aria-label="0 of 10 hearts. Collect 10 hearts to win." title="0 of 10 hearts. Collect 10 hearts to win.">
+                <span class="heart-count"></span>
                 <span aria-hidden="true" class="heart-icons"></span>
             </div>
         </div>
         <div class="aw-header-controls">
-            <button class="ghost" id="fs">Full Screen</button>
+            <button aria-label="Full Screen" class="ghost" id="fs" type="button">
+                <svg aria-hidden="true" class="fullscreen-icon" focusable="false" viewBox="0 0 32 32">
+                    <path d="M11 5H5V11M5 5L12 12M21 5H27V11M27 5L20 12M5 21V27H11M5 27L12 20M21 27H27V21M27 27L20 20"
+                          fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5"/>
+                </svg>
+            </button>
             <button type="button" class="ghost" id="mute" aria-pressed="false" aria-label="Mute audio">Mute</button>
         </div>
     </div>
@@ -115,7 +105,6 @@
         <div class="card__body">
             <hgroup class="allergen-introduction">
                 <h2 class="title" id="allergy-title">Pick your allergens</h2>
-                <p class="muted">Choose anything that might cause trouble. You can change this later.</p>
             </hgroup>
             <div class="grid allergen-grid" id="allergy-list"></div>
             <button
