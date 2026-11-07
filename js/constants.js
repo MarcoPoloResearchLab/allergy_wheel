@@ -54,10 +54,10 @@ export const PrivacyContract = Object.freeze({
 });
 
 export const ParentText = Object.freeze({
-    TITLE: 'For parents', ANSWER: 'Answer', CONTINUE: 'Continue', QUESTION: 'To continue, multiply',
+    TITLE: 'Feedback', ANSWER: 'Answer', CONTINUE: 'Continue', QUESTION: 'To continue, multiply',
     INCORRECT: 'Please ask an adult to answer the question.',
     FEEDBACK: 'Open feedback', PRIVACY_TITLE: 'Privacy and support',
-    INTRODUCTION: 'Have a question or an idea? Ask an adult to open feedback.',
+    INTRODUCTION: 'Share a question or suggestion with our team.',
     LOADING: 'The online service is starting.', READY: 'The online service is ready.', UNAVAILABLE: 'Internet is unavailable or the service could not load. The game still works offline.',
     PRIVACY: PrivacyContract.sections.join('\n\n'),
     CONSENT: 'Feedback is for adults. Share a question or suggestion with our team.',
@@ -513,5 +513,10 @@ export const ResultCardText = Object.freeze({
 export const HeartsText = Object.freeze({
     DELTA_GAIN: "+1",
     DELTA_LOSS: "-1",
-    LABEL_SUFFIX: " hearts"
+    GOAL: `Collect ${WheelConfiguration.WIN_CONDITION_HEARTS} hearts to win`,
+    LABEL_SUFFIX: ` hearts. Collect ${WheelConfiguration.WIN_CONDITION_HEARTS} hearts to win.`,
+    OF: " of ",
+    COUNT_SEPARATOR: " / ",
+    FILLED_SYMBOL: "♥",
+    EMPTY_SYMBOL: "♡"
 });
