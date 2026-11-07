@@ -21,7 +21,7 @@ import { ResultCard } from "../ui/lastCard.js";
 import { renderHearts, animateHeartGainFromReveal, animateHeartLossAtHeartsBar } from "../ui/hearts.js";
 import { MenuView } from "../ui/menu.js";
 import { MenuFilterController } from "../ui/menuFilters.js";
-import { NavigationController, resolveInitialNavState } from "./navigation.js";
+import { NavigationController, resolveInitialNavState } from "../ui/navigation.js";
 import {
     suspendAudio,
     resumeAudio,
@@ -307,12 +307,7 @@ navigationController = new NavigationController({
     documentReference: document,
     controlElementIdMap: ControlElementId,
     attributeNameMap: AttributeName,
-    onScreenChange: (targetScreenName) => {
-        const resolvedTarget = targetScreenName === ScreenName.MENU
-            ? ScreenName.MENU
-            : ScreenName.ALLERGY;
-        navAwareShowScreen(resolvedTarget);
-    }
+    onScreenChange: navAwareShowScreen
 });
 
 navigationController.initialize();
