@@ -249,6 +249,13 @@ The store publisher uses the private inputs captured from the selected manifest.
 The corresponding example file lists the required names without credential values.
 The store text export does not upload content or prove submission readiness.
 
+## View navigation
+
+`js/ui/navigation.js` controls one header button through the composition root in `js/core/app.js`.
+The button shows `Menu` in the game and `Game` in the menu.
+The `Game` action returns to the previous game screen.
+If a round ends during a menu visit, its result appears when the player returns to the game.
+
 ## Dynamic allergen summary
 
 The crawler-friendly food allergy summary that appears on the first screen is now rendered in the browser with the live

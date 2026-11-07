@@ -14,6 +14,7 @@ const viewports = [
     { width: 440, height: 956 },
     { width: 768, height: 1024 },
     { width: 667, height: 375 },
+    { width: 704, height: 507 },
     { width: 844, height: 390 },
     { width: 1024, height: 768 },
     { width: 1440, height: 900 }
@@ -48,6 +49,13 @@ async function assertSelectionFits(page) {
         const chips = [...list.querySelectorAll('.chip')];
         return {
             heights: chips.map((chip) => chip.getBoundingClientRect().height),
+            visibleEmoji: chips.filter((chip) => {
+                const emoji = chip.querySelector('.chip__emoji');
+                if (!emoji || !emoji.textContent.trim()) return false;
+                const bounds = emoji.getBoundingClientRect();
+                const style = getComputedStyle(emoji);
+                return bounds.width > 0 && bounds.height > 0 && style.visibility === 'visible' && style.opacity !== '0';
+            }).length,
             overflow: chips.filter((chip) => {
                 const bounds = chip.getBoundingClientRect();
                 const children = [...chip.children];
@@ -68,6 +76,7 @@ async function assertSelectionFits(page) {
         };
     });
     assert.equal(layout.heights.length, 10, 'Every allergen must be available.');
+    assert.equal(layout.visibleEmoji, 10, 'Every allergen must show its food icon at every viewport size.');
     assert.ok(Math.max(...layout.heights) - Math.min(...layout.heights) <= 1,
         `All allergen options must have equal heights (${layout.heights.join(', ')}).`);
     assert.ok(Math.min(...layout.heights) >= 44, 'All options must support touch input.');
