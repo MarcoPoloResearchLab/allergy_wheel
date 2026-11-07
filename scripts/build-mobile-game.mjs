@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 const { build } = createRequire(new URL('../mobile/package.json', import.meta.url))('esbuild');
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
+import { ControlElementId } from '../js/constants.js';
 
 const root = resolve(import.meta.dirname, '..');
 const output = resolve(root, 'mobile/generated');
@@ -54,7 +55,14 @@ let html = await readFile(resolve(root, 'index.html'), 'utf8');
 html = html.replace(/\s*<!-- Google tag[\s\S]*?(?=\s*<meta content="Marco Polo)/, '');
 html = html.replace(/\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/, '');
 html = html.replace('<link rel="stylesheet" href="/assets/css/main.css">', `<style>${await readFile(resolve(root, 'assets/css/main.css'), 'utf8')}</style>`);
-html = html.replace('<button class="ghost" id="fs">Full Screen</button>', '');
+const fullScreenButtonPattern = new RegExp(
+    `<button\\b(?=[^>]*\\sid=(["'])${ControlElementId.FULLSCREEN_BUTTON}\\1)[^>]*>[\\s\\S]*?</button>`,
+    'g'
+);
+if ([...html.matchAll(fullScreenButtonPattern)].length !== 1) {
+    throw new Error('Mobile packaging requires exactly one browser fullscreen button.');
+}
+html = html.replace(fullScreenButtonPattern, '');
 html = await embedLiterals(html);
 const scriptData = Buffer.from(bundle.outputFiles[0].contents).toString('base64');
 html = html.replace('<script src="js/core/app.js" type="module"></script>', `<script src="data:text/javascript;base64,${scriptData}"></script>`);
