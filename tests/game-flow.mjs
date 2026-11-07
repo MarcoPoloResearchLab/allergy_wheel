@@ -13,6 +13,15 @@ export async function runGameFlow(browser, gameUrl) {
         await page.goto(gameUrl, { waitUntil: "domcontentloaded" });
         await page.locator('#loading[hidden]').waitFor({ state: "attached" });
         assert.equal(await page.locator('#load-error').isVisible(), false);
+        const assertHeartGoal = async () => {
+            const count = Number(await page.locator('#hearts-bar').getAttribute('data-count'));
+            assert.equal(await page.locator('.heart-icons .heart').count(), 10, 'The goal must always show ten heart slots.');
+            assert.equal(await page.locator('.heart-icons .heart:not(.heart-empty)').count(), count);
+            assert.equal(await page.locator('.heart-count').innerText(), `${count} / 10`);
+            assert.equal(await page.locator('.heart-goal').innerText(), 'Collect 10 hearts to win');
+            assert.equal(await page.locator('#hearts-bar').getAttribute('aria-label'), `${count} of 10 hearts. Collect 10 hearts to win.`);
+        };
+        await assertHeartGoal();
         assert.equal(await page.locator('#start').getAttribute('aria-disabled'), 'true');
         assert.equal(await page.locator('body').getAttribute('data-screen'), 'allergy');
         assert.equal(await page.locator('.header-nav button').count(), 1, 'Navigation must use one destination button.');
@@ -36,6 +45,7 @@ export async function runGameFlow(browser, gameUrl) {
         await page.locator('#reveal[aria-hidden="false"]').waitFor();
         assert.ok((await page.locator('#dish-ingredients').innerText()).length > 0);
         assert.ok((await page.locator('#dish-title').innerText()).length > 0);
+        await assertHeartGoal();
         await page.locator('#again').click();
         await page.getByRole('button', { name: 'Menu', exact: true }).click();
         await page.clock.runFor(35_000);
@@ -51,6 +61,7 @@ export async function runGameFlow(browser, gameUrl) {
         await page.locator('#wheel-restart').click();
         await page.locator('#restart-confirmation-confirm').click();
         assert.equal(await page.locator('body').getAttribute('data-screen'), 'allergy');
+        await assertHeartGoal();
         await page.getByRole('button', { name: 'Menu', exact: true }).click();
         assert.equal(await page.locator('#nav-toggle').innerText(), 'Game');
         assert.equal(await page.locator('#nav-toggle').getAttribute('aria-controls'), 'screen-allergy');

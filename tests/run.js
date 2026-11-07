@@ -3,6 +3,7 @@
 import { runSuites } from "./harness.js";
 
 import "./specs/navigation.test.js";
+import "./specs/hearts.test.js";
 import "./specs/startButtonState.test.js";
 import "./specs/stateManager.test.js";
 // Run this suite last to verify that fixture cleanup preserves prior reports.

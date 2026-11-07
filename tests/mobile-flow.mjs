@@ -6,9 +6,11 @@ import { chromium } from 'playwright';
 import { runPageFlow, runWithOwnedCleanup } from '../scripts/page-flow.mjs';
 import { runFeedbackFlow } from './feedback-flow.mjs';
 import { ExternalService, ParentText } from '../js/constants.js';
+import { runMobileShellFlow } from './mobile-shell-flow.mjs';
 import { runAutomaticServicesFlow } from './mobile-services.mjs';
 
 execFileSync(process.execPath, ['scripts/build-mobile-game.mjs'], { stdio: 'inherit' });
+await runMobileShellFlow();
 const documentSource = await readFile('mobile/generated/game.html', 'utf8');
 const browser = await chromium.launch();
 await runWithOwnedCleanup(async () => {
@@ -60,6 +62,7 @@ await runWithOwnedCleanup(async () => {
     const parentPage = await context.newPage();
     await runPageFlow(parentPage, async () => {
         await parentPage.setContent(parentSource);
+        assert.equal(await parentPage.getByRole('heading', { name: 'Feedback', exact: true }).count(), 1);
         assert.equal(await parentPage.getByRole('button', { name: 'Enable analytics for this visit' }).isVisible(), false);
         const question = await parentPage.locator('#parent-question').innerText();
         const numbers = question.match(/\d+/g).map(Number);

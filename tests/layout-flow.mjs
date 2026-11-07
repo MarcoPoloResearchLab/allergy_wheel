@@ -90,6 +90,28 @@ async function assertSelectionFits(page) {
     assert.ok(Math.max(...layout.headerControlHeights) - Math.min(...layout.headerControlHeights) <= 1, 'Header action buttons must have equal heights.');
 }
 
+/** Verify all goal slots remain visible and separate from navigation. */
+async function assertHeartGoalFits(page) {
+    const layout = await page.locator('#hearts-bar').evaluate((bar) => {
+        const bounds = bar.getBoundingClientRect();
+        const nav = document.querySelector('#nav-toggle').getBoundingClientRect();
+        const slots = [...bar.querySelectorAll('.heart')];
+        return {
+            slots: slots.length,
+            visibleSlots: slots.filter((slot) => {
+                const rect = slot.getBoundingClientRect();
+                return rect.width > 0 && rect.height > 0 && rect.left >= bounds.left && rect.right <= bounds.right;
+            }).length,
+            fits: bounds.left >= 0 && bounds.right <= innerWidth && bar.scrollWidth <= bar.clientWidth,
+            separate: bounds.right <= nav.left || bounds.left >= nav.right || bounds.bottom <= nav.top || bounds.top >= nav.bottom
+        };
+    });
+    assert.equal(layout.slots, 10);
+    assert.equal(layout.visibleSlots, 10, 'All ten heart slots must remain visible.');
+    assert.equal(layout.fits, true, 'The heart goal must fit the viewport.');
+    assert.equal(layout.separate, true, 'Navigation and the heart goal must not overlap.');
+}
+
 const contentTypes = Object.freeze({
     html: 'text/html', js: 'text/javascript', css: 'text/css',
     json: 'application/json', svg: 'image/svg+xml'
@@ -106,7 +128,8 @@ for (const engine of [chromium, webkit]) {
     try {
         for (const surface of ['browser', 'mobile']) {
             for (const { viewport, fontMode } of scenarios) {
-                const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
+                const gameViewport = { ...viewport, height: viewport.height - (surface === 'mobile' ? 44 : 0) };
+                const context = await browser.newContext({ viewport: gameViewport, reducedMotion: 'reduce' });
                 await context.route('**/*', async (route) => {
                     const url = new URL(route.request().url());
                     if (url.href === MobileLocation.GAME) return route.fulfill({ contentType: contentTypes.html, body: mobileSource });
@@ -139,6 +162,7 @@ for (const engine of [chromium, webkit]) {
                     await page.locator('#mute').click();
                     await page.locator('#start').click();
                     await assertWheelFits(page);
+                    await assertHeartGoalFits(page);
                     await page.locator('#wheel-continue').click();
                     await page.locator('#reveal[aria-hidden="false"]').waitFor();
                     const resultLayout = await page.locator('#reveal').evaluate((overlay) => {
@@ -174,6 +198,7 @@ for (const engine of [chromium, webkit]) {
                     await page.locator('#again').click();
                     assert.equal(await page.locator('#reveal').getAttribute('aria-hidden'), 'true');
                     await assertWheelFits(page);
+                    await assertHeartGoalFits(page);
                     await page.screenshot({ path: `${screenshotDirectory}/${engine.name()}-${surface}-${viewport.width}-${fontMode}-wheel.png` });
                     await page.locator('#wheel-continue').click();
                     await page.locator('#reveal[aria-hidden="false"]').waitFor();
