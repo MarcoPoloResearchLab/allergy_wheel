@@ -40,12 +40,6 @@ export default function App() {
                 thirdPartyCookiesEnabled: false, allowFileAccess: false, setSupportMultipleWindows: false
             })),
         React.createElement(SafeAreaView, { style: styles.screen },
-            React.createElement(View, { style: styles.parentBar },
-                React.createElement(Pressable, {
-                    accessibilityRole: 'button',
-                    onPress: () => setParentsVisible(true),
-                    style: ({ pressed }) => [styles.parentButton, pressed && styles.parentButtonPressed]
-                }, React.createElement(Text, { style: styles.parentLabel }, MobileText.PARENTS))),
             React.createElement(Modal, { visible: parentsVisible, presentationStyle: 'fullScreen', onRequestClose: () => setParentsVisible(false) },
                 React.createElement(SafeAreaProvider, null,
                 React.createElement(SafeAreaView, { style: styles.screen },
@@ -71,5 +65,11 @@ export default function App() {
                 allowFileAccess: false,
                 style: styles.screen,
                 renderError: () => React.createElement(View, { style: styles.error }, React.createElement(Text, { accessibilityRole: 'alert' }, MobileText.LOAD_ERROR))
-            })));
+            }),
+            React.createElement(View, { style: styles.parentBar },
+                React.createElement(Pressable, {
+                    accessibilityRole: 'button',
+                    onPress: () => setParentsVisible(true),
+                    style: ({ pressed }) => [styles.parentButton, pressed && styles.parentButtonPressed]
+                }, React.createElement(Text, { style: styles.parentLabel }, MobileText.FEEDBACK)))));
 }
