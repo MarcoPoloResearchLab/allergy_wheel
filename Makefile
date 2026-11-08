@@ -52,10 +52,15 @@ test-layout: build-test-image
 	mkdir -p artifacts/layout
 	docker run --rm --init --shm-size=1g --volume "$(REPOSITORY_DIRECTORY)/artifacts/layout:/output" "$(TEST_IMAGE)" node tests/layout-flow.mjs
 
+.PHONY: test-menu
+test-menu: build-test-image
+	mkdir -p artifacts/menu
+	docker run --rm --init --shm-size=1g --volume "$(REPOSITORY_DIRECTORY)/artifacts/menu:/output" "$(TEST_IMAGE)" node tests/menu-flow.mjs
+
 test-local:
 	bash "$(REPOSITORY_DIRECTORY)/tests/local-commands.sh"
 
-ci: check test-lifecycle-commands test-harness-first-failure test test-layout test-node-forge-security test-deepmerge-security test-dependency-audit test-dependency-installs test-mobile mobile-check test-expo-fingerprint mobile-audit test-pages test-store-listings test-feedback-verifier test-privacy test-native-release test-release-adapter test-native-preparation mobile-native-check test-apple-bundle test-local
+ci: check test-lifecycle-commands test-harness-first-failure test test-layout test-menu test-node-forge-security test-deepmerge-security test-dependency-audit test-dependency-installs test-mobile mobile-check test-expo-fingerprint mobile-audit test-pages test-store-listings test-feedback-verifier test-privacy test-native-release test-release-adapter test-native-preparation mobile-native-check test-apple-bundle test-local
 
 .PHONY: test-mobile mobile-dependencies mobile-prepare
 

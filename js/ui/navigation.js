@@ -4,6 +4,7 @@ import {
     ScreenName,
     ScreenElementId,
     NavigationText,
+    NavigationIcon,
     AttributeName,
     ControlElementId,
     BrowserEventName
@@ -18,9 +19,14 @@ const NavigationScreenElementId = Object.freeze({
     [ScreenName.MENU]: ScreenElementId.MENU
 });
 
+const DestinationIconSize = 24;
+const DestinationIconClassName = "header-destination-icon";
+
 /** Shows the other view on one button and remembers the current game screen. */
 export class NavigationController {
     #toggleButtonElement;
+    #destinationIconElement;
+    #destinationLabelElement;
     #attributeNameMap;
     #onScreenChange;
     /** @type {NavigationScreen} */
@@ -41,6 +47,14 @@ export class NavigationController {
         const button = documentReference.getElementById(controlElementIdMap.NAV_TOGGLE_BUTTON);
         if (!button) throw new Error(NavigationText.MISSING_CONTROL);
         this.#toggleButtonElement = button;
+        this.#destinationIconElement = documentReference.createElement("img");
+        this.#destinationIconElement.className = DestinationIconClassName;
+        this.#destinationIconElement.alt = "";
+        this.#destinationIconElement.setAttribute(attributeNameMap.ARIA_HIDDEN, "true");
+        this.#destinationIconElement.width = DestinationIconSize;
+        this.#destinationIconElement.height = DestinationIconSize;
+        this.#destinationLabelElement = documentReference.createElement("span");
+        button.replaceChildren(this.#destinationIconElement, this.#destinationLabelElement);
         this.#attributeNameMap = attributeNameMap;
         this.#onScreenChange = onScreenChange;
     }
@@ -61,8 +75,10 @@ export class NavigationController {
     updateActiveScreen(screenName) {
         this.#activeScreenName = screenName;
         if (screenName !== ScreenName.MENU) this.#gameScreenName = screenName;
-        this.#toggleButtonElement.textContent = screenName === ScreenName.MENU
+        this.#destinationLabelElement.textContent = screenName === ScreenName.MENU
             ? NavigationText.GAME : NavigationText.MENU;
+        this.#destinationIconElement.src = screenName === ScreenName.MENU
+            ? NavigationIcon.GAME : NavigationIcon.MENU;
         this.#toggleButtonElement.setAttribute(
             this.#attributeNameMap.ARIA_CONTROLS,
             NavigationScreenElementId[this.#targetScreenName()]

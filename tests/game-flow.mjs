@@ -27,20 +27,42 @@ export async function runGameFlow(browser, gameUrl) {
         assert.equal(await page.locator('.header-nav button').count(), 1, 'Navigation must use one destination button.');
         assert.equal(await page.locator('#nav-toggle').innerText(), 'Menu');
         assert.equal(await page.locator('#nav-toggle').getAttribute('aria-controls'), 'screen-menu');
+        const assertNavigationIcon = async (assetName) => {
+            const icon = page.locator('#nav-toggle img');
+            assert.equal(await icon.count(), 1, 'Navigation must show one destination icon.');
+            assert.equal(await icon.getAttribute('alt'), '', 'The destination label must supply the accessible name.');
+            assert.ok((await icon.getAttribute('src')).endsWith(`/${assetName}.svg`));
+            const iconBounds = await icon.boundingBox();
+            const labelBounds = await page.locator('#nav-toggle span').boundingBox();
+            assert.ok(iconBounds.x + iconBounds.width <= labelBounds.x,
+                'The destination icon must precede its label.');
+        };
+        const assertAudioIcon = async (isMuted) => {
+            assert.equal(await page.locator('#mute').innerText(), '', 'Audio must use an icon without a visible text label.');
+            assert.equal(await page.locator('#mute svg').count(), 1, 'Audio must show a speaker illustration.');
+            assert.equal(await page.locator('#mute').getAttribute('aria-label'), isMuted ? 'Unmute audio' : 'Mute audio');
+            assert.equal(await page.locator('#mute .audio-icon__cross').isVisible(), isMuted, 'Muted audio must show the cross-out.');
+            assert.equal(await page.locator('#mute .audio-icon__waves').isVisible(), !isMuted, 'Audible audio must show sound waves.');
+        };
+        await assertNavigationIcon('menu-card');
+        await assertAudioIcon(false);
         assert.equal(await page.getByRole('button', { name: 'Full Screen', exact: true }).locator('svg').count(), 1);
         await page.locator('input[value="peanuts"]').check();
         await page.locator('#mute').click();
         assert.equal(await page.locator('#mute').getAttribute('aria-pressed'), 'true');
+        await assertAudioIcon(true);
         await page.locator('#start').click();
         assert.equal(await page.locator('body').getAttribute('data-screen'), 'wheel');
         assert.equal(await page.locator('#screen-allergy').isVisible(), false);
         await page.getByRole('button', { name: 'Menu', exact: true }).click();
         assert.equal(await page.locator('body').getAttribute('data-screen'), 'menu');
         assert.equal(await page.locator('#nav-toggle').innerText(), 'Game');
+        await assertNavigationIcon('spinning-wheel');
         assert.equal(await page.locator('#nav-toggle').getAttribute('aria-controls'), 'screen-wheel');
         await page.getByRole('button', { name: 'Game', exact: true }).click();
         assert.equal(await page.locator('body').getAttribute('data-screen'), 'wheel', 'Game must return to the current wheel round.');
         assert.equal(await page.locator('#nav-toggle').innerText(), 'Menu');
+        await assertNavigationIcon('menu-card');
         await page.locator('#wheel-continue').click();
         await page.locator('#reveal[aria-hidden="false"]').waitFor();
         assert.ok((await page.locator('#dish-ingredients').innerText()).length > 0);
@@ -79,6 +101,7 @@ export async function runGameFlow(browser, gameUrl) {
         assert.equal(await page.locator('#nav-toggle').innerText(), 'Menu');
         await page.locator('#mute').click();
         assert.equal(await page.locator('#mute').getAttribute('aria-pressed'), 'false');
+        await assertAudioIcon(false);
         console.info('Real game flow passed: selection, Stop, automatic stop, reveal, restart, mute, and navigation.');
     });
 }

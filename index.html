@@ -94,7 +94,23 @@
                           fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5"/>
                 </svg>
             </button>
-            <button type="button" class="ghost" id="mute" aria-pressed="false" aria-label="Mute audio">Mute</button>
+            <button type="button" class="ghost" id="mute" aria-pressed="false" aria-label="Mute audio">
+                <svg aria-hidden="true" class="audio-icon" focusable="false" viewBox="0 0 64 64">
+                    <path d="M9 24L23 23L39 10L41 53L23 40L10 41Z" fill="#ffcc4d" stroke="#111" stroke-width="4" stroke-linejoin="round"/>
+                    <path d="M10 25L22 24L23 40L11 40Z" fill="#7bdff2" stroke="#111" stroke-width="3" stroke-linejoin="round"/>
+                    <ellipse cx="29" cy="27" rx="2.5" ry="3.5" fill="#111"/>
+                    <ellipse cx="35" cy="25" rx="2.5" ry="3.5" fill="#111"/>
+                    <path d="M28 36Q33 41 37 34" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round"/>
+                    <g class="audio-icon__waves" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M47 23Q54 31 47 39M54 16Q65 31 54 46" stroke="#111" stroke-width="7"/>
+                        <path d="M47 23Q54 31 47 39M54 16Q65 31 54 46" stroke="#ff6f87" stroke-width="3"/>
+                    </g>
+                    <g class="audio-icon__cross" fill="none" stroke-linecap="round">
+                        <path d="M13 11L53 53" stroke="#111" stroke-width="9"/>
+                        <path d="M13 11L53 53" stroke="#ff4d6d" stroke-width="5"/>
+                    </g>
+                </svg>
+            </button>
         </div>
     </div>
 </header>
@@ -194,11 +210,11 @@
             <p class="muted">Browse every dish from the wheel with its colorful story.</p>
         </div>
         <div class="menu-table-wrapper">
-            <table aria-describedby="menu-title" class="menu-table">
-                <thead>
-                    <tr>
-                        <th scope="col">Dish</th>
-                        <th scope="col">
+            <table aria-labelledby="menu-title" class="menu-table" role="table">
+                <thead role="rowgroup">
+                    <tr role="row">
+                        <th role="columnheader" scope="col">Dish</th>
+                        <th role="columnheader" scope="col">
                             <div class="menu-header-cell">
                                 <button
                                     aria-controls="menu-ingredient-filter-panel"
@@ -232,7 +248,7 @@
                                 </div>
                             </div>
                         </th>
-                        <th scope="col">
+                        <th role="columnheader" scope="col">
                             <div class="menu-header-cell">
                                 <button
                                     aria-controls="menu-cuisine-filter-panel"
@@ -266,10 +282,10 @@
                                 </div>
                             </div>
                         </th>
-                        <th scope="col">Story</th>
+                        <th role="columnheader" scope="col">Story</th>
                     </tr>
                 </thead>
-                <tbody id="menu-table-body"></tbody>
+                <tbody id="menu-table-body" role="rowgroup"></tbody>
             </table>
         </div>
     </div>

@@ -20,6 +20,7 @@ const MenuFilterClassName = Object.freeze({
     OPTION: "menu-filter-option",
     OPTION_SELECTED: "is-selected",
     OPTION_ICON: "menu-filter-option__icon",
+    OPTION_CHECK: "menu-filter-option__check",
     OPTION_LABEL: "menu-filter-option__label"
 });
 
@@ -343,7 +344,13 @@ export class MenuFilterController {
 
             const iconSpan = this.#documentReference.createElement("span");
             iconSpan.className = MenuFilterClassName.OPTION_ICON;
-            iconSpan.textContent = isSelected ? MenuFilterIcon.CHECK : TextContent.EMPTY;
+            iconSpan.textContent = optionDescriptor.emoji || TextContent.EMPTY;
+            iconSpan.setAttribute(this.#attributeNameMap.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
+
+            const checkSpan = this.#documentReference.createElement("span");
+            checkSpan.className = MenuFilterClassName.OPTION_CHECK;
+            checkSpan.textContent = isSelected ? MenuFilterIcon.CHECK : TextContent.EMPTY;
+            checkSpan.setAttribute(this.#attributeNameMap.ARIA_HIDDEN, AttributeBooleanValue.TRUE);
 
             const labelSpan = this.#documentReference.createElement("span");
             labelSpan.className = MenuFilterClassName.OPTION_LABEL;
@@ -351,6 +358,7 @@ export class MenuFilterController {
 
             optionButton.appendChild(iconSpan);
             optionButton.appendChild(labelSpan);
+            optionButton.appendChild(checkSpan);
 
             listElement.appendChild(optionButton);
         }
