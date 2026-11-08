@@ -26,6 +26,7 @@ The first validation run downloads the test image and its locked dependencies.
 | `make up` | Start the game at <http://127.0.0.1:8765>. |
 | `make down` | Stop and remove the local game container and its network. |
 | `make test` | Run the browser tests inside Docker. |
+| `make test-menu` | Verify menu stories, filter icons, filter combinations, and responsive layouts in Docker. |
 | `make test-local` | Verify startup, file responses, repeated startup, and shutdown. |
 | `make check` | Validate JavaScript and JSON syntax, Compose configuration, and whitespace. |
 | `make ci` | Run source, browser, mobile, dependency, Pages, and local server checks. |
@@ -255,6 +256,18 @@ The store text export does not upload content or prove submission readiness.
 The button shows `Menu` in the game and `Game` in the menu.
 The `Game` action returns to the previous game screen.
 If a round ends during a menu visit, its result appears when the player returns to the game.
+Each destination has an icon before its label.
+The audio button shows a speaker with sound waves or a cross when muted.
+
+## Menu layout
+
+At widths through 1100 pixels, each story occupies a full-width section below its dish details.
+Wider screens use four table columns with explicit widths.
+Ingredient filters use the same food icons as dish ingredients.
+A separate checkmark identifies each selected filter.
+
+`make test-menu` covers the website and generated mobile package in Chromium and WebKit.
+The cases include both fonts, combined filters, empty results, clear actions, and open filters across the layout boundary.
 
 ## Dynamic allergen summary
 
