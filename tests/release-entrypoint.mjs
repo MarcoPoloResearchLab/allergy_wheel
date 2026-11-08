@@ -22,7 +22,7 @@ try {
     // This file must never execute. The selected manifest owns private inputs.
     await writeFile(join(applicationRoot, 'configs/.env.allergy-wheel'), 'exit 79\n');
     for (const target of ['release', 'publish', 'deploy']) {
-        await writeFile(join(applicationRoot, `app-${target}`), `
+        await writeFile(join(applicationRoot, target), `
 const fs = require('node:fs');
 fs.writeFileSync(process.env.TEST_GATEWAY_RECEIPT, JSON.stringify({
     args: process.argv.slice(1), ci: process.env.CI,
@@ -40,7 +40,7 @@ process.exit(Number(process.env.TEST_GATEWAY_EXIT || 0));
         });
         assert.equal(result.status, 0, result.stderr);
         const receipt = JSON.parse(await readFile(receiptPath, 'utf8'));
-        assert.deepEqual(receipt.args, [join(applicationRoot, `app-${target}`), '--app-root', applicationRoot]);
+        assert.deepEqual(receipt.args, [join(applicationRoot, target), '--app-root', applicationRoot]);
         assert.equal(receipt.ci, '1');
         assert.equal(receipt.stdin, '');
         assert.equal(receipt.signing, 'ambient input');
