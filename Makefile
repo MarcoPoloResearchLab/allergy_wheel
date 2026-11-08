@@ -55,7 +55,7 @@ test-layout: build-test-image
 test-local:
 	bash "$(REPOSITORY_DIRECTORY)/tests/local-commands.sh"
 
-ci: check test-harness-first-failure test test-layout test-node-forge-security test-deepmerge-security test-dependency-audit test-dependency-installs test-mobile mobile-check test-expo-fingerprint mobile-audit test-pages test-store-listings test-feedback-verifier test-privacy test-native-release test-release-adapter test-native-preparation mobile-native-check test-apple-bundle test-local
+ci: check test-lifecycle-commands test-harness-first-failure test test-layout test-node-forge-security test-deepmerge-security test-dependency-audit test-dependency-installs test-mobile mobile-check test-expo-fingerprint mobile-audit test-pages test-store-listings test-feedback-verifier test-privacy test-native-release test-release-adapter test-native-preparation mobile-native-check test-apple-bundle test-local
 
 .PHONY: test-mobile mobile-dependencies mobile-prepare
 
@@ -152,7 +152,7 @@ verify-feedback: build-test-image
 	docker run --rm --init --shm-size=1g "$(TEST_IMAGE)" node scripts/verify-feedback.mjs
 
 release publish deploy:
-	@CI=1 "$(MPRLAB_GATEWAY_EXECUTABLE)" "app-$@" --app-root "$(REPOSITORY_DIRECTORY)" </dev/null
+	@CI=1 "$(MPRLAB_GATEWAY_EXECUTABLE)" "$@" --app-root "$(REPOSITORY_DIRECTORY)" </dev/null
 
 .PHONY: test-native-release
 test-native-release: build-test-image
@@ -222,3 +222,7 @@ MOBILE_LOCK_PACKAGES ?=
 mobile-update-lock-packages: build-dependency-image
 	$(if $(strip $(MOBILE_LOCK_PACKAGES)),,$(error Set MOBILE_LOCK_PACKAGES to the package names to update))
 	docker run --rm --init --env CI=1 --volume "$(REPOSITORY_DIRECTORY):/workspace" --workdir /workspace/mobile "$(DEPENDENCY_IMAGE)" npm update $(MOBILE_LOCK_PACKAGES) --package-lock-only --ignore-scripts
+
+.PHONY: test-lifecycle-commands
+test-lifecycle-commands: build-test-image
+	docker run --rm --init "$(TEST_IMAGE)" node tests/lifecycle-commands.mjs
