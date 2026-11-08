@@ -11,6 +11,24 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B057] (P1) Use Gateway v9 lifecycle commands
+  Goal:
+  Restore the repository lifecycle targets with Gateway v9.
+
+  Requirements:
+  - Use release, publish, and deploy as the public Gateway command names.
+  - Keep the explicit application root and executable override.
+  - Verify the targets through Make without production effects.
+
+  Validation:
+  The installed Gateway v9.0.0 rejected app-deploy as an unknown command.
+  The initial integration test reported app-release where release was required.
+  The test passed after the Make targets used the public command names.
+  Gateway v9 accepted all three commands with the application root and help flag.
+
+  The focused tests and `make ci` passed on November 7, 2026.
+  Independent review found no further defects.
+
 - [x] [B056] (P1) Align Expo patch dependencies
   Goal:
   Restore the full CI after the Expo compatibility check reports newer patch versions.
