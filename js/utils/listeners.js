@@ -7,7 +7,6 @@ import {
     AttributeBooleanValue,
     AvatarMenuClassName,
     TitleClassName,
-    ButtonText,
     AudioControlLabel,
     ListenerErrorMessage
 } from "../constants.js";
@@ -374,7 +373,6 @@ function createListenerBinder({ controlElementId, attributeName, documentReferen
             if (ariaPressedAttributeName) {
                 muteButton.setAttribute(ariaPressedAttributeName, pressedValue);
             }
-            muteButton.textContent = resolvedMuteState ? ButtonText.SOUND_ON : ButtonText.MUTE;
             if (ariaLabelAttributeName) {
                 muteButton.setAttribute(
                     ariaLabelAttributeName,

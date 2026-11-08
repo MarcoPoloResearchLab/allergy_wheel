@@ -53,14 +53,15 @@ const ValueType = Object.freeze({
 });
 
 const ViewportMediaQuery = Object.freeze({
-    MOBILE_MAX: "(max-width: 767px)"
+    MOBILE_MAX: "(max-width: 1100px)"
 });
 
 const ViewportThreshold = Object.freeze({
-    MOBILE_MAX_WIDTH: 767
+    MOBILE_MAX_WIDTH: 1100
 });
 
 const MenuColumnCount = 4;
+const TableRole = Object.freeze({ ATTRIBUTE: "role", ROW: "row", CELL: "cell" });
 
 function normalizeToMap(candidate) {
     if (candidate instanceof Map) {
@@ -160,7 +161,6 @@ export class MenuView {
     } = {}) {
         if (Array.isArray(dishesCatalog)) {
             this.#dishesCatalog = dishesCatalog.slice();
-            this.#rebuildFilterOptionsFromCatalog();
         }
         if (normalizationEngine) {
             this.#normalizationEngine = normalizationEngine;
@@ -175,6 +175,7 @@ export class MenuView {
             this.#emojiByTokenMap = this.#buildEmojiByTokenMap(allergensCatalog);
         }
 
+        this.#rebuildFilterOptionsFromCatalog();
         this.#emitFilterOptionsChange();
     }
 
@@ -297,6 +298,7 @@ export class MenuView {
     #createMenuDataRow(dishRecord) {
         const rowElement = this.#documentReference.createElement(HtmlTagName.TR);
         rowElement.className = ClassName.ROW_DATA;
+        rowElement.setAttribute(TableRole.ATTRIBUTE, TableRole.ROW);
 
         rowElement.appendChild(this.#createDishCell(dishRecord));
         rowElement.appendChild(this.#createIngredientsCell(dishRecord));
@@ -574,6 +576,7 @@ export class MenuView {
     }
 
     #decorateCellWithColumnLabel(cellElement, columnLabelText) {
+        cellElement.setAttribute(TableRole.ATTRIBUTE, TableRole.CELL);
         const labelText = typeof columnLabelText === "string" ? columnLabelText : TextContent.EMPTY;
         cellElement.setAttribute(AttributeName.DATA_COLUMN_LABEL, labelText);
 
@@ -663,7 +666,8 @@ export class MenuView {
             }
             cuisineMap.set(normalizedCuisine, Object.freeze({
                 value: normalizedCuisine,
-                label: cuisineLabel || normalizedCuisine
+                label: cuisineLabel || normalizedCuisine,
+                emoji: this.#resolveCuisineFlag(cuisineLabel)
             }));
         }
         return this.#sortFilterMapByLabel(cuisineMap);
@@ -684,7 +688,8 @@ export class MenuView {
                 }
                 ingredientMap.set(normalizedIngredient, Object.freeze({
                     value: normalizedIngredient,
-                    label: ingredientLabel || normalizedIngredient
+                    label: ingredientLabel || normalizedIngredient,
+                    emoji: this.#resolveIngredientEmoji(ingredientLabel)
                 }));
             }
         }
@@ -738,9 +743,11 @@ export class MenuView {
     #createEmptyStateRow() {
         const rowElement = this.#documentReference.createElement(HtmlTagName.TR);
         rowElement.className = ClassName.EMPTY_ROW;
+        rowElement.setAttribute(TableRole.ATTRIBUTE, TableRole.ROW);
 
         const cellElement = this.#documentReference.createElement(HtmlTagName.TD);
         cellElement.className = ClassName.EMPTY_CELL;
+        cellElement.setAttribute(TableRole.ATTRIBUTE, TableRole.CELL);
         cellElement.colSpan = MenuColumnCount;
         cellElement.textContent = MenuMessage.NO_MATCHES;
 
@@ -760,22 +767,10 @@ export class MenuView {
                 ? this.#normalizationEngine.tokensForIngredient(ingredientText)
                 : new Set();
 
-        let ingredientEmoji = this.#ingredientEmojiByName.get(normalizedIngredientName) || TextContent.EMPTY;
-        if (!ingredientEmoji) {
-            for (const allergenToken of tokensForIngredient || []) {
-                const emojiFromToken = this.#emojiByTokenMap.get(allergenToken);
-                if (emojiFromToken) {
-                    ingredientEmoji = emojiFromToken;
-                    break;
-                }
-            }
-        }
+        const ingredientEmoji = this.#resolveIngredientEmoji(normalizedIngredientName);
 
         if (this.#selectedAllergenToken && tokensForIngredient && tokensForIngredient.has(this.#selectedAllergenToken)) {
             chipElement.classList.add(ClassName.INGREDIENT_BAD);
-            if (!ingredientEmoji) {
-                ingredientEmoji = this.#emojiByTokenMap.get(this.#selectedAllergenToken) || TextContent.EMPTY;
-            }
         }
 
         const textSpan = this.#documentReference.createElement(HtmlTagName.SPAN);
@@ -790,6 +785,18 @@ export class MenuView {
         }
 
         return chipElement;
+    }
+
+    #resolveIngredientEmoji(ingredientName) {
+        const normalizedName = String(ingredientName).trim().toLowerCase();
+        const catalogEmoji = this.#ingredientEmojiByName.get(normalizedName);
+        if (catalogEmoji) return catalogEmoji;
+        const tokens = this.#normalizationEngine?.tokensForIngredient(ingredientName) || [];
+        for (const token of tokens) {
+            const emoji = this.#emojiByTokenMap.get(token);
+            if (emoji) return emoji;
+        }
+        return TextContent.EMPTY;
     }
 
     #resolveCuisineFlag(cuisineName) {

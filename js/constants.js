@@ -88,6 +88,11 @@ export const NavigationText = Object.freeze({
     CHANGE_FAILED: "Unable to change views."
 });
 
+export const NavigationIcon = Object.freeze({
+    GAME: "/assets/icons/spinning-wheel.svg",
+    MENU: "/assets/icons/menu-card.svg"
+});
+
 
 export const WheelConfiguration = Object.freeze({
     SEGMENT_COUNT: 8,
@@ -432,9 +437,7 @@ export const KeyboardKey = Object.freeze({
 export const ButtonText = Object.freeze({
     SPIN: "SPIN",
     STOP: "STOP",
-    RESTART: "Restart",
-    MUTE: "Mute",
-    SOUND_ON: "Sound On"
+    RESTART: "Restart"
 });
 
 export const AudioControlLabel = Object.freeze({
