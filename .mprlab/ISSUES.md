@@ -11,6 +11,68 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [x] [B060] (P2) Add playful audio and navigation icons
+  Goal:
+  Make audio state and navigation destinations visible through icons.
+
+  Requirements:
+  - Replace the Mute text with a speaker icon in the game style.
+  - Cross out the speaker when audio is muted.
+  - Keep accessible audio labels and the pressed state.
+  - Put the wheel icon before Game and a menu icon before Menu.
+  - Keep one navigation button and preserve game progress.
+
+  Validation:
+  The initial game test found no destination icon.
+  The revised game tests passed icon changes, audio state, labels, and game navigation.
+  All 80 general layout cases passed with equal header button heights.
+  Final `make ci` passed on November 8, 2026.
+
+- [x] [B059] (P1) Show ingredient icons and readable menu stories
+  Goal:
+  Keep menu stories readable and show food icons in ingredient filters.
+
+  Requirements:
+  - Use the existing ingredient icon data for filter options and dish ingredients.
+  - Keep the food icon visible when a filter is selected.
+  - Give each story the full row width through 1100 pixels.
+  - Preserve the four-column table above 1100 pixels.
+  - Keep all story text visible without horizontal scroll.
+  - Preserve ingredient filters, cuisine filters, clear actions, and game navigation.
+  - Verify the website and mobile package in Chromium and WebKit.
+
+  Validation:
+  The initial integration test found an invisible ingredient filter control on the phone layout.
+  A second regression test found clipped desktop filters after an empty result.
+  The corrected menu preserves dropdown access with complete and empty results.
+
+  All 56 menu cases passed with two fonts at seven widths from 320 to 1440 pixels.
+  The cases cover both browser engines, the website, and the generated mobile package.
+  The tests verify full stories, food icons, combined filters, empty results, clear actions, keyboard closure, and layout changes.
+  `make mobile-package` and final `make ci` passed on November 8, 2026.
+  Production deployment and native shell execution remain separate operations.
+
+- [x] [B058] (P2) Keep the animated allergen title inside the card
+  Goal:
+  Keep the allergen title inside the selection card during its animation.
+
+  Requirements:
+  - Keep the left edge fixed while the title expands.
+  - Preserve the blink, scale, and selection controls.
+  - Keep the text inside the card and viewport.
+  - Prevent horizontal scroll during the animation.
+  - Verify the website and mobile package in Chromium and WebKit.
+
+  Validation:
+  The initial browser test moved the title left edge from 15 pixels to -2.4 pixels.
+  The test measures nine animation positions with both fonts at phone, tablet, and desktop sizes.
+
+  All 80 layout cases passed in Chromium and WebKit for the website and generated mobile package.
+  The mobile package contains only the two CSS changes.
+  `make mobile-package` and final `make ci` passed on November 8, 2026.
+  Browser inspection confirmed a fixed left edge during expansion.
+  Native shell execution and production deployment remain separate operations.
+
 - [x] [B057] (P1) Use Gateway v9 lifecycle commands
   Goal:
   Restore the repository lifecycle targets with Gateway v9.
