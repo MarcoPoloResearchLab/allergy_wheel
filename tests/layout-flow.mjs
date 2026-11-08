@@ -90,6 +90,44 @@ async function assertSelectionFits(page) {
     assert.ok(Math.max(...layout.headerControlHeights) - Math.min(...layout.headerControlHeights) <= 1, 'Header action buttons must have equal heights.');
 }
 
+/** Verify the selection reminder grows rightward after a blocked start. */
+async function assertSelectionReminderFits(page, screenshotPath) {
+    const title = page.locator('#allergy-title');
+    const initialLeft = await title.evaluate((element) => element.getBoundingClientRect().left);
+    const startBounds = await page.locator('#start').boundingBox();
+    await page.mouse.click(startBounds.x + startBounds.width / 2, startBounds.y + startBounds.height / 2);
+    const frames = await title.evaluate((element) => {
+        const animation = element.getAnimations()[0];
+        if (!animation) throw new Error('A blocked start must animate the allergen heading.');
+        animation.pause();
+        const duration = Number(animation.effect.getTiming().duration);
+        const textRange = document.createRange();
+        textRange.selectNodeContents(element);
+        const cardBounds = element.closest('.card').getBoundingClientRect();
+        return [0, 0.3, 0.5, 0.7, 1, 1.3, 1.7, 2.3, 2.7].map((progress) => {
+            animation.currentTime = duration * progress;
+            const bounds = element.getBoundingClientRect();
+            const textBounds = textRange.getBoundingClientRect();
+            return {
+                left: bounds.left,
+                textFits: textBounds.left >= cardBounds.left && textBounds.right <= cardBounds.right
+                    && textBounds.left >= 0 && textBounds.right <= innerWidth,
+                pageFits: document.documentElement.scrollWidth <= innerWidth
+            };
+        });
+    });
+    if (screenshotPath) await page.screenshot({ path: screenshotPath });
+    for (const frame of frames) {
+        assert.ok(Math.abs(frame.left - initialLeft) <= 1,
+            `The reminder must keep its left edge fixed while growing rightward (${initialLeft} → ${frame.left}).`);
+        assert.equal(frame.textFits, true, 'The animated reminder must remain inside the card and viewport.');
+        assert.equal(frame.pageFits, true, 'The animated reminder must not create horizontal scrolling.');
+    }
+    assert.equal(await page.locator('body').getAttribute('data-screen'), 'allergy');
+    assert.equal(await page.locator('#allergy-list input:checked').count(), 0);
+    await title.evaluate((element) => element.getAnimations().forEach((animation) => animation.finish()));
+}
+
 /** Verify all goal slots remain visible and separate from navigation. */
 async function assertHeartGoalFits(page) {
     const layout = await page.locator('#hearts-bar').evaluate((bar) => {
@@ -154,6 +192,8 @@ for (const engine of [chromium, webkit]) {
                     assert.ok(header && header.height <= 172, `${surface} ${viewport.width}: header must leave room for the game (actual ${header?.height}).`);
                     await page.screenshot({ animations: 'disabled', path: `${screenshotDirectory}/${engine.name()}-${surface}-${viewport.width}-${fontMode}-selection.png`, fullPage: true });
                     await assertSelectionFits(page);
+                    await assertSelectionReminderFits(page, viewport.width === 375 && fontMode === 'fredoka'
+                        ? `${screenshotDirectory}/${engine.name()}-${surface}-reminder.png` : undefined);
                     await page.locator('input[value="italian_sausage"]').check();
                     await page.locator('input[value="italian_sausage"]').focus();
                     await assertSelectionFits(page);
