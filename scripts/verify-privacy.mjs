@@ -110,9 +110,8 @@ export async function verifyPrivacy({ routeProviderRequest } = {}) {
                 assert.equal(configuration.status(), 200);
                 const siteId = new URL(ExternalService.LOOP_FEEDBACK).searchParams.get('site_id');
                 assert.equal((await configuration.json()).site_id, siteId);
-                await parentPage.getByRole('status').filter({ hasText: ParentText.READY }).waitFor();
-                await parentPage.locator(`#${FeedbackConfiguration.BUBBLE_ID}`).click();
                 await parentPage.locator(`#${FeedbackConfiguration.CONTACT_ID}`).waitFor();
+                assert.equal(await parentPage.locator('[role="status"]').textContent(), ParentText.READY);
                 assert.equal(await parentPage.locator(`#${FeedbackConfiguration.PANEL_ID}`).isVisible(), true);
                 const parentStorage = await parentPage.evaluate(() => ({ local: Object.keys(localStorage), session: Object.keys(sessionStorage) }));
                 assert.deepEqual(parentStorage, { local: [], session: [] });

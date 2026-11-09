@@ -68,9 +68,9 @@ export async function verifyFeedback({ routeProviderRequest = (route) => route.c
                         const response = await configResponse;
                         assert.equal(response.status(), 200, `${engine.name()} ${scenario.name}: provider configuration failed for ${siteId}`);
                         assert.equal((await response.json()).site_id, siteId);
-                        if (scenario.parentGate) await page.getByRole('status').filter({ hasText: ParentText.READY }).waitFor();
-                        await page.locator(`#${FeedbackConfiguration.BUBBLE_ID}`).click();
+                        if (!scenario.parentGate) await page.locator(`#${FeedbackConfiguration.BUBBLE_ID}`).click();
                         await page.locator(`#${FeedbackConfiguration.CONTACT_ID}`).waitFor();
+                        if (scenario.parentGate) assert.equal(await page.locator('[role="status"]').textContent(), ParentText.READY);
                         assert.equal(await page.locator(`#${FeedbackConfiguration.PANEL_ID}`).isVisible(), true);
                         assert.deepEqual(blockedRequests, [], 'The form must initialize with GET requests to its provider only.');
                         results.push({ engine: engine.name(), scenario: scenario.name, siteId, configurationStatus: response.status(), feedbackFormVisible: true, submission: 'not-performed' });
