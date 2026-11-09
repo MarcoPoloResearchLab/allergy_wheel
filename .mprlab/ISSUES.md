@@ -308,6 +308,30 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## Improvements
 
+- [x] [I007] (P2) {I006} Use game controls for feedback.
+  Goal: Give optional feedback a clear entry and game controls.
+  Requirements:
+  - Use the game colors, borders, and button style.
+  - Give the adult-check instructions before the question.
+  - Keep the adult agreement and the LoopAware access conditions.
+  - Open the feedback form when the user selects Open feedback.
+  - Keep privacy information available and secondary.
+  Validation: Verify browser layouts, native controls, and an iOS simulator.
+
+  Initial tests found no adult-check heading and a closed form after Open feedback.
+  The feedback card and the Return to game button use the game colors and borders.
+  The form opens directly after the adult agreement and the Open feedback selection.
+  The adult agreement and the service access conditions are unchanged.
+  Chromium and WebKit passed ten layouts, with a 320-pixel width and a short landscape viewport.
+  Provider tests used controlled HTTP responses and sent no feedback.
+  The iPhone 18 Pro simulator on iOS 27.0 passed the entry, numeric keyboard, error, and adult agreement checks.
+  Return to game closed feedback, and a new visit started a fresh adult check.
+  The simulator checks stopped before the provider form.
+  The iOS simulator build and final `make ci` passed.
+  The code and visual review found no unresolved defects.
+  These changes are local and need a new application release.
+
+
 - [x] [I006] (P2) Show the heart goal and simplify game controls
   Goal:
   Show the game goal.
