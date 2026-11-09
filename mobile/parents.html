@@ -6,15 +6,49 @@
     <meta name="referrer" content="no-referrer">
     <title>Allergy Wheel</title>
     <style>
-        body { font: 1rem/1.5 system-ui, sans-serif; background: #fff5e9; color: #172554; margin: 0; padding: 1rem; }
-        h1 { font-size: 1.6rem; margin: .5rem 0; }
-        details { margin-top: 1.5rem; font-size: .9rem; }
-        summary { cursor: pointer; font-weight: 600; }
-        main { max-width: 42rem; margin: auto; }
-        button, input { font: inherit; border: 2px solid #172554; border-radius: .6rem; padding: .7rem; margin: .4rem 0; }
-        button { display: block; color: #172554; background: #ffd166; }
-        input { display: block; max-width: 90%; }
+        :root { color-scheme: light; --feedback-ink: #111; --feedback-pink: #ffe5ef; --feedback-yellow: #ffdf75; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 24px 20px 36px; min-height: 100svh;
+            background: radial-gradient(ellipse at 100% 0, #ffe5ef 0, transparent 55%), #fffbef;
+            color: var(--feedback-ink); font: 1rem/1.5 ui-rounded, system-ui, -apple-system, sans-serif;
+        }
+        main { width: 100%; max-width: 460px; margin: 0 auto; }
+        .feedback-card { padding: 24px; border: 3px solid var(--feedback-ink); border-radius: 26px; background: #fff; box-shadow: 6px 7px 0 var(--feedback-ink); }
+        .feedback-heading { display: flex; gap: 16px; align-items: center; }
+        .feedback-sticker { display: grid; place-items: center; flex: 0 0 58px; height: 58px; font-size: 32px; background: var(--feedback-pink); border: 2px solid var(--feedback-ink); border-radius: 20px; transform: rotate(-7deg); }
+        h1 { margin: 0; font-size: clamp(28px, 7vw, 36px); line-height: 1.1; font-weight: 900; letter-spacing: -.03em; }
+        h2 { margin: 0 0 6px; font-size: 19px; line-height: 1.3; font-weight: 850; }
+        .feedback-introduction { margin: 18px 0 24px; color: #555; font-size: 16px; }
+        .feedback-description { margin: 0 0 18px; color: #555; font-size: 15px; }
+        .feedback-equation { margin: 0 0 20px; padding: 12px; border: 2px solid var(--feedback-ink); border-radius: 16px; background: #fff7c8; text-align: center; font-size: clamp(28px, 7vw, 36px); font-weight: 900; letter-spacing: .025em; }
+        .feedback-answer-label { display: block; font-weight: 750; font-size: 14px; }
+        .feedback-answer-label input { display: block; width: 100%; height: 56px; margin: 6px 0 18px; padding: 8px 12px; border: 3px solid var(--feedback-ink); border-radius: 14px; color: var(--feedback-ink); background: #fff; text-align: center; font: inherit; font-size: 24px; line-height: 1.25; font-weight: 750; box-shadow: 2px 3px 0 var(--feedback-ink); }
+        .feedback-answer-label input::placeholder { color: #767676; font-size: 18px; font-weight: 400; }
+        .feedback-answer-label input[aria-invalid="true"] { background: #fff0f3; border-color: #b52447; }
+        .feedback-primary { display: flex; justify-content: center; align-items: center; gap: 14px; width: 100%; min-height: 54px; padding: 12px 16px; border: 3px solid var(--feedback-ink); border-radius: 16px; background: var(--feedback-yellow); color: var(--feedback-ink); box-shadow: 3px 4px 0 var(--feedback-ink); font: inherit; font-weight: 850; cursor: pointer; }
+        .feedback-primary:disabled { opacity: .5; box-shadow: 1px 2px 0 var(--feedback-ink); cursor: default; }
+        .feedback-primary:not(:disabled):active { transform: translate(2px, 2px); box-shadow: 1px 2px 0 var(--feedback-ink); }
+        :focus-visible { outline: 3px solid #e4336f; outline-offset: 4px; }
+        .feedback-agreement { display: flex; gap: 12px; padding: 14px; margin: 0 0 20px; background: #fff7c8; border: 2px solid var(--feedback-ink); border-radius: 16px; font-size: 14px; line-height: 1.5; cursor: pointer; }
+        .feedback-agreement input { flex: 0 0 22px; width: 22px; height: 22px; margin: 3px 0 0; accent-color: #d82f66; }
+        .feedback-error { margin: -4px 0 16px; color: #a91c40; font-size: 14px; font-weight: 650; }
+        .feedback-status { margin: 18px 0 0; color: #555; font-size: 14px; }
+        .feedback-status:empty { display: none; }
+        details { margin: 22px 8px 0; font-size: 14px; color: #555; }
+        summary { min-height: 44px; padding: 10px 0; cursor: pointer; font-weight: 700; }
+        #privacy-text { margin: 8px 0; font-size: 14px; }
+        #mp-feedback-panel { box-sizing: border-box !important; width: 360px !important; max-width: calc(100vw - 32px) !important; max-height: calc(100dvh - 32px) !important; left: auto !important; right: 16px !important; bottom: 16px !important; overflow-y: auto !important; overscroll-behavior: contain; }
+        #mp-feedback-panel { padding: 16px !important; background: #fff !important; color: var(--feedback-ink) !important; border: 3px solid var(--feedback-ink) !important; border-radius: 24px !important; box-shadow: 5px 6px 0 var(--feedback-ink) !important; }
+        #mp-feedback-headline { font-size: 20px !important; font-weight: 850 !important; }
+        #mp-feedback-panel input, #mp-feedback-panel textarea { border: 2px solid var(--feedback-ink) !important; border-radius: 12px !important; color: var(--feedback-ink) !important; font-size: 16px !important; min-height: 48px; }
+        #mp-feedback-panel > div > button { min-height: 50px; background: var(--feedback-yellow) !important; color: var(--feedback-ink) !important; border: 3px solid var(--feedback-ink) !important; border-radius: 14px !important; box-shadow: 2px 3px 0 var(--feedback-ink); font-size: 16px !important; }
+        #mp-feedback-panel [aria-label="Close feedback panel"] { min-width: 44px; min-height: 44px; }
+        body:has(#mp-feedback-panel[style*="display: block"]) main { visibility: hidden; }
         [hidden] { display: none !important; }
+        @media (max-width: 360px) { body { padding: 20px 16px 28px; } .feedback-card { padding: 20px; } .feedback-heading { gap: 12px; } .feedback-sticker { flex-basis: 48px; height: 48px; font-size: 28px; border-radius: 16px; } }
+        @media (max-height: 440px) { body { padding-top: 16px; } }
+        @media (prefers-reduced-motion: reduce) { .feedback-primary:active { transform: none; } }
     </style>
 </head>
 <body><main></main><!-- parent-entry --></body>
