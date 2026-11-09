@@ -30,10 +30,11 @@ export async function runMobileShellFlow() {
     const descendants = (node) => node && typeof node === 'object'
         ? [node, ...node.children.flatMap(descendants)] : [];
     let nodes = descendants(App());
-    const findParentButton = () => nodes.find((node) => node.type === 'Pressable');
+    const findParentButton = () => nodes.find((node) => node.type === 'Pressable'
+        && descendants(node).some((child) => child.type === 'Text' && child.children.includes(MobileText.FEEDBACK)));
     const safeArea = nodes.find((node) => node.type === 'SafeAreaView');
     const gameIndex = safeArea.children.findIndex((node) => node?.props.source?.baseUrl === MobileLocation.GAME);
-    const parentIndex = safeArea.children.findIndex((node) => descendants(node).some((item) => item.type === 'Pressable'));
+    const parentIndex = safeArea.children.findIndex((node) => descendants(node).includes(findParentButton()));
     assert.ok(gameIndex >= 0 && parentIndex > gameIndex, 'Parent feedback must follow the game at the bottom of the safe area.');
     const parentBar = safeArea.children[parentIndex];
     assert.equal(parentBar.props.style.alignItems, 'flex-end', 'Parent feedback must align to the right edge.');
@@ -45,7 +46,25 @@ export async function runMobileShellFlow() {
     nodes = descendants(App());
     assert.equal(nodes.find((node) => node.type === 'Modal').props.visible, true);
     assert.equal(nodes.filter((node) => node.type === 'WebView' && node.props.source.baseUrl === MobileLocation.PARENTS).length, 1);
-    nodes.find((node) => node.type === 'Button' && node.props.title === MobileText.CLOSE).props.onPress();
+    const returnButton = nodes.find((node) => node.type === 'Pressable' && node.props.accessibilityLabel === MobileText.CLOSE);
+    assert.ok(returnButton, 'Feedback must provide a styled Return to game button.');
+    assert.equal(returnButton.props.accessibilityRole, 'button');
+    const returnStyle = Object.assign({}, ...returnButton.props.style({ pressed: false }));
+    assert.ok(returnStyle.minHeight >= 44, 'Return to game must support touch input.');
+    assert.equal(returnStyle.borderColor, '#111');
+    assert.ok(returnStyle.borderWidth >= 2, 'The return pill must have the game’s bold outline.');
+    assert.equal(returnStyle.backgroundColor, '#fff7c8');
+    assert.ok(returnStyle.borderRadius >= returnStyle.minHeight / 2);
+    assert.ok(returnStyle.shadowOffset.width > 0 && returnStyle.shadowOffset.height > 0);
+    assert.equal(returnStyle.shadowOpacity, 1);
+    const returnBar = nodes.find((node) => node.type === 'View' && node.children.includes(returnButton));
+    assert.equal(returnBar.props.style.alignItems, 'flex-start', 'The return pill must align to the left edge.');
+    const returnArrow = returnButton.children.find((node) => node.props.accessible === false);
+    assert.ok(returnArrow && returnArrow.children.includes('←'), 'The return pill must show a decorative back arrow.');
+    const modalText = descendants(nodes.find((node) => node.type === 'Modal'))
+        .filter((node) => node.type === 'Text').flatMap((node) => node.children);
+    assert.deepEqual(modalText, ['←', MobileText.CLOSE], 'The native bar must not duplicate the document heading.');
+    returnButton.props.onPress();
     nodes = descendants(App());
     assert.equal(nodes.find((node) => node.type === 'Modal').props.visible, false);
     findParentButton().props.onPress();

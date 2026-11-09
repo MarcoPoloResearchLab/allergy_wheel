@@ -54,13 +54,17 @@ export const PrivacyContract = Object.freeze({
 });
 
 export const ParentText = Object.freeze({
-    TITLE: 'Feedback', ANSWER: 'Answer', CONTINUE: 'Continue', QUESTION: 'To continue, multiply',
-    INCORRECT: 'Please ask an adult to answer the question.',
+    TITLE: 'Feedback', ANSWER: 'Answer', CONTINUE: 'Continue',
+    GATE_TITLE: 'A quick adult check',
+    GATE_DESCRIPTION: 'Ask an adult to solve this before opening feedback.',
+    ANSWER_PLACEHOLDER: 'Your answer', MULTIPLY: '×', EQUATION_END: '= ?',
+    NEXT_ICON: '→', STICKER: '💬', AGREEMENT_TITLE: 'Before you share',
+    INCORRECT: 'Not quite. Please ask an adult to try again.',
     FEEDBACK: 'Open feedback', PRIVACY_TITLE: 'Privacy and support',
-    INTRODUCTION: 'Share a question or suggestion with our team.',
-    LOADING: 'The online service is starting.', READY: 'The online service is ready.', UNAVAILABLE: 'Internet is unavailable or the service could not load. The game still works offline.',
+    INTRODUCTION: 'Help make Allergy Wheel even better.',
+    LOADING: 'Opening feedback…', READY: 'Feedback is ready.', UNAVAILABLE: 'Internet is unavailable or the service could not load. The game still works offline.',
     PRIVACY: PrivacyContract.sections.join('\n\n'),
-    CONSENT: 'Feedback is for adults. Share a question or suggestion with our team.',
+    CONSENT: 'Your message goes to our team through LoopAware.',
     AGREEMENT: 'I am an adult and agree to LoopAware processing my contact details, message, sentiment, IP address, and browser/device information from User-Agent for feedback. I will not include a child\'s personal information.'
 });
 export const FeedbackConfiguration = Object.freeze({
