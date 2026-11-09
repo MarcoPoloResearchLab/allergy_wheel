@@ -94,8 +94,10 @@ for (const engine of [chromium, webkit]) {
             assert.match(await agreement.locator('..').innerText(), /IP address.*User-Agent/i);
             await agreement.check();
             await feedback.click();
-            await parentPage.getByRole('status').filter({ hasText: ParentText.READY }).waitFor();
+            await parentPage.locator('#mp-feedback-contact').waitFor();
+            assert.equal(await parentPage.locator('[role="status"]').textContent(), ParentText.READY);
             assert.deepEqual(await parentPage.evaluate(() => Object.keys(localStorage)), []);
+            await parentPage.getByRole('button', { name: 'Close feedback panel', exact: true }).click();
             await parentPage.getByText(ParentText.PRIVACY_TITLE, { exact: true }).click();
             const privacyText = await parentPage.locator('#privacy-text').innerText();
             assert.match(privacyText, /90.*days/i);

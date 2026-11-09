@@ -53,7 +53,7 @@ export async function runFeedbackFlow(browser, parentSource) {
         }
         await page.locator('#mp-feedback-bubble').waitFor();
         await page.waitForFunction((ready) => document.querySelector('[role="status"]').textContent === ready, ParentText.READY);
-        await page.locator('#mp-feedback-bubble').click();
+        assert.equal(await page.locator('#mp-feedback-panel').isVisible(), true, 'Open feedback must open the usable form without a second launcher click.');
         await page.locator('#mp-feedback-contact').waitFor();
         assert.equal(await page.locator('#mp-feedback-panel').isVisible(), true);
         assert.equal(await page.locator('#mp-feedback-bubble').count(), 1);
