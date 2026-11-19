@@ -17,7 +17,9 @@ bin/
 
 /configs/signing/
 
+mobile/android/.kotlin/
+
 # BEGIN MPRLAB-GOVERNANCE
 /.mprlab/*-PLAN.md
+/_scratch/
 # END MPRLAB-GOVERNANCE
-mobile/android/.kotlin/

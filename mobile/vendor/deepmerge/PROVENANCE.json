@@ -4,7 +4,7 @@
   "source": "https://registry.npmjs.org/deepmerge/4.3.1",
   "advisory": "GHSA-gcqx-w48m-w2h4",
   "upstream_fix_reference": "https://github.com/TehShrike/deepmerge/pull/274",
-  "review_after": "2026-11-12",
+  "review_after": "2026-12-03",
   "maintenance_owner": "Marco Polo Research Lab LLC, Allergy Wheel maintainers",
   "owned_changes": [
     "index.js, dist/cjs.js, dist/umd.js: reject __proto__ in both target and source copy loops",

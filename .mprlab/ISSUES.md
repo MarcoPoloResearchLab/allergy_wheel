@@ -11,6 +11,47 @@ Format: `- [ ] [B042] (P1) {I007} Title`
 
 ## BugFixes
 
+- [!] [B061] (P1) Restore the game after mobile WebView process termination
+  Goal:
+  Recover the blank game while the native Feedback entry remains usable.
+
+  Requirements:
+  - Use one recovery command to recreate the packaged game after iOS content process termination or Android renderer loss.
+  - Preserve the game during ordinary Feedback visits.
+  - Keep the Feedback modal usable when the game process terminates behind it.
+  - A terminated game restarts at allergen selection because its session memory is lost.
+
+  Validation:
+  On November 19, 2026, the iOS 27 iPhone 18 Pro simulator displayed the initial game.
+  Terminating its WebKit content processes reproduced the cream blank screen with Feedback visible.
+  Maestro opened Feedback and returned successfully; allergen selection remained absent.
+  The new `make test-mobile` regression failed because the termination callback was missing.
+  `make test-mobile` passed the revised native entry-point regression, offline phone/tablet rounds, audio lifecycle, and Feedback flows.
+  `make mobile-ios` built the simulator app successfully.
+  Maestro on the rebuilt iOS 27 iPhone 18 Pro simulator verified recovery after content process termination,
+  a playable round after recovery, preservation of the result during ordinary Feedback return,
+  and termination behind Feedback followed by return to a playable game.
+  Independent architect review found no actionable correctness findings.
+  The original screenshot cannot establish why its content process stopped.
+  Before the shared-handler extension, `make ci` passed source, browser, layout, menu, Feedback layout, and installed security probes,
+  then failed at `test-dependency-audit`: the existing deepmerge review expired on November 12, 2026.
+  `mobile/config/dependency-audit.json` and `mobile/vendor/deepmerge/PROVENANCE.json` retain that expired date.
+  The task did not change the dependency review policy. Evidence is in `artifacts/b061/ci.log`.
+  The shared-handler regression first failed on the missing Android callback.
+  The revised `make test-mobile` passed iOS termination, Android crash, and Android system-kill scenarios,
+  each with Feedback open and closed, plus normal Feedback return and packaged offline game rounds.
+  Both platform callbacks invoke `handleGameProcessTermination` in the native composition root.
+  Android emits its renderer-loss callback on API 26 and later.
+  The Android native build initially selected Java 27 and failed with unsupported class file version 71.
+  `JAVA_HOME="$(/usr/libexec/java_home -v 17)" make mobile-android` passed with the documented JDK 17.
+  `make check` passed syntax validation for 115 JavaScript and JSON files and whitespace checks.
+  Android termination coverage invokes the real App entry point with controlled native events;
+  it does not claim Android emulator process-termination execution.
+  Full CI remains pending until the existing expired dependency review is requalified.
+  This source fix requires new native releases to reach installed apps.
+
+  Blocked: requalify the expired deepmerge dependency review and pass final `make ci` before closing B061.
+
 - [x] [B060] (P2) Add playful audio and navigation icons
   Goal:
   Make audio state and navigation destinations visible through icons.
@@ -540,7 +581,7 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   Requirements:
   - Cadence: run before release cuts and after merge bursts that change user-facing or operator-facing behavior.
   - Review README, ARCHITECTURE, PRD, CHANGELOG, docs, runbooks, setup guides, and local workflow notes for stale behavior or missing new contracts.
-  - Review changed English technical prose against `.mprlab/AGENTS.DOCS.md` and the official ASD-STE100 standard.
+  - Review changed English technical prose against `.mprlab/AGENTS.DOCS.md`. Use `.mprlab/AGENTS.STE.md` only for explicitly required formal compliance.
   - Add approved repository terms to `.mprlab/TERMINOLOGY.md`.
   - Update docs when closed issues changed durable behavior, public APIs, operator workflows, release semantics, or deployment expectations.
   - Remove or rewrite stale instructions instead of preserving obsolete alternatives.
@@ -552,10 +593,11 @@ Format: `- [ ] [B042] (P1) {I007} Title`
   - Cross-references from archived issue history to durable docs when useful.
 
   Validation:
-  - Run the skill `prepare-ste-reference` script and use its verified official PDF.
-  - Run the skill `check-ste` script on each English technical document that changed.
-  - Review the changed text against Part 1 writing rules and the Part 2 dictionary.
-  - Confirm that the producing agent completed the review without end-user work.
+  - Review changed prose against its sources, repository terminology, and the applicable documentation contract.
+  - For explicitly selected formal STE scope, run the skill `prepare-ste-reference` script and use its verified official PDF.
+  - For that formal scope, run the skill `check-ste` script on each changed document or section.
+  - Within that formal scope, review the changed text against Part 1 writing rules and the Part 2 dictionary.
+  - Confirm that the producing agent completed the applicable review without end-user work.
   - Do a check of links, command names, paths, and public contract descriptions changed by the pass.
   - Confirm docs describe the current canonical path only.
   - Confirm issue archive and active tracker references remain consistent.
