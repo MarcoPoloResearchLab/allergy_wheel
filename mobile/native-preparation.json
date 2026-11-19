@@ -15,8 +15,8 @@
         "resolved": "4.3.1"
       },
       "expo": {
-        "declared": "~57.0.32",
-        "resolved": "57.0.32"
+        "declared": "~57.0.33",
+        "resolved": "57.0.33"
       },
       "expo-build-properties": {
         "declared": "~57.0.23",
@@ -66,10 +66,10 @@
       "brace-expansion": "5.0.12",
       "node-forge": "$node-forge",
       "deepmerge": "$deepmerge",
-      "@expo/fingerprint@0.20.15": {
-        "glob": "14.0.3",
+      "@expo/fingerprint@0.20.16": {
         "minimatch": "11.0.4"
-      }
+      },
+      "expo": "$expo"
     }
   },
   "toolchain": {
