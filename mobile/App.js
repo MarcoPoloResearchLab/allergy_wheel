@@ -50,6 +50,9 @@ const styles = StyleSheet.create({
 export default function App() {
     const webView = useRef(null);
     const [parentsVisible, setParentsVisible] = useState(false);
+    const [gameInstance, setGameInstance] = useState(0);
+    // Both platforms lose the game document when its renderer stops. Remount the packaged source.
+    const handleGameProcessTermination = () => setGameInstance((instance) => instance + 1);
     useEffect(() => {
         const subscription = AppState.addEventListener('change', (state) => {
             webView.current?.injectJavaScript(createLifecycleScript(state));
@@ -88,7 +91,10 @@ export default function App() {
                         allowFileAccess: false, setSupportMultipleWindows: false, style: styles.screen
                     }) : null))),
             React.createElement(WebView, {
+                key: gameInstance,
                 ref: webView,
+                onContentProcessDidTerminate: handleGameProcessTermination,
+                onRenderProcessGone: handleGameProcessTermination,
                 source: { html: game.html, baseUrl: MobileLocation.GAME },
                 originWhitelist: ['*'],
                 onShouldStartLoadWithRequest: (request) => request.url === 'about:blank' || request.url === MobileLocation.GAME,
