@@ -159,6 +159,9 @@ Read each selected guide in full before its first applicable action.
 
 - Before edits: `.mprlab/PLANNING.md`.
 - For technical prose: `.mprlab/AGENTS.DOCS.md` and `.mprlab/TERMINOLOGY.md`.
+- For explicitly required ASD-STE100 compliance: `.mprlab/AGENTS.STE.md`.
+- For application onboarding or user-interface behavior: `.mprlab/AGENTS.PRODUCT.md`.
+- For deployment manifests, release, publication, deployment, or native preparation: `.mprlab/AGENTS.DEPLOYMENT.md`.
 - For issue work: the selected issue and its dependencies in `.mprlab/ISSUES.md`.
 - For tracker edits: `.mprlab/issues-md-format.md`.
 - For Git operations: `.mprlab/AGENTS.GIT.md`.
